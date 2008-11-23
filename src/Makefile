@@ -11,7 +11,7 @@ INCLUDES = -DENABLE_RGBA \
 	   -DENABLE_GDKCOLOR_TO_STRING \
 	   -DPACKAGE_NAME=\"LilyTerm\" \
 	   -DPACKAGE=\"lilyterm\" \
-	   -DVERSION=\"0.9.0\" \
+	   -DVERSION=\"0.9.1\" \
 	   -DPACKAGE_BUGREPORT=\"tetrlet@gmail.com\" \
 	   -DLOCALEDIR=\"$(datadir)/locale\" \
 	   -DICONDIR=\"$(datadir)/pixmaps\"

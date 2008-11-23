@@ -38,27 +38,26 @@
 // #define SHIFT_ONLY_MASK (GDK_CONTROL_MASK | GDK_MOD1_MASK | GDK_MOD3_MASK | GDK_MOD4_MASK | GDK_MOD5_MASK)
 
 void add_page(gboolean run_once);
-gboolean close_page (GtkWidget *widget, gboolean need_safe_close);
+gboolean close_page (GtkWidget *vtebox, gboolean need_safe_close);
 gboolean vtebox_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 // gboolean vtebox_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
 // void deal_key_press(gint type);
 
 void vtebox_grab_focuse(GtkWidget *vtebox, gpointer user_data);
-void vtebox_get_focuse(GtkWidget *vtebox, gpointer user_data);
-void vtebox_lost_focuse(GtkWidget *vtebox, gpointer user_data);
-void vtebox_style_set (GtkWidget *vtebox, GtkStyle *previous_style, gpointer user_data);
+void set_vtebox_geometry (GtkWidget *vtebox);
 void vtebox_size_request (GtkWidget *vtebox, GtkRequisition *requisition, gpointer user_data);
 void vtebox_size_allocate (GtkWidget *vtebox, GtkAllocation *allocation, gpointer user_data);
 
 extern void init_new_page(GtkWidget *vtebox, char* font_name, gint column, gint row, gint run_once);
 extern void window_resizable(GtkWidget *vtebox, gboolean run_once, gint minsize);
 extern gboolean dialog (GtkWidget *widget, gint style);
-extern void update_tab_name(gchar *stat_path, GtkWidget *label, pid_t pid, pid_t *tpgid,
-			    gint page_no, gchar *custom_page_name);
+extern void update_tab_name(gchar *stat_path, GtkWidget *label, pid_t pid, pid_t tpgid,
+			    gint page_no, gchar *custom_page_name, const gchar *pwd);
 extern void reorder_page_number(GtkWidget *widget, gpointer user_data);
 extern void update_window_title(gchar *name);
-extern gboolean monitor_cmdline(gpointer data);
+extern gboolean monitor_cmdline(GtkWidget *vtebox);
 // extern void set_vtebox_font(GtkWidget *widget, gint type);
 extern gint get_tpgid(gchar *stat_path, pid_t pid);
+extern gchar *get_cmdline(pid_t tpgid);
 
 #endif

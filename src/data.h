@@ -50,6 +50,12 @@ struct Page
 	pid_t tpgid;
 	// the path to /proc/pid/stat. *for performance*
 	gchar *stat_path;
+	gchar *custom_page_name;
+	// Use colorful tab
+	gchar *tab_color;
+	// Current Directory
+	gchar *pwd;
+
 	// the id of g_timeout_add_seconds()
 	guint timeout_id;
 
@@ -63,7 +69,6 @@ struct Page
 
 	gboolean use_scrollback_lines;
 
-	gchar *custom_page_name;
 	GtkWidget *encoding;
 	// current page no on notebook. *for performance*
 	gint current_page_no;
@@ -75,6 +80,7 @@ struct KeyValue
 	gchar *value;
 	guint key;
 	guint mods;
+	gchar *comment;
 };
 
 #endif

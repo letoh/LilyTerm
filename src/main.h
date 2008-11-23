@@ -50,21 +50,20 @@ void deal_key_press(gint type);
 
 extern void get_user_settings();
 extern void add_page(gboolean run_once);
-extern gboolean close_page (GtkWidget *widget, gboolean need_safe_close);
+extern gboolean close_page (GtkWidget *vtebox, gboolean need_safe_close);
 extern void create_menu();
 extern gboolean dialog (GtkWidget *widget, gint style);
 extern void reorder_page_number(GtkWidget *widget, gpointer user_data);
-
-void window_get_focuse(GtkWidget *window, gpointer user_data);
-void window_lost_focuse(GtkWidget *window, gpointer user_data);
-void window_style_set (GtkWidget *widget, GtkStyle  *previous_style, gpointer user_data);
 extern void set_vtebox_font(GtkWidget *widget, gint type);
 
 void window_style_set (GtkWidget *window, GtkStyle *previous_style, gpointer user_data);
 void window_size_request (GtkWidget *window, GtkRequisition *requisition, gpointer user_data);
 void window_size_allocate (GtkWidget *window, GtkAllocation *allocation, gpointer user_data);
+gboolean window_get_focuse(GtkWidget *window, GdkEventFocus *event, gpointer user_data);
+gboolean window_lost_focuse (GtkWidget *window, GdkEventFocus *event, gpointer user_data);
+
 
 extern void add_page(gint run_once);
 extern GString *save_user_settings(GtkWidget *widget, GtkWidget *current_vtebox);
-
+extern void window_resizable(GtkWidget *vtebox, gint run_once, gint minsize);
 #endif

@@ -1,9 +1,48 @@
+2008-5-25 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
+  version 0.9.1
+
+    The size of LilyTerm can't decrease in fluxbox and evilwm. They are
+    insensitive in gtk+2 focus event, which is used for keep correct geometry
+    in LilyTerm.
+
+    There is another project named LilyTerm already, so that LilyTerm will
+    renamed to LunaTerm, and relicense to GPLv3 in next release.
+
+    FIX:
+	* page_shows_current_cmdline only updates for current page.
+
+    New Feature:
+	* Applied updated German translation. VERY THANKS to Mario Blättermann.
+	* Support colorful tab. You may specify the color with:
+
+	    page_cmdline_color = darkblue
+	    page_dir_color = darkgreen
+	    page_custom_color = darkred
+	    page_normal_color = black
+	  
+	  in your profile, or use `use_color_page = 0' to disable it.
+	* Shows the PWD (current directory) on page name.
+	  Enable it will NOT cause performance program. Lilyterm with 100 tabs
+	  causes around 2.3% CPU loading on a Celeron 850 PC.
+	  You may use `page_shows_current_dir = 0' in profile to disable it.
+	* Shows PWD or Cmdline on page name will stop updating when LilyTerm
+	  is not on focus.
+	* You may use `page_width' in your profile to specify the max size of
+	  page, and use `fixed_page_width' to fix the size of page width.
+	* Always move window to top-left when initing.
+	* You may use `show_get_function_key_menu' to disable "Get function
+	  key value" menu item.
+	* Add comments in profile.
+
 2008-5-9 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
   version 0.9.0
 
     FIX:
 	* <backspace> don't work under emacs.
 	  Thanks yoyo for report this bug.
+	* page_shows_current_cmdline only enabled under GNU/Linux for temporary.
 
     New Feature:
 	* Applied German translation. VERY THANKS to Mario Blättermann.
@@ -21,6 +60,7 @@
     	* menu item [Profile sample] is obsoleted.
 
 2008-5-1 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
   version 0.8.9
 
     FIX:

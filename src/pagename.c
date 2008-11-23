@@ -31,13 +31,21 @@ extern gchar **splited_page_names;
 extern gint page_names_no;
 extern gboolean reuse_page_names;
 extern gboolean page_shows_current_cmdline;
-// extern gboolean page_shows_current_dir;
+extern gboolean page_shows_current_dir;
+extern gboolean use_color_page;
+extern gchar *page_cmdline_color;
+extern gchar *page_dir_color;
+extern gchar *page_custom_color;
+extern gchar *page_normal_color;
 extern gboolean window_shows_current_page;
 extern gboolean page_number;
 
 extern GtkWidget *window;
 extern GtkWidget *notebook;
-extern GtkWidget *current_vtebox;
+
+extern gboolean lost_focuse;
+extern gboolean add_remove_page;
+extern gboolean style_set;
 
 void reorder_page_number(GtkWidget *widget, gpointer user_data)
 {
@@ -60,48 +68,174 @@ void reorder_page_number(GtkWidget *widget, gpointer user_data)
 		current_data->current_page_no = i;
 		
 		if (page_number)
-			update_page_name(current_data->label, i+1, current_data->custom_page_name);
+			update_page_name(current_data->label, i+1, current_data->custom_page_name,
+					 current_data->tab_color);
 	}
 }
 
-gboolean monitor_cmdline(gpointer data)
+gboolean monitor_cmdline(GtkWidget *vtebox)
 {
-	struct Page *current_data = (struct Page *)g_object_get_data(G_OBJECT(current_vtebox), "Data");
-	pid_t tpgid = get_tpgid(current_data->stat_path, current_data->pid);
-	// g_debug("the original tpgid is %d, and got tpgid from get_tpgid() is: %d\n", current_data->tpgid, tpgid);
+	// The pagename won't be updated if LunaTerm is not on focuse.
+	if (lost_focuse || add_remove_page || style_set)
+		return TRUE;
+
+	gboolean update_pwd = FALSE;
+
+	struct Page *current_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Data");
+	pid_t old_tpgid = current_data->tpgid;
+
+	if (current_data->pid==0)
+	{
+		current_data->tpgid = 0;
+		return TRUE;
+	}
+	else
+		current_data->tpgid = get_tpgid(current_data->stat_path, current_data->pid);
+	
+	// g_debug("the original tpgid is %d, and got tpgid from get_tpgid() is: %d\n",
+	//	old_tpgid, current_data->tpgid);
+	
+	if (page_shows_current_dir && (current_data->tpgid == current_data->pid) && current_data->custom_page_name==NULL)
+	{
+		gchar *new_dir = get_tab_name_with_current_dir(current_data->pid);
+		// g_debug("Old dir =%s", current_data->pwd);
+		// g_debug("New dir =%s", new_dir);
+		if (current_data->pwd==NULL)
+			update_pwd = TRUE;
+		else if (strcmp(current_data->pwd, new_dir))
+			update_pwd = TRUE;
+
+		if (update_pwd)
+		{
+			// g_debug("PWD '%s' is changed. Updating tab name...", new_dir);
+			g_free(current_data->pwd);
+			current_data->pwd = new_dir;
+		}
+		else
+		{
+			// g_debug("PWD '%s' is not changed. Have no need to update tab name...", new_dir);
+			g_free(new_dir);
+		}
+	}
 
 	// only updte the page name when tpgid is updated.
-	if (tpgid != current_data->tpgid)
-		// tpgid will be updated in somewhere in update_tab_name() XD
+	if (update_pwd ||
+	   ((page_shows_current_cmdline && (old_tpgid != current_data->tpgid)) ||
+	    (page_shows_current_dir && update_pwd && (current_data->tpgid == current_data->pid))))
 		update_tab_name(current_data->stat_path, current_data->label,
-				current_data->pid, &(current_data->tpgid),
-				gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook))+1,
-				current_data->custom_page_name);
+				current_data->pid, current_data->tpgid,
+				current_data->current_page_no+1, current_data->custom_page_name,
+				current_data->pwd);
 	return TRUE;
 }
 
 // it will update the text in label ,label->name, and the title of window
-void update_tab_name(gchar *stat_path, GtkWidget *label, pid_t pid, pid_t *tpgid,
-		     gint page_no, gchar *custom_page_name)
+void update_tab_name(gchar *stat_path, GtkWidget *label, pid_t pid, pid_t tpgid,
+		     gint page_no, gchar *custom_page_name, const gchar *pwd)
 {
-	// Please resure that label->name = NULL when init
-	g_free(label->name);
-	
-	// got the tab name
-	if (page_shows_current_cmdline)
-		// we get stat_path from "struct Page" for performance.
-		// tpgid will be update in get_tab_name_with_cmdline()
-		label->name = get_tab_name_with_cmdline(stat_path, pid, tpgid);
-	
-	//if ((page_shows_current_dir) && ((label->name==NULL) || (pid!=*tpgid)))
-	//	label->name = get_tab_name_with_dir(pid);
-	
-	if (label->name==NULL)
-		label->name = get_tab_name_with_page_names();
+	// page_name = label->name, so that it don't need to be freed
+	// page_color should not be freed too.
+	gchar *page_name = NULL, *page_color = NULL;
+	// Please resure that page_name = NULL when init
+	// g_free(label->name);
+	// g_debug("Get pid=%d, tpgid=%d", pid, tpgid);
 
-	// we'll update the page name every time.
-	// please don't update the tab name if unnecessary.
-	update_page_name(label, page_no, custom_page_name);
+	// got the tab name
+	if (page_shows_current_cmdline &&
+	   ((!page_shows_current_dir) || (page_shows_current_dir && (pid!=tpgid))))
+	{
+		// we get stat_path from "struct Page" for performance.
+		page_name = get_tab_name_with_cmdline(tpgid);
+		if (page_name!=NULL)
+			page_color = page_cmdline_color;
+		// g_debug("page_shows_current_cmdline : page_name = %s, color = %s", page_name, page_color);
+	}
+	
+	if (page_shows_current_dir && (page_name==NULL))
+	{
+		// page_name = get_tab_name_with_current_dir(pid);
+		page_name = g_strdup(pwd);
+		if (page_name!=NULL)
+			page_color = page_dir_color;
+		// g_debug("page_shows_current_dir : page_name = %s, color = %s", page_name, page_color);
+	}
+	
+	if (page_name==NULL)
+	{
+		page_name = get_tab_name_with_page_names();
+		page_color = page_normal_color;
+		// g_debug("page_shows_normal_dir : page_name = %s, color = %s", page_name, page_color);
+	}
+
+	// even though custom_page_name is setted, we still need to set the page_name for it.
+	// therefore if we disable custom_page_name sometime, we still have the page_name for use.
+	if (custom_page_name!=NULL)
+	{
+		page_color = page_custom_color;
+		// g_debug("page_shows_custom_dir : page_name = %s, color = %s", page_name, page_color);
+	}
+	
+	// g_debug("Final : page_name = %s, color = %s", page_name, page_color);
+
+	if (use_color_page)
+	{
+		GtkWidget *vtebox=(GtkWidget *)g_object_get_data(G_OBJECT(label), "VteBox");
+		if (vtebox!=NULL)
+		{
+			struct Page *current_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Data");
+			if (current_data!=NULL)
+				current_data->tab_color = page_color;
+		}
+	}
+	
+	g_free(label->name);
+	label->name = page_name;
+
+	update_page_name(label, page_no, custom_page_name, page_color);
+}
+
+void update_page_name(GtkWidget *label, gint page_no, gchar *custom_page_name, const gchar *tab_color)
+{
+	if (lost_focuse || add_remove_page || style_set)
+		return;
+
+	// g_debug("Updating page name to %s...", label->name);
+	gchar *page_name = NULL;
+
+	if (custom_page_name==NULL)
+		page_name = label->name;
+	else
+		page_name = custom_page_name;
+	
+	if (page_number)
+	{
+		gchar *temp_name = g_strdup_printf("(%d) %s", page_no, page_name);
+		page_name = temp_name;
+	}
+
+	if (use_color_page)
+	{
+		gchar *temp_str[2];
+		temp_str[0] = g_markup_escape_text(page_name, -1);
+		temp_str[1] = g_strconcat("<span foreground=\"", tab_color,"\">", temp_str[0], "</span>", NULL);
+		gtk_label_set_markup (GTK_LABEL(label), temp_str[1]);
+		g_free(temp_str[0]);
+		g_free(temp_str[1]);
+	}
+	else
+		gtk_label_set_text(GTK_LABEL(label), page_name);
+	
+	if (page_number)
+		g_free(page_name);
+	
+	// we should update window title if page name changed.
+	if (window_shows_current_page)
+	{
+		if (custom_page_name==NULL)
+			update_window_title(label->name);
+		else
+			update_window_title(custom_page_name);
+	}
 }
 
 void update_window_title(gchar *name)
@@ -109,28 +243,6 @@ void update_window_title(gchar *name)
 	gchar *window_title = g_strdup_printf("%s - %s", name, PACKAGE_NAME);
 	gtk_window_set_title(GTK_WINDOW(window), window_title);
 	g_free(window_title);
-}
-
-void update_page_name(GtkWidget *label, gint page_no, gchar *custom_page_name)
-{
-	if (page_number)
-	{
-		gchar *page_name;
-		if (custom_page_name==NULL)
-			page_name = g_strdup_printf("(%d) %s", page_no, label->name);
-		else
-			page_name = g_strdup_printf("(%d) %s", page_no, custom_page_name);
-
-		gtk_label_set_text(GTK_LABEL(label), page_name);
-		g_free(page_name);
-	}
-	else
-		if (custom_page_name==NULL)
-			gtk_label_set_text(GTK_LABEL(label), label->name);
-
-	// we should update window title if page name changed.
-	if (window_shows_current_page)
-		update_window_title(label->name);
 }
 
 // The returned string should be freed when no longer needed.
@@ -151,29 +263,24 @@ gchar *get_tab_name_with_page_names()
 
 // It will return NULL if fault
 // The returned string should be freed when no longer needed.
-// gchar *get_tab_name_with_dir(pid_t pid)
-// {
-//	// g_file_read_link will return NULL if an error occurred.
-//	return g_strdup(g_file_read_link(g_strdup_printf("/proc/%d/cwd", pid), NULL));
-//}
+gchar *get_tab_name_with_cmdline(pid_t tpgid)
+{
+	if (tpgid!=0)
+		return get_cmdline(tpgid);
+	else
+		return NULL;
+}
 
 // It will return NULL if fault
 // The returned string should be freed when no longer needed.
-// It will update *tpgid too.
-gchar *get_tab_name_with_cmdline(gchar *stat_path, pid_t pid, pid_t *tpgid)
+gchar *get_tab_name_with_current_dir(pid_t pid)
 {
-	gchar *cmdline=NULL;
-	
-	// we get stat_path from "struct Page" for performance.
-	*tpgid = get_tpgid(stat_path, pid);
-	// g_debug("Got tpgid = %d\n", *tpgid);
-
-	if (*tpgid!=0)
-		cmdline = get_cmdline(*tpgid);
-	// g_debug("Got Forground program = %s\n", cmdline);
-	
-	return cmdline;
+	if (pid!=0)
+		return g_strdup(g_file_read_link(g_strdup_printf("/proc/%d/cwd", pid), NULL));
+	else
+		return NULL;
 }
+
 
 gint get_tpgid(gchar *stat_path, pid_t pid)
 {

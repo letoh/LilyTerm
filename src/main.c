@@ -36,6 +36,18 @@ extern GtkWidget *current_vtebox;
 extern struct KeyValue pagekeys[KEYS];
 gboolean enable_function_key = TRUE;
 
+// Trying to keep the vtebox size:
+// 1, When the page bar was hidden. (on_focuse), do nothing
+// 2, When the page bar was shown. (on_focuse), using gtk_window_resize.
+// 3, When the font was changed by right click menu. (lost_focuse), using gtk_widget_set_size_request
+// 4, Increase/decrease window size. (on_focuse), using gtk_widget_set_size_request
+// 5, Resotre to system/default font. (on_focuse), using gtk_widget_set_size_request
+// 6, Theme has changed. (lost_focuse) (need column * row info), We save the column * row info for it when lost_focuse.
+// 7, Using Dir/Cmdline on pagename. (on_focuse), do nothing
+
+gboolean lost_focuse = FALSE;
+gint style_set = 0;
+
 int main( int   argc,
 	  char *argv[] )
 {
@@ -57,16 +69,22 @@ int main( int   argc,
 	GdkPixbuf *icon = gdk_pixbuf_new_from_file(ICONDIR G_DIR_SEPARATOR_S PACKAGE ".png", NULL);
 	gtk_window_set_icon(GTK_WINDOW(window), icon);
 	if (icon) g_object_unref(icon);
-
-	// get user settings. we may setup RGBA so that we need create main window first.
+	
+	// get user settings. we may init RGBA so that we need create main window first.
 	get_user_settings();
-
+	
 	// close application if [Close Button] clicked
 	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(main_quit), NULL);
-	
 	// if function key pressed
 	g_signal_connect(G_OBJECT(window), "key-press-event", G_CALLBACK(window_key_press), NULL);
-	
+	// if get focuse, the size of vtebox is NOT resizeable.
+	g_signal_connect_after(G_OBJECT(window), "focus-in-event", G_CALLBACK(window_get_focuse), NULL);
+	// if lost focuse, the size of vtebox is resizeable.
+	g_signal_connect(G_OBJECT(window), "focus-out-event", G_CALLBACK(window_lost_focuse), NULL);
+	// if the theme/fonts changed
+	g_signal_connect_after(G_OBJECT(window), "style-set", G_CALLBACK(window_style_set), NULL);
+	g_signal_connect(G_OBJECT(window), "size-allocate", G_CALLBACK(window_size_allocate), NULL);
+
 	// create notebook
 	notebook = gtk_notebook_new();
 	gtk_notebook_set_scrollable(GTK_NOTEBOOK(notebook), TRUE);
@@ -75,8 +93,12 @@ int main( int   argc,
 #ifdef ENABLE_TAB_REORDER
 	g_signal_connect(G_OBJECT(notebook), "page-reordered", G_CALLBACK(reorder_page_number), NULL);
 #endif
+
 	// add a new page to notebook. run_once=TRUE.
 	add_page(TRUE);
+
+	// gtk_window_set_gravity(GTK_WINDOW(window), GDK_GRAVITY_NORTH);
+	gtk_window_move (GTK_WINDOW(window), 0, 0);
 
 	// finish!
 	gtk_widget_show_all(window);
@@ -97,7 +119,7 @@ gboolean main_quit()
 		// confirm to close multi pages.
 		dialog(NULL, 3);
 	else
-		close_page(NULL, TRUE);
+		close_page(current_vtebox, TRUE);
 	
 	// It will be segmentation fault if retrun FALSE
 	return TRUE;
@@ -308,7 +330,7 @@ void deal_key_press(gint type)
 		case 2:
 			// close page
 			// g_debug("Trying to close page!\n");
-			close_page (NULL, TRUE);
+			close_page (current_vtebox, TRUE);
 			break;
 		case 3:
 			// edit page's label
@@ -394,4 +416,71 @@ void deal_key_press(gint type)
 			set_vtebox_font(NULL, 0);
 			break;
 	}
+}
+gboolean window_get_focuse(GtkWidget *window, GdkEventFocus *event, gpointer user_data)
+{
+	//g_debug("! window_get_focuse! and style_set = %d", style_set);
+	//g_debug("Current %d vtebox size is %dx%d\n",
+	//	gtk_notebook_get_n_pages (notebook),
+	//	vte_terminal_get_column_count(VTE_TERMINAL(current_vtebox)),
+	//	vte_terminal_get_row_count(VTE_TERMINAL(current_vtebox)));
+	
+	if (lost_focuse && current_vtebox!=NULL && (!style_set))
+		window_resizable(current_vtebox, 0, -1);
+
+	lost_focuse = FALSE;
+	return FALSE;
+}
+
+gboolean window_lost_focuse (GtkWidget *window, GdkEventFocus *event, gpointer user_data)
+{
+	//g_debug("! vteboxvte_lost_focuse!");
+	//g_debug("Current %d vtebox size is %dx%d\n",
+	//	gtk_notebook_get_n_pages (notebook),
+	//	vte_terminal_get_column_count(VTE_TERMINAL(current_vtebox)),
+	//	vte_terminal_get_row_count(VTE_TERMINAL(current_vtebox)));
+
+	if (current_vtebox!=NULL && (!style_set))
+		window_resizable(current_vtebox, 0, 1);
+
+	lost_focuse = TRUE;
+	return FALSE;
+}
+
+void window_style_set (GtkWidget *window, GtkStyle *previous_style, gpointer user_data)
+{
+	//g_debug("window_style_set!");
+	//g_debug("Current %d vtebox size is %dx%d\n",
+	//	gtk_notebook_get_n_pages (notebook),
+	//	vte_terminal_get_column_count(VTE_TERMINAL(current_vtebox)),
+	//	vte_terminal_get_row_count(VTE_TERMINAL(current_vtebox)));
+	
+	// g_debug("Updating hints for %d page to 0!\n", gtk_notebook_get_n_pages (notebook));
+	window_resizable(current_vtebox, 2, -1);
+	gtk_window_resize(GTK_WINDOW(window), 1, 1);
+	// we need to launch window_size_allocate twice.
+	style_set = 2;
+}
+
+void window_size_allocate (GtkWidget *window, GtkAllocation *allocation, gpointer user_data)
+{
+	//g_debug("window_size-allocate!");
+	if (style_set)
+	{
+		style_set --;
+		// g_debug("! window_size_allocate");
+		
+		if (style_set==0)
+		{
+			// g_debug("Updating hints for %d page to FONT!\n", gtk_notebook_get_n_pages (notebook));
+			if (lost_focuse)
+				window_resizable(current_vtebox, 1, 1);
+			else
+				window_resizable(current_vtebox, 1, -1);
+		}
+	}
+
+	// GtkRequisition window_requisition;
+	// gtk_window_get_size(GTK_WINDOW(window), &window_requisition.width, &window_requisition.height);
+	// g_debug("! The final window size is %d x %d", window_requisition.width, window_requisition.height);
 }

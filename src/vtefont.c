@@ -39,10 +39,10 @@ extern GtkWidget *current_vtebox;
 
 gchar *new_font_name;
 
-gboolean force_resize_window = FALSE;
-gboolean update_hints=FALSE;
-// 0 : User default font
-// 1 : System default font
+gboolean update_hints = FALSE;
+gboolean update_hints_once = FALSE;
+extern gint style_set;
+GtkRequisition window_requisition, vtebox_requisition;
 
 void set_vtebox_font(GtkWidget *widget, gint type)
 {
@@ -54,6 +54,15 @@ void set_vtebox_font(GtkWidget *widget, gint type)
 	// type 5: reset window size & font size to default for every vtebox
 	// type 6: reset window size & font size to system for every vtebox
 	// type 7: change every vtebox to the selected font name
+
+	if (type>3)
+	{
+		// get the size of window/vtebox. for resize window late. 
+		gtk_window_get_size(GTK_WINDOW(window), &window_requisition.width, &window_requisition.height);
+		//g_debug("current window size is %d x %d", window_requisition.width, window_requisition.height);
+		gtk_widget_size_request(current_vtebox, &vtebox_requisition);
+		//g_debug("current vtebox size is %d x %d", vtebox_requisition.width, vtebox_requisition.height);
+	}
 
 	switch (type)
 	{
@@ -119,6 +128,7 @@ void get_resize_font(gint type)
 	if (restore_font_name == NULL)
 	{
 		restore_font_name = g_strdup(current_data->font_name);
+		//g_debug("Restore the font to %s!", restore_font_name);
 		if (type==2)
 			return;
 	}
@@ -126,6 +136,10 @@ void get_resize_font(gint type)
 	if (type<3)
 		g_free(current_data->font_name);
 	
+	// we use font_size to save current font size
+	// font_size = (the size in font_name) * PANGO_SCALE
+	// if font_size == 0 -> use the data in font_name
+
 	switch (type)
 	{
 		case 0:
@@ -209,8 +223,6 @@ void get_resize_font(gint type)
 
 void reset_vtebox_size(gint type)
 {
-	gint total_page = gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook));
-	
 	// type 0: change current page's font
 	// type 1: apply current column & row to every vtebox
 	// type 2: apply default column & row to every vtebox
@@ -219,14 +231,17 @@ void reset_vtebox_size(gint type)
 	switch (type)
 	{
 		case 0:
-			// change current page's font
+			// We need to apply a new font to a single vtebox.
+			// so that we should insure that this won't chage the size of window.
+			// g_debug("Updating hints for %d page! to 0\n", gtk_notebook_get_n_pages (notebook));
+			window_resizable(current_vtebox, 2, 1);
+
 			// g_debug("Trying to apply font %s to vtebox\n", current_font_name);
 			vte_terminal_set_font_from_string(VTE_TERMINAL(current_vtebox), new_font_name);
-			window_resizable(current_vtebox, 2, 1);
-			if (total_page==1)
-				update_hints = FALSE;
-			else
-				update_hints = TRUE;
+
+			update_hints_once = TRUE;
+			update_hints = TRUE;
+			
 			break;
 		case 1:
 			// increase/decrease window size & font size for every vtebox
@@ -252,10 +267,14 @@ void apply_font_to_every_vtebox(gint column, gint row)
 {
 	GtkWidget *vtebox;
 	struct Page *current_data;
-	gint i;
+	gint i, vtebox_width, vtebox_height, x_pad, y_pad;
 
-	// g_debug("Trying to apply every vtebox to %dx%d!", column, row);
-	// g_debug("Trying to apply font %s to every vtebox!\n", new_font_name);
+	//g_debug("Trying to apply every vtebox to %dx%d!", column, row);
+	//g_debug("Trying to apply font %s to every vtebox!\n", new_font_name);
+
+	// to avoid set window_resizable() in window_get_focuse()
+	style_set = 1;
+	
 	for (i=0;i<gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook));i++)
 	{
 		vtebox=(GtkWidget *)g_object_get_data(G_OBJECT( gtk_notebook_get_tab_label(GTK_NOTEBOOK(notebook),
@@ -266,18 +285,37 @@ void apply_font_to_every_vtebox(gint column, gint row)
 		// g_debug("The default font for %d page is: %s (%s)\n", i, current_data->font_name, new_font_name);
 		vte_terminal_set_font_from_string(VTE_TERMINAL(vtebox), new_font_name);
 
-		vte_terminal_set_size(VTE_TERMINAL(vtebox), column, row);
+		// it will done in vtebox_size_request()
+		// vte_terminal_set_size(VTE_TERMINAL(vtebox), column, row);
+
+		current_data->column=column;
+		current_data->row=row;
 		g_free(current_data->font_name);
 		current_data->font_name = g_strdup(new_font_name);
 		// g_debug("The new font for %d page is: %s (%s)\n", i, current_data->font_name, new_font_name);
+
+		// set the inc size = 1, try to rezsie window more correctly.
+		if (i==0)
+		{
+			// g_debug("Updating hints for %d page to 0!\n", gtk_notebook_get_n_pages (notebook));
+			window_resizable(current_vtebox, 2, -1);
+		}
+		
+		set_vtebox_geometry(vtebox);
+		// vtebox_size_request(vtebox, NULL, NULL);
 	}
 
-	window_resizable(current_vtebox, 1, -1);
-	// Yes, just set it to 1 x 1,
-	// and the window will be resized to correct geometry automatically.
-	gtk_window_resize(GTK_WINDOW(window), 1, 1);
-
+	vte_terminal_get_padding(VTE_TERMINAL(vtebox), &x_pad, &y_pad);
+	vtebox_width = x_pad + vte_terminal_get_char_width(VTE_TERMINAL(vtebox)) * column;
+	vtebox_height = y_pad + vte_terminal_get_char_height(VTE_TERMINAL(vtebox)) * row;
+	gtk_window_resize(GTK_WINDOW(window),
+			  window_requisition.width - vtebox_requisition.width + vtebox_width,
+			  window_requisition.height - vtebox_requisition.height + vtebox_height);
+	//g_debug("Resizing window to %d x %d",
+	//		  window_requisition.width - vtebox_requisition.width + vtebox_width,
+	//		  window_requisition.height - vtebox_requisition.height + vtebox_height);
+	// gtk_window_resize(GTK_WINDOW(window), 1, 1);
+	
 	// g_debug("Set hints to FALSE!\n");
-	force_resize_window = TRUE;
 	update_hints = FALSE;
 }

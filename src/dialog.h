@@ -43,10 +43,10 @@ gboolean dialog_key_press(GtkWidget *widget, GdkEventKey *event, GtkWidget *key_
 gchar *dialog_key_press_join_string(gchar *value, gchar *separator, gchar *mask);
 void set_vtebox_color (GtkColorSelection *colorselection, GtkWidget *vtebox);
 
-extern gboolean close_page(GtkWidget *widget, gboolean need_safe_close);
+extern gboolean close_page(GtkWidget *vtebox, gboolean need_safe_close);
 extern GString *got_help_message();
 extern gchar *got_profile_sample();
-extern void update_page_name(GtkWidget *label, gint page_no, gchar *custom_page_name);
+extern void update_page_name(GtkWidget *label, gint page_no, gchar *custom_page_name, const gchar* tab_color);
 extern gint get_tpgid(gchar *stat_path, pid_t pid);
 extern gchar *get_cmdline(pid_t tpgid);
 

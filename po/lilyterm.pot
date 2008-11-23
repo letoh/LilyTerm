@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-05-09 22:33+0800\n"
+"POT-Creation-Date: 2008-05-25 19:30+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,59 +16,59 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: dialog.c:109
+#: dialog.c:112
 msgid "Rename the tab"
 msgstr ""
 
-#: dialog.c:112
+#: dialog.c:115
 msgid "Change the saturation of background"
 msgstr ""
 
-#: dialog.c:115
+#: dialog.c:118
 msgid "Confirm to close multi tabs"
 msgstr ""
 
-#: dialog.c:118
+#: dialog.c:121
 msgid "Get the key value for using in profile"
 msgstr ""
 
-#: dialog.c:121 menu.c:242
+#: dialog.c:124 menu.c:242
 msgid "Usage"
 msgstr ""
 
-#: dialog.c:124
+#: dialog.c:127
 msgid "Error when writing profile"
 msgstr ""
 
-#: dialog.c:127
+#: dialog.c:130
 msgid "Confirm to close running foreground program"
 msgstr ""
 
-#: dialog.c:130
+#: dialog.c:133
 msgid "Change the opacity of window"
 msgstr ""
 
-#: dialog.c:133 menu.c:96
+#: dialog.c:136 menu.c:96
 msgid "Change the foreground color"
 msgstr ""
 
-#: dialog.c:136 menu.c:103
+#: dialog.c:139 menu.c:103
 msgid "Change the background color"
 msgstr ""
 
-#: dialog.c:295
+#: dialog.c:298
 msgid "Please input the Label Name of this tab:"
 msgstr ""
 
-#: dialog.c:298
+#: dialog.c:301
 msgid "Change the Saturation of background:"
 msgstr ""
 
-#: dialog.c:301
+#: dialog.c:304
 msgid "You are about to close multi tabs. Continue anyway?"
 msgstr ""
 
-#: dialog.c:304
+#: dialog.c:307
 msgid ""
 "You may press any key here to get the key value for using in profile.\n"
 "\n"
@@ -76,7 +76,7 @@ msgid ""
 "And press [Close] to exit."
 msgstr ""
 
-#: dialog.c:318
+#: dialog.c:321
 #, c-format
 msgid ""
 "Error while writing profile '%s/%s':\n"
@@ -84,7 +84,7 @@ msgid ""
 "%s"
 msgstr ""
 
-#: dialog.c:325
+#: dialog.c:328
 #, c-format
 msgid ""
 "There is still a running foreground program on #%d tab:\n"
@@ -94,126 +94,126 @@ msgid ""
 "Continue anyway?\n"
 msgstr ""
 
-#: dialog.c:332
+#: dialog.c:335
 msgid "Change the Opacity of window:"
 msgstr ""
 
-#: dialog.c:426
+#: dialog.c:429
 msgid "Label Name:"
 msgstr ""
 
-#: dialog.c:465
+#: dialog.c:468
 msgid "Key Value:"
 msgstr ""
 
-#: main.c:193
+#: main.c:215
 #, c-format
 msgid ""
 "%s is a libvte based X Terminal Emulater.\n"
 "\n"
 msgstr ""
 
-#: main.c:195
+#: main.c:217
 #, c-format
 msgid "Use -e/--execute {Command} to run a command after %s start.\n"
 msgstr ""
 
-#: main.c:196
+#: main.c:218
 msgid "Use -v/--version to show the version infomation.\n"
 msgstr ""
 
-#: main.c:197
+#: main.c:219
 msgid "Use -p/--profile to got a profile sample.\n"
 msgstr ""
 
-#: main.c:199
+#: main.c:221
 #, c-format
 msgid ""
 "Use -u/--user_profile {%s} to use a specified profile.\n"
 "\n"
 msgstr ""
 
-#: main.c:202
+#: main.c:224
 #, c-format
 msgid "The %s system config is: %s/%s\n"
 msgstr ""
 
-#: main.c:204
+#: main.c:226
 #, c-format
 msgid ""
 "And your %s profile is: %s/%s\n"
 "\n"
 msgstr ""
 
-#: main.c:206
+#: main.c:228
 msgid ""
 "Default shortcut key: (It may custom by editing user's profile)\n"
 "\n"
 msgstr ""
 
-#: main.c:207
+#: main.c:229
 msgid "  * <Ctrl><`>\t\tDisable/Enable function keys\n"
 msgstr ""
 
-#: main.c:208
+#: main.c:230
 msgid "  * <Ctrl><T/W>\t\tAdd a New tab/Close current tab\n"
 msgstr ""
 
-#: main.c:209
+#: main.c:231
 msgid "  * <Ctrl><E>\t\tRename current tab\n"
 msgstr ""
 
-#: main.c:210
+#: main.c:232
 msgid "  * <Ctrl><PgUp/PgDn>\tSwitch to Prev/Next tab\n"
 msgstr ""
 
-#: main.c:211
+#: main.c:233
 msgid "  * <Ctrl><Home/End>\tSwitch to First/Last tab\n"
 msgstr ""
 
-#: main.c:212
+#: main.c:234
 msgid "  * <Ctrl><Left/Right>\tMove current page Forward/Backward\n"
 msgstr ""
 
-#: main.c:213
+#: main.c:235
 msgid "  * <Ctrl><Up/Down>\tMove current page to First/Last\n"
 msgstr ""
 
-#: main.c:214
+#: main.c:236
 msgid "  * <Ctrl><F1~F12>\tSwitch to 1st ~ 12th tab\n"
 msgstr ""
 
-#: main.c:215
+#: main.c:237
 msgid "  * <Ctrl><O>\t\tSelect all the text in the Vte Terminal box\n"
 msgstr ""
 
-#: main.c:216
+#: main.c:238
 msgid "  * <Ctrl><X>\t\tCopy the text to clipboard\n"
 msgstr ""
 
-#: main.c:217
+#: main.c:239
 msgid "  * <Ctrl><V>\t\tPast the text in clipboard\n"
 msgstr ""
 
-#: main.c:218
+#: main.c:240
 msgid "  * <Ctrl><+/->\t\tIncrease/Decrease the font size of current tab\n"
 msgstr ""
 
-#: main.c:219
+#: main.c:241
 msgid "  * <Ctrl><Enter>\tReset the font size of current tab\n"
 msgstr ""
 
-#: main.c:220
+#: main.c:242
 msgid "  * <Shift><Insert>\tPast the text in primary clipboard\n"
 msgstr ""
 
-#: main.c:221
+#: main.c:243
 msgid ""
 "\t\t\t(i.e. Emulate a middle button mouse click to past the text)\n"
 "\n"
 msgstr ""
 
-#: main.c:223
+#: main.c:245
 #, c-format
 msgid "Please report bug to %s. Thank you for using %s!\n"
 msgstr ""

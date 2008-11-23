@@ -50,6 +50,9 @@ GdkColor fg_color;
 GdkColor bg_color;
 gboolean is_fg;
 
+extern gchar *page_custom_color;
+extern gchar *page_normal_color;
+
 GtkWidget *adjustment;
 
 extern GError *error;
@@ -276,7 +279,7 @@ gboolean dialog (GtkWidget *widget, gint style)
 					break;
 				case 6:
 					icon = gtk_image_new_from_stock (GTK_STOCK_DIALOG_ERROR,
-                                                                         GTK_ICON_SIZE_DIALOG);
+									 GTK_ICON_SIZE_DIALOG);
 			}
 			gtk_box_pack_start (GTK_BOX(icon_vbox), icon, FALSE, FALSE, 0);
 			break;
@@ -512,15 +515,23 @@ gboolean dialog (GtkWidget *widget, gint style)
 				{
 					// store current_data->label->name
 					current_data->custom_page_name = g_strdup(gtk_entry_get_text(GTK_ENTRY(entry)));
+					current_data->tab_color = page_custom_color;
+
+					// Update `page_name' for saving profile
+					g_free(page_name);
 					page_name = g_strdup(current_data->custom_page_name);
 				}
 				else
+				{
 					current_data->custom_page_name = NULL;
+					current_data->tab_color = page_normal_color;
+				}
 				
+				//g_debug("Get the page name = %s, color = %s",
+				//	current_data->custom_page_name, current_data->tab_color);
 				update_page_name(current_data->label, current_data->current_page_no+1,
-						 current_data->custom_page_name);
+						 current_data->custom_page_name, current_data->tab_color);
 				break;
-
 			// style  2: change the saturation of background
 			// style  9: change the foreground color
 			// style 10: change the background color
@@ -579,7 +590,7 @@ gboolean dialog (GtkWidget *widget, gint style)
 				for (i=0;i<total_page;i++)
 				{
 					// g_debug("Trying to close %d vtebox !\n", i);
-					if (close_page(NULL, TRUE)==FALSE)
+					if (close_page(current_vtebox, TRUE)==FALSE)
 						break;
 				}
 				break;
@@ -619,6 +630,9 @@ gboolean dialog (GtkWidget *widget, gint style)
 
 				if (style!=2)
 					set_vtebox_color(NULL, current_vtebox);
+				break;
+			case 3:
+				gtk_widget_destroy(dialog);
 				break;
 #ifdef ENABLE_RGBA
 			case 8:
