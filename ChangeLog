@@ -1,3 +1,11 @@
+2008-5-27 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
+  version 0.9.2, a hotfix for 0.9.1
+
+    FIX:
+	* All the function keys will be disabled after confirm to close a
+	  running vte terminal.
+
 2008-5-25 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
 
   version 0.9.1

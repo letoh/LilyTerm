@@ -316,7 +316,7 @@ void get_user_settings()
 			show_input_method_menu = check_boolean_value(keyfile, "main", "show_input_method_menu", 
 								     show_input_method_menu);
 
-                        show_get_function_key_menu = check_boolean_value(keyfile, "main",
+			show_get_function_key_menu = check_boolean_value(keyfile, "main",
 							"show_get_function_key_menu", show_get_function_key_menu);
 
 			locales_list = check_string_value(keyfile, "main", "locales_list", locales_list, TRUE);
@@ -511,26 +511,26 @@ void get_default_locale()
 // to init a new page
 void init_new_page(GtkWidget *vtebox, char* font_name, gint column, gint row, gint run_once)
 {
-	// set font
-	vte_terminal_set_font_from_string(VTE_TERMINAL(vtebox), font_name);
-	//g_debug("Got font size from %s: %d\n", font_name, pango_font_description_get_size (
-	//		pango_font_description_from_string(font_name))/PANGO_SCALE);
-
-	// set font/background colors
-	vte_terminal_set_default_colors(VTE_TERMINAL(vtebox));
-	vte_terminal_set_color_foreground(VTE_TERMINAL(vtebox), &fg_color);
-	vte_terminal_set_color_background(VTE_TERMINAL(vtebox), &bg_color);
-
 	if (run_once)
 		// update hints and make window unresizable
 		window_resizable(vtebox, run_once, -1);
+
+	// set transparent
+	set_background_saturation (NULL, 0, background_saturation, vtebox);
 
 	// set terminal size
 	// g_debug("Set the vtebox size to: %dx%d", column, row);
 	vte_terminal_set_size(VTE_TERMINAL(vtebox), column, row);
 
-	// set transparent
-	set_background_saturation (NULL, 0, background_saturation, vtebox);
+	// set font
+	vte_terminal_set_font_from_string(VTE_TERMINAL(vtebox), font_name);
+	//g_debug("Got font size from %s: %d\n", font_name, pango_font_description_get_size (
+	//	      pango_font_description_from_string(font_name))/PANGO_SCALE);
+
+	// set font/background colors
+	vte_terminal_set_default_colors(VTE_TERMINAL(vtebox));
+	vte_terminal_set_color_foreground(VTE_TERMINAL(vtebox), &fg_color);
+	vte_terminal_set_color_background(VTE_TERMINAL(vtebox), &bg_color);
 
 	// other settings
 	vte_terminal_set_word_chars(VTE_TERMINAL(vtebox), word_chars);
@@ -870,8 +870,8 @@ GString *save_user_settings(GtkWidget *widget, GtkWidget *current_vtebox)
 	g_string_append_printf(contents,"scrollback_lines = %d\n\n", scrollback_lines);
 	g_string_append_printf(contents,"# Shows input method menu on right cilck menu.\n");
 	g_string_append_printf(contents,"show_input_method_menu = %d\n\n", show_input_method_menu);
-        g_string_append_printf(contents,"# Shows get function key menu on right cilck menu.\n");
-        g_string_append_printf(contents,"show_get_function_key_menu = %d\n\n", show_get_function_key_menu);
+	g_string_append_printf(contents,"# Shows get function key menu on right cilck menu.\n");
+	g_string_append_printf(contents,"show_get_function_key_menu = %d\n\n", show_get_function_key_menu);
 	g_string_append_printf(contents,"# The locales list on right click menu.\n");
 	g_string_append_printf(contents,"# You may use zh_TW or zh_TW.Big5 here.\n");
 	g_string_append_printf(contents,"# Left it blank will disable locale select menu items.\n");

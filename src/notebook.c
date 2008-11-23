@@ -231,7 +231,11 @@ gboolean close_page (GtkWidget *vtebox, gboolean need_safe_close)
 		gint tpgid = get_tpgid(current_data->stat_path, current_data->pid);
 		// g_debug("pid=%d, and tpgid=%d\n", current_data->pid, tpgid);
 		if (current_data->pid != tpgid)
-			if (dialog(NULL, 7)==FALSE) return FALSE;
+			if (dialog(NULL, 7)==FALSE)
+			{
+				add_remove_page = FALSE;
+				return FALSE;
+			}
 	}
 
 	// remove timeout event for page_shows_current_cmdline
