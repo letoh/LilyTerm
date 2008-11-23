@@ -42,12 +42,18 @@ extern gboolean set_window_opacity(GtkRange *range, GtkScrollType scroll, gdoubl
 gboolean dialog_key_press(GtkWidget *widget, GdkEventKey *event, GtkWidget *key_value_label);
 gchar *dialog_key_press_join_string(gchar *value, gchar *separator, gchar *mask);
 void set_vtebox_color (GtkColorSelection *colorselection, GtkWidget *vtebox);
+void recover_page_colors();
 
 extern gboolean close_page(GtkWidget *vtebox, gboolean need_safe_close);
 extern GString *got_help_message();
 extern gchar *got_profile_sample();
-extern void update_page_name(GtkWidget *label, gint page_no, gchar *custom_page_name, const gchar* tab_color);
-extern gint get_tpgid(gchar *stat_path, pid_t pid);
+extern void add_page(gboolean run_once);
+extern void update_tab_name(GtkWidget *vtebox, GtkWidget *label, pid_t pid, pid_t tpgid,
+		     gint page_no, gchar *custom_page_name, const gchar *pwd, gboolean is_root, gboolean is_bold);
+extern void update_page_name(GtkWidget *vtebox, GtkWidget *label, gint page_no, gchar *custom_page_name,
+			     const gchar* tab_color, gboolean is_root, gboolean bold);
+extern void change_notebook_color(gboolean is_root);
+extern gint get_tpgid(pid_t pid);
 extern gchar *get_cmdline(pid_t tpgid);
 
 #endif

@@ -32,19 +32,17 @@ gchar **splited_page_names = NULL;
 gint page_names_no = 0;
 gboolean reuse_page_names = TRUE;
 gboolean page_number = TRUE;
-#if defined(__linux__)
 gboolean page_shows_current_cmdline = TRUE;
-#else
-gboolean page_shows_current_cmdline = FALSE;
-#endif
 gboolean page_shows_current_dir = TRUE;
 gboolean use_color_page = TRUE;
-gchar *page_cmdline_color = "darkblue";
-gchar *page_dir_color = "darkgreen";
-gchar *page_custom_color = "darkred";
-gchar *page_normal_color = "black";
+gboolean bold_current_page_name = TRUE;
+gchar *page_cmdline_color = "#1C1CDC";
+gchar *page_dir_color = "#215E3E";
+gchar *page_custom_color = "#9C0A81";
+gchar *page_root_color = "#BE0020";
+gchar *page_normal_color = "#333333";
 gboolean window_shows_current_page = TRUE;
-gint page_width = 20;
+gint page_width = 16;
 gboolean fixed_page_width = TRUE;
 gboolean show_color_selection_menu = TRUE;
 gchar *foreground_color = "white";
@@ -79,6 +77,7 @@ gchar *default_locale = NULL;
 gchar *locales_list = "EUC-JP GB2312 Big5";
 gchar **supported_locales = NULL;
 
+gint update_hints = 0;
 GdkGeometry hints = {0};
 
 extern gchar *profile;
@@ -102,7 +101,7 @@ void init_pagekeys()
 	pagekeys[1].comment = "# Add a new tab.";
 	// Close Page
 	pagekeys[2].name = "close_tab_key";
-	pagekeys[2].value = "Ctrl W";
+	pagekeys[2].value = "Ctrl Q";
 	pagekeys[2].comment = "# Close current tab.";
 	// Edit Page Name
 	pagekeys[3].name = "edit_label_key";
@@ -252,6 +251,9 @@ void get_user_settings()
 
 			use_color_page = check_boolean_value(keyfile, "main", "use_color_page", use_color_page);
 
+			bold_current_page_name = check_boolean_value(keyfile, "main", "bold_current_page_name",
+								     bold_current_page_name);
+
 			page_cmdline_color = check_string_value(keyfile, "main", "page_cmdline_color",
 								page_cmdline_color, FALSE);
 
@@ -262,6 +264,9 @@ void get_user_settings()
 
 			page_normal_color = check_string_value( keyfile, "main", "page_normal_color",
 								page_normal_color, FALSE);
+
+			page_root_color = check_string_value( keyfile, "main", "page_root_color",
+							      page_root_color, FALSE);
 
 			page_number = check_boolean_value(keyfile, "main", "page_number", page_number);
 
@@ -417,6 +422,11 @@ void strdup_settings()
 	// default_font_name = g_strdup(default_font_name);
 	// word_chars = g_strdup(word_chars);
 	// locales_list = g_strdup(locales_list);
+	page_cmdline_color = g_strdup(page_cmdline_color);
+	page_dir_color = g_strdup(page_dir_color);
+	page_custom_color = g_strdup(page_custom_color);
+	page_root_color = g_strdup(page_root_color);
+	page_normal_color = g_strdup(page_normal_color);
 }
 
 gboolean check_boolean_value(GKeyFile *keyfile, const gchar *group_name, const gchar *key, const gboolean default_value)
@@ -511,26 +521,29 @@ void get_default_locale()
 // to init a new page
 void init_new_page(GtkWidget *vtebox, char* font_name, gint column, gint row, gint run_once)
 {
-	if (run_once)
-		// update hints and make window unresizable
-		window_resizable(vtebox, run_once, -1);
-
-	// set transparent
-	set_background_saturation (NULL, 0, background_saturation, vtebox);
-
-	// set terminal size
-	// g_debug("Set the vtebox size to: %dx%d", column, row);
-	vte_terminal_set_size(VTE_TERMINAL(vtebox), column, row);
-
 	// set font
 	vte_terminal_set_font_from_string(VTE_TERMINAL(vtebox), font_name);
 	//g_debug("Got font size from %s: %d\n", font_name, pango_font_description_get_size (
-	//	      pango_font_description_from_string(font_name))/PANGO_SCALE);
+	//		pango_font_description_from_string(font_name))/PANGO_SCALE);
 
 	// set font/background colors
 	vte_terminal_set_default_colors(VTE_TERMINAL(vtebox));
 	vte_terminal_set_color_foreground(VTE_TERMINAL(vtebox), &fg_color);
 	vte_terminal_set_color_background(VTE_TERMINAL(vtebox), &bg_color);
+
+	if (run_once)
+	{
+		update_hints = 1;
+		// update hints and make window unresizable
+		window_resizable(vtebox, run_once, 1);
+	}
+
+	// set terminal size
+	// g_debug("Set the vtebox size to: %dx%d", column, row);
+	vte_terminal_set_size(VTE_TERMINAL(vtebox), column, row);
+
+	// set transparent
+	set_background_saturation (NULL, 0, background_saturation, vtebox);
 
 	// other settings
 	vte_terminal_set_word_chars(VTE_TERMINAL(vtebox), word_chars);
@@ -653,7 +666,7 @@ void window_resizable(GtkWidget *vtebox, gint run_once, gint minsize)
 		hints.min_height = hints.base_height + hints.height_inc;
 	}
 
-	// g_debug("Tring to set geometry...\n");
+	// g_debug("Tring to set geometry, and run_once = %d\n", run_once);
 	gtk_window_set_geometry_hints (GTK_WINDOW (window), GTK_WIDGET (vtebox), &hints,
 					GDK_HINT_RESIZE_INC | GDK_HINT_MIN_SIZE | GDK_HINT_BASE_SIZE);
 
@@ -777,60 +790,66 @@ GString *save_user_settings(GtkWidget *widget, GtkWidget *current_vtebox)
 		init_pagekeys();
 	
 	contents = g_string_new("[main]\n\n");
-	g_string_append_printf(contents,"# The page name used for a new page.\n");
-	g_string_append_printf(contents,"page_name = %s\n\n", page_name);
-	g_string_append_printf(contents,"# The page names list used for new pages, separate with space.\n");
-	g_string_append_printf(contents,"page_names = %s\n\n", page_names);
-	g_string_append_printf(contents,"# Reuse the page name in the page names list.\n");
-	g_string_append_printf(contents,"reuse_page_names = %d\n\n", reuse_page_names);
-	g_string_append_printf(contents,"# Shows a (number no) on the page name.\n");
-	g_string_append_printf(contents,"page_number = %d\n\n", page_number);
-	g_string_append_printf(contents,"# Shows the foreground running command on the page name.\n");
-	g_string_append_printf(contents,"page_shows_current_cmdline = %d\n\n", page_shows_current_cmdline);
-	g_string_append_printf(contents,"# Shows current directory on the page name.\n");
-	g_string_append_printf(contents,"page_shows_current_dir = %d\n\n", page_shows_current_dir);
-	g_string_append_printf(contents,"# Shows the page name of current page on window title.\n");
-	g_string_append_printf(contents,"window_shows_current_page = %d\n\n", window_shows_current_page);
-	g_string_append_printf(contents,"# The max character width of page name.\n");
-	g_string_append_printf(contents,"page_width = %d\n\n", page_width);
-	g_string_append_printf(contents,"# The page width will always use the max character width.\n");
-	g_string_append_printf(contents,"fixed_page_width = %d\n\n", fixed_page_width);
-	g_string_append_printf(contents,"# Use colorful page text.\n");
-	g_string_append_printf(contents,"use_color_page = %d\n\n", use_color_page);
-	g_string_append_printf(contents,"# The color used for showing cmdline on page name.\n");
-	g_string_append_printf(contents,"# You may use black or #000000 here.\n");
-	g_string_append_printf(contents,"page_cmdline_color = %s\n\n", page_cmdline_color);
-	g_string_append_printf(contents,"# The color used for showing current directory on page name.\n");
-	g_string_append_printf(contents,"# You may use black or #000000 here.\n");
-	g_string_append_printf(contents,"page_dir_color = %s\n\n", page_dir_color);
-	g_string_append_printf(contents,"# The color used for showing custom name on page name.\n");
-	g_string_append_printf(contents,"# You may use black or #000000 here.\n");
-	g_string_append_printf(contents,"page_custom_color = %s\n\n", page_custom_color);
-	g_string_append_printf(contents,"# The color used for showing normal name on page name.\n");
-	g_string_append_printf(contents,"# You may use black or #000000 here.\n");
-	g_string_append_printf(contents,"page_normal_color = %s\n\n", page_normal_color);
+	g_string_append_printf(contents,"# The page name used for a new page.\n"
+					"page_name = %s\n\n", page_name);
+	g_string_append_printf(contents,"# The page names list used for new pages, separate with space.\n"
+					"page_names = %s\n\n", page_names);
+	g_string_append_printf(contents,"# Reuse the page name in the page names list.\n"
+					"reuse_page_names = %d\n\n", reuse_page_names);
+	g_string_append_printf(contents,"# Shows a (number no) on the page name.\n"
+					"page_number = %d\n\n", page_number);
+	g_string_append_printf(contents,"# Shows the foreground running command on the page name.\n"
+					"page_shows_current_cmdline = %d\n\n", page_shows_current_cmdline);
+	g_string_append_printf(contents,"# Shows current directory on the page name.\n"
+					"page_shows_current_dir = %d\n\n", page_shows_current_dir);
+	g_string_append_printf(contents,"# Shows the page name of current page on window title.\n"
+					"window_shows_current_page = %d\n\n", window_shows_current_page);
+	g_string_append_printf(contents,"# The max character width of page name.\n"
+					"page_width = %d\n\n", page_width);
+	g_string_append_printf(contents,"# The page width will always use the max character width.\n"
+					"fixed_page_width = %d\n\n", fixed_page_width);
+	g_string_append_printf(contents,"# Use colorful text on page.\n"
+					"use_color_page = %d\n\n", use_color_page);
+	g_string_append_printf(contents,"# Bold the text of current page name.\n"
+					"bold_current_page_name = %d\n\n", bold_current_page_name);
+	g_string_append_printf(contents,"# The color used for showing cmdline on page name.\n"
+					"# You may use black or #000000 here.\n"
+					"page_cmdline_color = %s\n\n", page_cmdline_color);
+	g_string_append_printf(contents,"# The color used for showing current directory on page name.\n"
+					"# You may use black or #000000 here.\n"
+					"page_dir_color = %s\n\n", page_dir_color);
+	g_string_append_printf(contents,"# The color used for showing custom name on page name.\n"
+					"# You may use black or #000000 here.\n"
+					"page_custom_color = %s\n\n", page_custom_color);
+	g_string_append_printf(contents,"# The color used for showing normal name on page name.\n"
+					"# You may use black or #000000 here.\n"
+					"page_normal_color = %s\n\n", page_normal_color);
+	g_string_append_printf(contents,"# The color used for showing root privileges cmdline on page name.\n"
+					"# You may use black or #000000 here.\n"
+					"page_root_color = %s\n\n", page_root_color);
 	g_string_append_printf(contents,"# Shows [Change the foreground color]\n"
-					"# and [Change the background color] on right click menu.\n");
-	g_string_append_printf(contents,"show_color_selection_menu = %d\n\n", show_color_selection_menu);
-	g_string_append_printf(contents,"# The normal text color used in vte terminal.\n");
-	g_string_append_printf(contents,"# You may use black or #000000 here.\n");
-	g_string_append_printf(contents,"foreground_color = %s\n\n", foreground_color);
-	g_string_append_printf(contents,"# The background color used in vte terminal.\n");
-	g_string_append_printf(contents,"# You may use black or #000000 here.\n");
-	g_string_append_printf(contents,"background_color = %s\n\n", background_color);
+					"# and [Change the background color] on right click menu.\n"
+					"show_color_selection_menu = %d\n\n", show_color_selection_menu);
+	g_string_append_printf(contents,"# The normal text color used in vte terminal.\n"
+					"# You may use black or #000000 here.\n"
+					"foreground_color = %s\n\n", foreground_color);
+	g_string_append_printf(contents,"# The background color used in vte terminal.\n"
+					"# You may use black or #000000 here.\n"
+					"background_color = %s\n\n", background_color);
 	g_string_append_printf(contents,"# Shows [Increase window size], [Decrease window size],\n"
 					"# [Reset to default font/size] and [Reset to system font/size]\n"
-					"# on right click menu.\n");
-	g_string_append_printf(contents,"show_resize_menu = %d\n\n", show_resize_menu);
+					"# on right click menu.\n"
+					"show_resize_menu = %d\n\n", show_resize_menu);
 	
 	if (current_vtebox)
 	{
-		g_string_append_printf(contents,"# The default column of vte terminal.\n");
-		g_string_append_printf(contents, "column = %d\n\n", current_data->column);
-		g_string_append_printf(contents,"# The default row of vte terminal.\n");
-		g_string_append_printf(contents, "row = %d\n\n", current_data->row);
-		g_string_append_printf(contents,"# The default font name of vte terminal.\n");
-		g_string_append_printf(contents, "font_name = %s\n\n", current_data->font_name);
+		g_string_append_printf(contents,"# The default column of vte terminal.\n"
+						 "column = %ld\n\n",
+				       vte_terminal_get_column_count(VTE_TERMINAL(current_vtebox)));
+		g_string_append_printf(contents,"# The default row of vte terminal.\n"
+						 "row = %ld\n\n", vte_terminal_get_row_count(VTE_TERMINAL(current_vtebox)));
+		g_string_append_printf(contents,"# The default font name of vte terminal.\n"
+						 "font_name = %s\n\n", current_data->font_name);
 		g_string_append_printf(contents,"# Use true opacity. Left it blank will enable it automatically\n"
 						"# if the window manager were composited.\n");
 		if (original_use_rgba == 2)
@@ -840,42 +859,42 @@ GString *save_user_settings(GtkWidget *widget, GtkWidget *current_vtebox)
 	}
 	else
 	{
-		g_string_append_printf(contents,"# The default column of vte terminal.\n");
-		g_string_append_printf(contents, "column = %d\n\n", system_column);
-		g_string_append_printf(contents,"# The default row of vte terminal.\n");
-		g_string_append_printf(contents, "row = %d\n\n", system_row);
-		g_string_append_printf(contents,"# The default font name of vte terminal.\n");
-		g_string_append_printf(contents, "font_name = %s\n\n", system_font_name);
+		g_string_append_printf(contents,"# The default column of vte terminal.\n"
+						 "column = %d\n\n", system_column);
+		g_string_append_printf(contents,"# The default row of vte terminal.\n"
+						 "row = %d\n\n", system_row);
+		g_string_append_printf(contents,"# The default font name of vte terminal.\n"
+						 "font_name = %s\n\n", system_font_name);
 		g_string_append_printf(contents,"# Use true opacity. Left it blank will enable it automatically\n"
-						"# if the window manager were composited.\n");
-		g_string_append_printf(contents, "use_rgba =\n\n");
+						"# if the window manager were composited.\n"
+						 "use_rgba =\n\n");
 	}
 	g_string_append_printf(contents,"# Shows [Transparent Background], [Background Saturation]\n"
-					"# [Transparent Window] and [Window Opacity] on right click menu.\n");
-	g_string_append_printf(contents,"show_transparent_menu = %d\n\n", show_transparent_menu);
+					"# [Transparent Window] and [Window Opacity] on right click menu.\n"
+					"show_transparent_menu = %d\n\n", show_transparent_menu);
 #ifdef ENABLE_RGBA
-	g_string_append_printf(contents,"# Transparent Window. Only enabled when the window manager were composited.\n");
-	g_string_append_printf(contents,"transparent_window = %d\n\n", transparent_window>0);
-	g_string_append_printf(contents,"# The opacity of transparent Window.\n");
-	g_string_append_printf(contents,"window_opacity = %1.3f\n\n", window_opacity);
+	g_string_append_printf(contents,"# Transparent Window. Only enabled when the window manager were composited.\n"
+					"transparent_window = %d\n\n", transparent_window>0);
+	g_string_append_printf(contents,"# The opacity of transparent Window.\n"
+					"window_opacity = %1.3f\n\n", window_opacity);
 #endif
 	g_string_append_printf(contents,"# Use Transparent Background.\n"
-					"# It will use true transparent if the window manager were composited.\n");
-	g_string_append_printf(contents,"transparent_background = %d\n\n", transparent_background>0);
-	g_string_append_printf(contents,"# The saturation of transparent background.\n");
-	g_string_append_printf(contents,"background_saturation = %1.3f\n\n", background_saturation);
-	g_string_append_printf(contents,"# When user double clicks on a text, which character will be selected.\n");
-	g_string_append_printf(contents,"word_chars = %s\n\n", word_chars);
-	g_string_append_printf(contents,"# The lines of scrollback history.\n");
-	g_string_append_printf(contents,"scrollback_lines = %d\n\n", scrollback_lines);
-	g_string_append_printf(contents,"# Shows input method menu on right cilck menu.\n");
-	g_string_append_printf(contents,"show_input_method_menu = %d\n\n", show_input_method_menu);
-	g_string_append_printf(contents,"# Shows get function key menu on right cilck menu.\n");
-	g_string_append_printf(contents,"show_get_function_key_menu = %d\n\n", show_get_function_key_menu);
-	g_string_append_printf(contents,"# The locales list on right click menu.\n");
-	g_string_append_printf(contents,"# You may use zh_TW or zh_TW.Big5 here.\n");
-	g_string_append_printf(contents,"# Left it blank will disable locale select menu items.\n");
-	g_string_append_printf(contents,"locales_list = %s\n\n", locales_list);
+					"# It will use true transparent if the window manager were composited.\n"
+					"transparent_background = %d\n\n", transparent_background>0);
+	g_string_append_printf(contents,"# The saturation of transparent background.\n"
+					"background_saturation = %1.3f\n\n", background_saturation);
+	g_string_append_printf(contents,"# When user double clicks on a text, which character will be selected.\n"
+					"word_chars = %s\n\n", word_chars);
+	g_string_append_printf(contents,"# The lines of scrollback history.\n"
+					"scrollback_lines = %d\n\n", scrollback_lines);
+	g_string_append_printf(contents,"# Shows input method menu on right cilck menu.\n"
+					"show_input_method_menu = %d\n\n", show_input_method_menu);
+	g_string_append_printf(contents,"# Shows get function key menu on right cilck menu.\n"
+					"show_get_function_key_menu = %d\n\n", show_get_function_key_menu);
+	g_string_append_printf(contents,"# The locales list on right click menu.\n"
+					"# You may use zh_TW or zh_TW.Big5 here.\n"
+					"# Left it blank will disable locale select menu items.\n"
+					"locales_list = %s\n\n", locales_list);
 	g_string_append_printf(contents,"\n");
 	g_string_append_printf(contents,"[key]\n\n");
 	

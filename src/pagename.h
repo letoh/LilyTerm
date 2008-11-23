@@ -22,6 +22,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
 #ifndef PAGENAME_H
 #define PAGENAME_H
 
@@ -35,23 +36,24 @@
 #include <string.h>
 // for KEYS, struct Page, struct KeyValue
 #include "data.h"
-#ifdef USE_LIBGTOP
-	// for glibtop_get_proc_uid()
-	#include <glibtop/procuid.h>
-#endif
-
 
 void reorder_page_number(GtkWidget *widget, gpointer user_data);
 gboolean monitor_cmdline(GtkWidget *vtebox);
-void update_tab_name(gchar *stat_path, GtkWidget *label, pid_t pid, pid_t tpgid,
-		     gint page_no, gchar *custom_page_name, const gchar *pwd);
+void update_tab_name(GtkWidget *vtebox, GtkWidget *label, pid_t pid, pid_t tpgid,
+		     gint page_no, gchar *custom_page_name, const gchar *pwd, gboolean is_root, gboolean is_bold);
 void update_window_title(gchar *name);
-void update_page_name(GtkWidget *label, gint page_no, gchar *custom_page_name, const gchar *tab_color);
+void update_page_name(GtkWidget *vtebox, GtkWidget *label, gint page_no, gchar *custom_page_name,
+		      const gchar *tab_color, gboolean is_root, gboolean is_bold);
 gchar *get_page_name_with_number(gchar *label_name, gint page_no);
 gchar *get_tab_name_with_page_names();
 gchar *get_tab_name_with_cmdline(pid_t tpgid);
 gchar *get_tab_name_with_current_dir(pid_t pid);
-gint get_tpgid(gchar *stat_path, pid_t pid);
+gint get_tpgid(pid_t pid);
 gchar *get_cmdline(pid_t tpgid);
+gboolean check_is_root(pid_t tpgid);
+gboolean check_status_data(gchar **status_data);
+void change_notebook_color(gboolean is_root);
+
+extern void window_resizable(GtkWidget *vtebox, gint run_once, gint minsize);
 
 #endif

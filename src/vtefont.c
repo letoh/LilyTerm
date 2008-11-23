@@ -22,6 +22,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
 #include "vtefont.h"
 
 extern gchar *default_font_name;
@@ -39,10 +40,8 @@ extern GtkWidget *current_vtebox;
 
 gchar *new_font_name;
 
-gboolean update_hints = FALSE;
-gboolean update_hints_once = FALSE;
-extern gint style_set;
-GtkRequisition window_requisition, vtebox_requisition;
+extern gint update_hints;
+extern gint keep_vtebox_size;
 
 void set_vtebox_font(GtkWidget *widget, gint type)
 {
@@ -54,15 +53,6 @@ void set_vtebox_font(GtkWidget *widget, gint type)
 	// type 5: reset window size & font size to default for every vtebox
 	// type 6: reset window size & font size to system for every vtebox
 	// type 7: change every vtebox to the selected font name
-
-	if (type>3)
-	{
-		// get the size of window/vtebox. for resize window late. 
-		gtk_window_get_size(GTK_WINDOW(window), &window_requisition.width, &window_requisition.height);
-		//g_debug("current window size is %d x %d", window_requisition.width, window_requisition.height);
-		gtk_widget_size_request(current_vtebox, &vtebox_requisition);
-		//g_debug("current vtebox size is %d x %d", vtebox_requisition.width, vtebox_requisition.height);
-	}
 
 	switch (type)
 	{
@@ -128,7 +118,7 @@ void get_resize_font(gint type)
 	if (restore_font_name == NULL)
 	{
 		restore_font_name = g_strdup(current_data->font_name);
-		//g_debug("Restore the font to %s!", restore_font_name);
+		// g_debug("Restore the font to %s!", restore_font_name);
 		if (type==2)
 			return;
 	}
@@ -233,15 +223,13 @@ void reset_vtebox_size(gint type)
 		case 0:
 			// We need to apply a new font to a single vtebox.
 			// so that we should insure that this won't chage the size of window.
-			// g_debug("Updating hints for %d page! to 0\n", gtk_notebook_get_n_pages (notebook));
-			window_resizable(current_vtebox, 2, 1);
-
 			// g_debug("Trying to apply font %s to vtebox\n", current_font_name);
 			vte_terminal_set_font_from_string(VTE_TERMINAL(current_vtebox), new_font_name);
-
-			update_hints_once = TRUE;
-			update_hints = TRUE;
 			
+			update_hints = 2;
+			// g_debug("window_resizable in change current font!");
+			window_resizable(current_vtebox, 2, 1);
+
 			break;
 		case 1:
 			// increase/decrease window size & font size for every vtebox
@@ -267,14 +255,10 @@ void apply_font_to_every_vtebox(gint column, gint row)
 {
 	GtkWidget *vtebox;
 	struct Page *current_data;
-	gint i, vtebox_width, vtebox_height, x_pad, y_pad;
+	gint i;
 
-	//g_debug("Trying to apply every vtebox to %dx%d!", column, row);
-	//g_debug("Trying to apply font %s to every vtebox!\n", new_font_name);
-
-	// to avoid set window_resizable() in window_get_focuse()
-	style_set = 1;
-	
+	// g_debug("Trying to apply every vtebox to %dx%d!", column, row);
+	// g_debug("Trying to apply font %s to every vtebox!\n", new_font_name);
 	for (i=0;i<gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook));i++)
 	{
 		vtebox=(GtkWidget *)g_object_get_data(G_OBJECT( gtk_notebook_get_tab_label(GTK_NOTEBOOK(notebook),
@@ -284,38 +268,16 @@ void apply_font_to_every_vtebox(gint column, gint row)
 		current_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Data");
 		// g_debug("The default font for %d page is: %s (%s)\n", i, current_data->font_name, new_font_name);
 		vte_terminal_set_font_from_string(VTE_TERMINAL(vtebox), new_font_name);
-
-		// it will done in vtebox_size_request()
-		// vte_terminal_set_size(VTE_TERMINAL(vtebox), column, row);
-
-		current_data->column=column;
-		current_data->row=row;
+		vte_terminal_set_size(VTE_TERMINAL(vtebox), column, row);
 		g_free(current_data->font_name);
 		current_data->font_name = g_strdup(new_font_name);
-		// g_debug("The new font for %d page is: %s (%s)\n", i, current_data->font_name, new_font_name);
 
-		// set the inc size = 1, try to rezsie window more correctly.
-		if (i==0)
-		{
-			// g_debug("Updating hints for %d page to 0!\n", gtk_notebook_get_n_pages (notebook));
-			window_resizable(current_vtebox, 2, -1);
-		}
-		
-		set_vtebox_geometry(vtebox);
-		// vtebox_size_request(vtebox, NULL, NULL);
+		// g_debug("The new font for %d page is: %s (%s)\n", i, current_data->font_name, new_font_name);
 	}
 
-	vte_terminal_get_padding(VTE_TERMINAL(vtebox), &x_pad, &y_pad);
-	vtebox_width = x_pad + vte_terminal_get_char_width(VTE_TERMINAL(vtebox)) * column;
-	vtebox_height = y_pad + vte_terminal_get_char_height(VTE_TERMINAL(vtebox)) * row;
-	gtk_window_resize(GTK_WINDOW(window),
-			  window_requisition.width - vtebox_requisition.width + vtebox_width,
-			  window_requisition.height - vtebox_requisition.height + vtebox_height);
-	//g_debug("Resizing window to %d x %d",
-	//		  window_requisition.width - vtebox_requisition.width + vtebox_width,
-	//		  window_requisition.height - vtebox_requisition.height + vtebox_height);
-	// gtk_window_resize(GTK_WINDOW(window), 1, 1);
-	
 	// g_debug("Set hints to FALSE!\n");
-	update_hints = FALSE;
+	update_hints = 1;
+	keep_vtebox_size |= 0x30;
+	// g_debug("window_resizable in apply_font_to_every_vtebox!");
+	window_resizable(vtebox, 2, 1);
 }

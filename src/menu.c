@@ -41,6 +41,7 @@ extern gdouble window_opacity;
 GtkWidget *menuitem_trans_win;
 #endif
 extern gboolean show_color_selection_menu;
+extern gboolean use_color_page;
 extern GdkColor fg_color;
 extern GdkColor bg_color;
 
@@ -92,19 +93,65 @@ void create_menu()
 #ifdef ENABLE_GDKCOLOR_TO_STRING
 	if (show_color_selection_menu)
 	{
+		// The submenu of Change color
+		menu_item = gtk_image_menu_item_new_with_label(_("Change colors"));
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
+					      gtk_image_new_from_stock(GTK_STOCK_SELECT_COLOR, GTK_ICON_SIZE_MENU));
+		sub_menu = gtk_menu_new ();
+		gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item), sub_menu);
+		gtk_menu_shell_append (GTK_MENU_SHELL (menu), menu_item);
+
 		// Change the foreground color for every tab
 		menu_item = gtk_image_menu_item_new_with_label(_("Change the foreground color"));
 		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
 					      gtk_image_new_from_stock(GTK_STOCK_SELECT_COLOR, GTK_ICON_SIZE_MENU));
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+		gtk_menu_shell_append(GTK_MENU_SHELL(sub_menu), menu_item);
 		g_signal_connect(menu_item, "activate", G_CALLBACK(dialog), (gint *) 9);
 
 		// Change the background color for every tab
 		menu_item = gtk_image_menu_item_new_with_label(_("Change the background color"));
 		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
 					      gtk_image_new_from_stock(GTK_STOCK_SELECT_COLOR, GTK_ICON_SIZE_MENU));
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+		gtk_menu_shell_append(GTK_MENU_SHELL(sub_menu), menu_item);
 		g_signal_connect(menu_item, "activate", G_CALLBACK(dialog), (gint *) 10);
+
+		if (use_color_page)
+		{
+			// style 11: change the text color of cmdline
+			menu_item = gtk_image_menu_item_new_with_label(_("Change the cmdline color on tab"));
+			gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
+						      gtk_image_new_from_stock(GTK_STOCK_SELECT_COLOR, GTK_ICON_SIZE_MENU));
+			gtk_menu_shell_append(GTK_MENU_SHELL(sub_menu), menu_item);
+			g_signal_connect(menu_item, "activate", G_CALLBACK(dialog), (gint *) 11);
+	
+			// style 12: change the text color of current dir
+			menu_item = gtk_image_menu_item_new_with_label(_("Change the dir color on tab"));
+			gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
+						      gtk_image_new_from_stock(GTK_STOCK_SELECT_COLOR, GTK_ICON_SIZE_MENU));
+			gtk_menu_shell_append(GTK_MENU_SHELL(sub_menu), menu_item);
+			g_signal_connect(menu_item, "activate", G_CALLBACK(dialog), (gint *) 12);
+	
+			// style 13: change the text color of custom page name
+			menu_item = gtk_image_menu_item_new_with_label(_("Change the custom color on tab"));
+			gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
+						      gtk_image_new_from_stock(GTK_STOCK_SELECT_COLOR, GTK_ICON_SIZE_MENU));
+			gtk_menu_shell_append(GTK_MENU_SHELL(sub_menu), menu_item);
+			g_signal_connect(menu_item, "activate", G_CALLBACK(dialog), (gint *) 13);
+	
+			// style 14: change the text color of root privileges cmdline
+			menu_item = gtk_image_menu_item_new_with_label(_("Change the root color on tab"));
+			gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
+						      gtk_image_new_from_stock(GTK_STOCK_SELECT_COLOR, GTK_ICON_SIZE_MENU));
+			gtk_menu_shell_append(GTK_MENU_SHELL(sub_menu), menu_item);
+			g_signal_connect(menu_item, "activate", G_CALLBACK(dialog), (gint *) 14);
+	
+			// style 15: change the text color of normal text
+			menu_item = gtk_image_menu_item_new_with_label(_("Change the normal color on tab"));
+			gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
+						      gtk_image_new_from_stock(GTK_STOCK_SELECT_COLOR, GTK_ICON_SIZE_MENU));
+			gtk_menu_shell_append(GTK_MENU_SHELL(sub_menu), menu_item);
+			g_signal_connect(menu_item, "activate", G_CALLBACK(dialog), (gint *) 15);
+		}
 
 		// ----------------------------------------
 		menu_item = gtk_separator_menu_item_new ();

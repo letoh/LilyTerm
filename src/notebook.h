@@ -22,6 +22,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
 #ifndef NOTEBOOK_H
 #define NOTEBOOK_H
 
@@ -44,20 +45,24 @@ gboolean vtebox_button_press(GtkWidget *widget, GdkEventButton *event, gpointer 
 // void deal_key_press(gint type);
 
 void vtebox_grab_focuse(GtkWidget *vtebox, gpointer user_data);
-void set_vtebox_geometry (GtkWidget *vtebox);
+void vtebox_style_set (GtkWidget *vtebox, GtkStyle *previous_style, gpointer user_data);
 void vtebox_size_request (GtkWidget *vtebox, GtkRequisition *requisition, gpointer user_data);
 void vtebox_size_allocate (GtkWidget *vtebox, GtkAllocation *allocation, gpointer user_data);
 
 extern void init_new_page(GtkWidget *vtebox, char* font_name, gint column, gint row, gint run_once);
-extern void window_resizable(GtkWidget *vtebox, gboolean run_once, gint minsize);
+extern void window_resizable(GtkWidget *vtebox, gint run_once, gint minsize);
 extern gboolean dialog (GtkWidget *widget, gint style);
-extern void update_tab_name(gchar *stat_path, GtkWidget *label, pid_t pid, pid_t tpgid,
-			    gint page_no, gchar *custom_page_name, const gchar *pwd);
+extern void update_tab_name(GtkWidget *vtebox, GtkWidget *label, pid_t pid, pid_t tpgid,
+			    gint page_no, gchar *custom_page_name, const gchar *pwd, gboolean is_root, gboolean is_bold);
+extern void update_page_name(GtkWidget *vtebox, GtkWidget *label, gint page_no, gchar *custom_page_name,
+			     const gchar *tab_color, gboolean is_root, gboolean is_bold);
 extern void reorder_page_number(GtkWidget *widget, gpointer user_data);
 extern void update_window_title(gchar *name);
 extern gboolean monitor_cmdline(GtkWidget *vtebox);
 // extern void set_vtebox_font(GtkWidget *widget, gint type);
-extern gint get_tpgid(gchar *stat_path, pid_t pid);
+extern gint get_tpgid(pid_t pid);
 extern gchar *get_cmdline(pid_t tpgid);
+extern gboolean check_is_root(pid_t tpgid);
+extern void change_notebook_color(gboolean is_root);
 
 #endif

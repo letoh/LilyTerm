@@ -22,29 +22,36 @@ page_shows_current_dir = 1
 window_shows_current_page = 1
 
 # The max character width of page name.
-page_width = 20
+page_width = 16
 
 # The page width will always use the max character width.
 fixed_page_width = 1
 
-# Use colorful page text.
+# Use colorful text on page.
 use_color_page = 1
+
+# Bold the text of current page name.
+bold_current_page_name = 1
 
 # The color used for showing cmdline on page name.
 # You may use black or #000000 here.
-page_cmdline_color = darkblue
+page_cmdline_color = #1C1CDC
 
 # The color used for showing current directory on page name.
 # You may use black or #000000 here.
-page_dir_color = darkgreen
+page_dir_color = #215E3E
 
 # The color used for showing custom name on page name.
 # You may use black or #000000 here.
-page_custom_color = darkred
+page_custom_color = #9C0A81
 
 # The color used for showing normal name on page name.
 # You may use black or #000000 here.
-page_normal_color = black
+page_normal_color = #333333
+
+# The color used for showing root privileges cmdline on page name.
+# You may use black or #000000 here.
+page_root_color = #BE0020
 
 # Shows [Change the foreground color]
 # and [Change the background color] on right click menu.
@@ -120,7 +127,7 @@ disable_function_key = Ctrl grave
 new_tab_key = Ctrl T
 
 # Close current tab.
-close_tab_key = Ctrl W
+close_tab_key = Ctrl Q
 
 # Rename the page name of current tab.
 edit_label_key = Ctrl E

@@ -1,72 +1,92 @@
-# German translation for Lilyterm.
+# German translation for LilyTerm.
 # Copyright (C) 2008 Mario Blättermann
-# This file is distributed under the same license as the Lilyterm package.
+# This file is distributed under the same license as the LilyTerm package.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: 0.8.9\n"
+"Project-Id-Version: 0.9.3\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-05-25 19:30+0800\n"
-"PO-Revision-Date: 2008-05-02 13:24+0200\n"
+"POT-Creation-Date: 2008-06-08 23:45+0800\n"
+"PO-Revision-Date: 2008-06-08 12:35+0200\n"
 "Last-Translator: Mario Blättermann <mario.blaettermann@t-online.de>\n"
 "Language-Team: Deutsch <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: dialog.c:112
-msgid "Rename the tab"
+#: dialog.c:132 menu.c:236
+msgid "Rename this tab"
 msgstr "Reiter umbenennen"
 
-#: dialog.c:115
+#: dialog.c:135
 msgid "Change the saturation of background"
 msgstr "Durchsichtigkeit ändern"
 
-#: dialog.c:118
+#: dialog.c:138
 msgid "Confirm to close multi tabs"
 msgstr "Schließen mehrerer Reiter bestätigen"
 
-#: dialog.c:121
+#: dialog.c:141
 msgid "Get the key value for using in profile"
 msgstr "Tastencode zur Verwendung in der Konfiguration ermitteln"
 
-#: dialog.c:124 menu.c:242
+#: dialog.c:144 menu.c:289
 msgid "Usage"
 msgstr "Anwendung"
 
-#: dialog.c:127
+#: dialog.c:147
 msgid "Error when writing profile"
 msgstr "Fehler beim Speichern des Profils"
 
-#: dialog.c:130
+#: dialog.c:150
 msgid "Confirm to close running foreground program"
 msgstr "Schließen eines Programms bestätigen"
 
-#: dialog.c:133
+#: dialog.c:153
 msgid "Change the opacity of window"
 msgstr "Durchsichtigkeit des Fensters ändern"
 
-#: dialog.c:136 menu.c:96
-msgid "Change the foreground color"
-msgstr "Vordergrundfarbe ändern"
+#: dialog.c:156
+msgid "Change the foreground color in terminal"
+msgstr "Vordergrundfarbe des Terminals ändern"
 
-#: dialog.c:139 menu.c:103
-msgid "Change the background color"
-msgstr "Hintergrundfarbe ändern"
+#: dialog.c:159
+msgid "Change the background color in terminal"
+msgstr "Hintergrundfarbe des Terminals ändern"
 
-#: dialog.c:298
+#: dialog.c:162
+msgid "Change the command line color on tab"
+msgstr "Farbe der Befehlszeile im Reiter ändern"
+
+#: dialog.c:165
+msgid "Change the current directory color on tab"
+msgstr "Farbe des aktuellen Verzeichnisses im Reiter ändern"
+
+#: dialog.c:168
+msgid "Change the custom tab text color"
+msgstr "Textfarbe im Reiter ändern"
+
+#: dialog.c:171
+msgid "Change the root privileges color on tab"
+msgstr "Farbe bei aktivierten Systemverwalter-Privilegien im Reiter ändern"
+
+#: dialog.c:174
+msgid "Change the normal tab text color"
+msgstr "Farbe des normalen Texts im Reiter ändern"
+
+#: dialog.c:348
 msgid "Please input the Label Name of this tab:"
 msgstr "Name für diesen Reiter eingeben:"
 
-#: dialog.c:301
+#: dialog.c:351
 msgid "Change the Saturation of background:"
 msgstr "Durchsichtigkeit des Hintergrunds ändern:"
 
-#: dialog.c:304
+#: dialog.c:354
 msgid "You are about to close multi tabs. Continue anyway?"
 msgstr "Sie haben mehrere Reiter geöffnet. Alle Reiter schließen?"
 
-#: dialog.c:307
+#: dialog.c:357
 msgid ""
 "You may press any key here to get the key value for using in profile.\n"
 "\n"
@@ -79,7 +99,7 @@ msgstr ""
 "Drücken sie auf [Kopieren] um den Code in der Zwischenablage zu speichern;\n"
 "dann drücken Sie [Schließen] zum Beenden."
 
-#: dialog.c:321
+#: dialog.c:371
 #, c-format
 msgid ""
 "Error while writing profile '%s/%s':\n"
@@ -90,7 +110,7 @@ msgstr ""
 "\n"
 "%s"
 
-#: dialog.c:328
+#: dialog.c:378
 #, c-format
 msgid ""
 "There is still a running foreground program on #%d tab:\n"
@@ -99,23 +119,47 @@ msgid ""
 "\n"
 "Continue anyway?\n"
 msgstr ""
-"Es läuft noch ein Programm im #%d Reiter:\n"
+"Es läuft noch ein Programm im Reiter #%d:\n"
 "\n"
 "\t%s?nWirklich schließen?\n"
 
-#: dialog.c:335
+#: dialog.c:385
 msgid "Change the Opacity of window:"
 msgstr "Durchsichtigkeit des Fensters ändern"
 
-#: dialog.c:429
+#: dialog.c:505
 msgid "Label Name:"
 msgstr "Beschriftung:"
 
-#: dialog.c:468
+#: dialog.c:544
 msgid "Key Value:"
 msgstr "Tastencode:"
 
-#: main.c:215
+#: dialog.c:617 dialog.c:936
+msgid "Bold Demo Text"
+msgstr "Fetter Beispieltext"
+
+#: dialog.c:621
+msgid "Running Command"
+msgstr "Ausgeführter Befehl"
+
+#: dialog.c:625
+msgid "Current Dir"
+msgstr "Aktuelles Verzeichnis"
+
+#: dialog.c:629
+msgid "Custom Tab Name"
+msgstr "Benutzerdefinierter Name des Reiters"
+
+#: dialog.c:633
+msgid "Root Privileges"
+msgstr "Systenverwalter-Rechte"
+
+#: dialog.c:637
+msgid "Normal Text"
+msgstr "Normaler Text"
+
+#: main.c:235
 #, c-format
 msgid ""
 "%s is a libvte based X Terminal Emulater.\n"
@@ -124,22 +168,22 @@ msgstr ""
 "%s ist ein auf Libvte basierender Terminalemulator.\n"
 "\n"
 
-#: main.c:217
+#: main.c:237
 #, c-format
 msgid "Use -e/--execute {Command} to run a command after %s start.\n"
 msgstr ""
 "Benutzen Sie -e/--execute {Befehl} um einen Befehl nach dem %s-Start "
 "auszuführen.\n"
 
-#: main.c:218
+#: main.c:238
 msgid "Use -v/--version to show the version infomation.\n"
 msgstr "Benutzen Sie -v/--version um die Versionsinformationen anzuzeigen.\n"
 
-#: main.c:219
+#: main.c:239
 msgid "Use -p/--profile to got a profile sample.\n"
 msgstr "Benutzen Sie -p/--profile für eine Beispielkonfiguration.\n"
 
-#: main.c:221
+#: main.c:241
 #, c-format
 msgid ""
 "Use -u/--user_profile {%s} to use a specified profile.\n"
@@ -148,12 +192,12 @@ msgstr ""
 "Benutzen Sie -u/--user_profile {%s} um ein bestimmtes Profil zu verwenden.\n"
 "\n"
 
-#: main.c:224
+#: main.c:244
 #, c-format
 msgid "The %s system config is: %s/%s\n"
 msgstr "Die %s Systemweite Konfiguration: %s/%s\n"
 
-#: main.c:226
+#: main.c:246
 #, c-format
 msgid ""
 "And your %s profile is: %s/%s\n"
@@ -162,77 +206,77 @@ msgstr ""
 "Ihr %s-Benutzerprofil: %s/%s\n"
 "\n"
 
-#: main.c:228
+#: main.c:248
 msgid ""
 "Default shortcut key: (It may custom by editing user's profile)\n"
 "\n"
 msgstr "Standard-Tastenkürzel: (können im Benutzerprofil geändert werden)\n"
 
-#: main.c:229
+#: main.c:249
 msgid "  * <Ctrl><`>\t\tDisable/Enable function keys\n"
 msgstr "  * <Strg><`>\t\t\t\tDeaktivieren/Aktivieren der Funktionstasten\n"
 
-#: main.c:230
-msgid "  * <Ctrl><T/W>\t\tAdd a New tab/Close current tab\n"
+#: main.c:250
+msgid "  * <Ctrl><T/Q>\t\tAdd a New tab/Close current tab\n"
 msgstr ""
 "  * <Strg><T/W>\t\t\t\tNeuen Reiter hinzufügen/Aktuellen Reiter schließen\n"
 
-#: main.c:231
+#: main.c:251
 msgid "  * <Ctrl><E>\t\tRename current tab\n"
 msgstr "  * <Strg><E>\t\t\t\tAktuellen Reiter umbenennen\n"
 
-#: main.c:232
+#: main.c:252
 msgid "  * <Ctrl><PgUp/PgDn>\tSwitch to Prev/Next tab\n"
 msgstr ""
 "  * <Strg><Bild hoch/Bild runter>\tZum vorherigen/nächsten Reiter wechseln\n"
 
-#: main.c:233
+#: main.c:253
 msgid "  * <Ctrl><Home/End>\tSwitch to First/Last tab\n"
 msgstr "  * <Strg><Pos1/Ende>\t\t\tZum ersten/letzten Reiter wechseln\n"
 
-#: main.c:234
+#: main.c:254
 msgid "  * <Ctrl><Left/Right>\tMove current page Forward/Backward\n"
 msgstr ""
 "  * <Strg><Links/Rechts>\t\tAktuellen Reiter nach links/rechts verschieben\n"
 
-#: main.c:235
+#: main.c:255
 msgid "  * <Ctrl><Up/Down>\tMove current page to First/Last\n"
 msgstr ""
 "  * <Strg><Rauf/Runter>\t\t\tAktuellen Reiter ganz nach links/ganz nach "
 "rechts verschieben\n"
 
-#: main.c:236
+#: main.c:256
 msgid "  * <Ctrl><F1~F12>\tSwitch to 1st ~ 12th tab\n"
 msgstr "  * <Ctrl><F1~F12>\t\t\tZum ersten ~ zwölften Reiter springen\n"
 
-#: main.c:237
+#: main.c:257
 msgid "  * <Ctrl><O>\t\tSelect all the text in the Vte Terminal box\n"
 msgstr "  * <Strg><O>\t\t\t\tGesamten Inhalt des Terminals auswählen\n"
 
-#: main.c:238
+#: main.c:258
 msgid "  * <Ctrl><X>\t\tCopy the text to clipboard\n"
 msgstr "  * <Strg><X>\t\t\t\tText in die Zwischenablage kopieren\n"
 
-#: main.c:239
+#: main.c:259
 msgid "  * <Ctrl><V>\t\tPast the text in clipboard\n"
 msgstr "  * <Strg><V>\t\t\t\tText aus der Zwischenablage einfügen\n"
 
-#: main.c:240
+#: main.c:260
 msgid "  * <Ctrl><+/->\t\tIncrease/Decrease the font size of current tab\n"
 msgstr ""
 "  * <Strg><+/->\t\t\t\tSchrift im aktuellen Reiter vergrößern/verkleinern\n"
 
-#: main.c:241
+#: main.c:261
 msgid "  * <Ctrl><Enter>\tReset the font size of current tab\n"
 msgstr "  * <Strg><Enter>\t\t\tSchriftgröße im aktuellen Reiter zurücksetzen\n"
 
-#: main.c:242
+#: main.c:262
 msgid "  * <Shift><Insert>\tPast the text in primary clipboard\n"
 msgstr ""
 "  * <Umschalt><Einfg>\t\t\tText aus der ersten Position der Zwischenablage "
 "einfügen\n"
 
-#: main.c:243
+#: main.c:263
 msgid ""
 "\t\t\t(i.e. Emulate a middle button mouse click to past the text)\n"
 "\n"
@@ -240,82 +284,107 @@ msgstr ""
 "\t\t\t\t\t(Emuliert die mittlere Maustaste, um Text einzufügen)\n"
 "\n"
 
-#: main.c:245
+#: main.c:265
 #, c-format
 msgid "Please report bug to %s. Thank you for using %s!\n"
 msgstr "Fehler bitte melden an %s. Danke dass Sie %s verwenden!\n"
 
-#: menu.c:71
+#: menu.c:72
 msgid "System Default"
 msgstr "Systemstandard"
 
-#: menu.c:120
+#: menu.c:97
+msgid "Change colors"
+msgstr "Farben anpassen"
+
+#: menu.c:105
+msgid "Change the foreground color"
+msgstr "Vordergrundfarbe ändern"
+
+#: menu.c:112
+msgid "Change the background color"
+msgstr "Hintergrundfarbe ändern"
+
+#: menu.c:121
+msgid "Change the cmdline color on tab"
+msgstr "Farbe der Befehlszeile im Reiter ändern"
+
+#: menu.c:128
+msgid "Change the dir color on tab"
+msgstr "Farbe des aktuellen Verzeichnisses im Reiter ändern"
+
+#: menu.c:135
+msgid "Change the custom color on tab"
+msgstr "Benutzerdefinierte Farbe im Reiter ändern"
+
+#: menu.c:142
+msgid "Change the root color on tab"
+msgstr "Farbe bei aktivierten Systemverwalter-Privilegien im Reiter ändern"
+
+#: menu.c:149
+msgid "Change the normal color on tab"
+msgstr "Farbe des normalen Texts im Reiter ändern"
+
+#: menu.c:167
 msgid "Transparent Window"
 msgstr "Transparentes Fenster"
 
-#: menu.c:124
+#: menu.c:171
 msgid "Window Opacity"
 msgstr "Durchsichtigkeit des Fensters"
 
-#: menu.c:136
+#: menu.c:183
 msgid "Transparent Background"
 msgstr "Transparenter Hintergrund"
 
-#: menu.c:140
+#: menu.c:187
 msgid "Background Saturation"
 msgstr "Durchsichtigkeit des Hintergrunds"
 
-#: menu.c:153
+#: menu.c:200
 msgid "Scrollback lines"
-msgstr ""
+msgstr "Shell-Befehlsspeicher"
 
-#: menu.c:158
+#: menu.c:205
 msgid "Clean scrollback lines of this tab"
-msgstr ""
+msgstr "Shell-Befehlsspeicher dieses Reiters löschen"
 
-#: menu.c:172
+#: menu.c:219
 msgid "Switch input methods"
 msgstr "Eingabemethode ändern"
 
-#: menu.c:182
+#: menu.c:229
 msgid "Change the font"
 msgstr "Schriften ändern"
 
-#: menu.c:189
-msgid "Rename this tab"
-msgstr "Reiter umbenennen"
-
-#: menu.c:202
+#: menu.c:249
 msgid "Increase window size"
 msgstr "Fenster vergrößern"
 
-#: menu.c:207
+#: menu.c:254
 msgid "Decrease window size"
 msgstr "Fenster verkleinern"
 
-#: menu.c:217
+#: menu.c:264
 msgid "Reset to default font/size"
 msgstr "Schrift/Größe auf Standardeinstellungen zurücksetzen"
 
-#: menu.c:223
+#: menu.c:270
 msgid "Reset to system font/size"
 msgstr "Zurücksetzen auf Systemschrift und -größe"
 
-#: menu.c:231
+#: menu.c:278
 msgid "Reset the content of this tab"
 msgstr "Inhalt dieses Reiters zurücksetzen"
 
-#: menu.c:249
+#: menu.c:296
 msgid "Get function key value"
 msgstr "Funktionstastencode holen "
 
-#: menu.c:257
+#: menu.c:304
 msgid "Save settings"
 msgstr "Einstellungen speichern"
 
-#: menu.c:340
+#: menu.c:387
 msgid "Font Selection"
 msgstr "Schriftauswahl"
-
-#~ msgid "Profile sample"
-#~ msgstr "Beispielkonfiguration"

@@ -22,6 +22,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
 #include "pagename.h"
 
 // The defalut Page Name
@@ -30,6 +31,7 @@ extern gchar *page_names;
 extern gchar **splited_page_names;
 extern gint page_names_no;
 extern gboolean reuse_page_names;
+extern gboolean bold_current_page_name;
 extern gboolean page_shows_current_cmdline;
 extern gboolean page_shows_current_dir;
 extern gboolean use_color_page;
@@ -37,6 +39,7 @@ extern gchar *page_cmdline_color;
 extern gchar *page_dir_color;
 extern gchar *page_custom_color;
 extern gchar *page_normal_color;
+extern gchar *page_root_color;
 extern gboolean window_shows_current_page;
 extern gboolean page_number;
 
@@ -44,8 +47,7 @@ extern GtkWidget *window;
 extern GtkWidget *notebook;
 
 extern gboolean lost_focuse;
-extern gboolean add_remove_page;
-extern gboolean style_set;
+extern gint keep_vtebox_size;
 
 void reorder_page_number(GtkWidget *widget, gpointer user_data)
 {
@@ -65,18 +67,19 @@ void reorder_page_number(GtkWidget *widget, gpointer user_data)
 		// Got the struct Page for this page (index by vtebox)
 		current_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Data");
 		// we store current_page_no in "struct Page" for performance.
-		current_data->current_page_no = i;
-		
+		current_data->page_no = i;
+
 		if (page_number)
-			update_page_name(current_data->label, i+1, current_data->custom_page_name,
-					 current_data->tab_color);
+			update_page_name(vtebox, current_data->label, i+1, current_data->custom_page_name,
+					 current_data->tab_color, current_data->is_root, current_data->is_bold);
 	}
 }
 
 gboolean monitor_cmdline(GtkWidget *vtebox)
 {
-	// The pagename won't be updated if LunaTerm is not on focuse.
-	if (lost_focuse || add_remove_page || style_set)
+	// g_debug("Updating the page name for %d.", vtebox);
+	// The pagename won't be updated if LilyTerm is not on focuse.
+	if (lost_focuse || (keep_vtebox_size&0x1e))
 		return TRUE;
 
 	gboolean update_pwd = FALSE;
@@ -90,7 +93,11 @@ gboolean monitor_cmdline(GtkWidget *vtebox)
 		return TRUE;
 	}
 	else
-		current_data->tpgid = get_tpgid(current_data->stat_path, current_data->pid);
+	{
+		current_data->tpgid = get_tpgid(current_data->pid);
+		if ( old_tpgid != current_data->tpgid)
+			current_data->is_root = check_is_root(current_data->tpgid);
+	}
 	
 	// g_debug("the original tpgid is %d, and got tpgid from get_tpgid() is: %d\n",
 	//	old_tpgid, current_data->tpgid);
@@ -98,8 +105,6 @@ gboolean monitor_cmdline(GtkWidget *vtebox)
 	if (page_shows_current_dir && (current_data->tpgid == current_data->pid) && current_data->custom_page_name==NULL)
 	{
 		gchar *new_dir = get_tab_name_with_current_dir(current_data->pid);
-		// g_debug("Old dir =%s", current_data->pwd);
-		// g_debug("New dir =%s", new_dir);
 		if (current_data->pwd==NULL)
 			update_pwd = TRUE;
 		else if (strcmp(current_data->pwd, new_dir))
@@ -122,16 +127,19 @@ gboolean monitor_cmdline(GtkWidget *vtebox)
 	if (update_pwd ||
 	   ((page_shows_current_cmdline && (old_tpgid != current_data->tpgid)) ||
 	    (page_shows_current_dir && update_pwd && (current_data->tpgid == current_data->pid))))
-		update_tab_name(current_data->stat_path, current_data->label,
+	{
+		current_data->is_bold = bold_current_page_name;
+		update_tab_name(vtebox, current_data->label,
 				current_data->pid, current_data->tpgid,
-				current_data->current_page_no+1, current_data->custom_page_name,
-				current_data->pwd);
+				current_data->page_no+1, current_data->custom_page_name,
+				current_data->pwd, current_data->is_root, current_data->is_bold);
+	}
 	return TRUE;
 }
 
 // it will update the text in label ,label->name, and the title of window
-void update_tab_name(gchar *stat_path, GtkWidget *label, pid_t pid, pid_t tpgid,
-		     gint page_no, gchar *custom_page_name, const gchar *pwd)
+void update_tab_name(GtkWidget *vtebox, GtkWidget *label, pid_t pid, pid_t tpgid,
+		     gint page_no, gchar *custom_page_name, const gchar *pwd, gboolean is_root, gboolean is_bold)
 {
 	// page_name = label->name, so that it don't need to be freed
 	// page_color should not be freed too.
@@ -144,7 +152,6 @@ void update_tab_name(gchar *stat_path, GtkWidget *label, pid_t pid, pid_t tpgid,
 	if (page_shows_current_cmdline &&
 	   ((!page_shows_current_dir) || (page_shows_current_dir && (pid!=tpgid))))
 	{
-		// we get stat_path from "struct Page" for performance.
 		page_name = get_tab_name_with_cmdline(tpgid);
 		if (page_name!=NULL)
 			page_color = page_cmdline_color;
@@ -159,7 +166,7 @@ void update_tab_name(gchar *stat_path, GtkWidget *label, pid_t pid, pid_t tpgid,
 			page_color = page_dir_color;
 		// g_debug("page_shows_current_dir : page_name = %s, color = %s", page_name, page_color);
 	}
-	
+
 	if (page_name==NULL)
 	{
 		page_name = get_tab_name_with_page_names();
@@ -167,6 +174,9 @@ void update_tab_name(gchar *stat_path, GtkWidget *label, pid_t pid, pid_t tpgid,
 		// g_debug("page_shows_normal_dir : page_name = %s, color = %s", page_name, page_color);
 	}
 
+	if (is_root)
+		page_color = page_root_color;
+	
 	// even though custom_page_name is setted, we still need to set the page_name for it.
 	// therefore if we disable custom_page_name sometime, we still have the page_name for use.
 	if (custom_page_name!=NULL)
@@ -174,32 +184,27 @@ void update_tab_name(gchar *stat_path, GtkWidget *label, pid_t pid, pid_t tpgid,
 		page_color = page_custom_color;
 		// g_debug("page_shows_custom_dir : page_name = %s, color = %s", page_name, page_color);
 	}
-	
+
 	// g_debug("Final : page_name = %s, color = %s", page_name, page_color);
 
 	if (use_color_page)
 	{
-		GtkWidget *vtebox=(GtkWidget *)g_object_get_data(G_OBJECT(label), "VteBox");
-		if (vtebox!=NULL)
-		{
-			struct Page *current_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Data");
-			if (current_data!=NULL)
-				current_data->tab_color = page_color;
-		}
+		struct Page *current_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Data");
+		current_data->tab_color = page_color;
 	}
-	
+
 	g_free(label->name);
 	label->name = page_name;
 
-	update_page_name(label, page_no, custom_page_name, page_color);
+	update_page_name(vtebox, label, page_no, custom_page_name, page_color, is_root, is_bold);
 }
 
-void update_page_name(GtkWidget *label, gint page_no, gchar *custom_page_name, const gchar *tab_color)
+void update_page_name(GtkWidget *vtebox, GtkWidget *label, gint page_no, gchar *custom_page_name, const gchar *tab_color, gboolean is_root, gboolean is_bold)
 {
-	if (lost_focuse || add_remove_page || style_set)
+	if (keep_vtebox_size&0x1e)
 		return;
-
-	// g_debug("Updating page name to %s...", label->name);
+	
+	// g_debug("Updating %d page name to %s...", page_no, label->name);
 	gchar *page_name = NULL;
 
 	if (custom_page_name==NULL)
@@ -207,17 +212,25 @@ void update_page_name(GtkWidget *label, gint page_no, gchar *custom_page_name, c
 	else
 		page_name = custom_page_name;
 	
+	// g_debug("Updating %d page name to %s...", page_no, page_name);
 	if (page_number)
 	{
 		gchar *temp_name = g_strdup_printf("(%d) %s", page_no, page_name);
 		page_name = temp_name;
 	}
 
+	keep_vtebox_size |= 1;
+	// g_debug("window_resizable in update_page_name! and keep_vtebox_size =%d", keep_vtebox_size);
+	window_resizable(vtebox, 2, 1);
 	if (use_color_page)
 	{
 		gchar *temp_str[2];
 		temp_str[0] = g_markup_escape_text(page_name, -1);
-		temp_str[1] = g_strconcat("<span foreground=\"", tab_color,"\">", temp_str[0], "</span>", NULL);
+		if (is_bold)
+			temp_str[1] = g_strconcat("<b><span foreground=\"", tab_color,"\">", temp_str[0], "</span></b>",
+						  NULL);
+		else
+			temp_str[1] = g_strconcat("<span foreground=\"", tab_color,"\">", temp_str[0], "</span>", NULL);
 		gtk_label_set_markup (GTK_LABEL(label), temp_str[1]);
 		g_free(temp_str[0]);
 		g_free(temp_str[1]);
@@ -231,10 +244,16 @@ void update_page_name(GtkWidget *label, gint page_no, gchar *custom_page_name, c
 	// we should update window title if page name changed.
 	if (window_shows_current_page)
 	{
-		if (custom_page_name==NULL)
-			update_window_title(label->name);
-		else
-			update_window_title(custom_page_name);
+		gint current_page_no = gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook));
+
+		// we only update the window title for current page
+		if (current_page_no == (page_no-1))
+		{
+			if (custom_page_name==NULL)
+				update_window_title(label->name);
+			else
+				update_window_title(custom_page_name);
+		}
 	}
 }
 
@@ -282,29 +301,28 @@ gchar *get_tab_name_with_current_dir(pid_t pid)
 }
 
 
-gint get_tpgid(gchar *stat_path, pid_t pid)
+gint get_tpgid(pid_t pid)
 {
-#ifdef USE_LIBGTOP
-	glibtop_proc_uid buf;
-	glibtop_get_proc_uid(&buf, pid);
-	return buf.tpgid;
-#else
-	// we get stat_path from "struct Page" for performance.
-	gchar *stat, **stats=NULL;
+
+	pid_t tmp_tpgid = 0;
+	pid_t new_tpgid = pid;
+	gchar *stat_path, *stat, **stats=NULL;
 	gsize length;
-	gint tpgid=0;
-	
-	if (g_file_get_contents (stat_path, &stat, &length, NULL))
+
+	while (tmp_tpgid != new_tpgid)
 	{
-		// we don't need to strsplit whole string, for performance.
-		stats = g_strsplit_set(stat, " ", LINUX_TPGID+1);
-		tpgid = atoi(stats[LINUX_TPGID]);
+		tmp_tpgid = new_tpgid;
+		stat_path = g_strdup_printf("/proc/%d/stat", (gint) tmp_tpgid);
+		if (g_file_get_contents (stat_path, &stat, &length, NULL))
+		{
+			stats = g_strsplit_set(stat, " ", 8);
+			new_tpgid = atoi(stats[7]);
+			g_free(stat);
+			g_strfreev(stats);
+		}
+		g_free(stat_path);
 	}
-	
-	g_free(stat);
-	g_strfreev(stats);
-	return tpgid;
-#endif	
+	return new_tpgid;
 }
 
 // It will return NULL if fault
@@ -341,6 +359,82 @@ gchar *get_cmdline(pid_t tpgid)
 	g_free(cmdline_path);
 
 	return g_strdup(cmdline);
+}
+
+gboolean check_is_root(pid_t tpgid)
+{
+	gchar *status=NULL, *status_path;
+	gsize length;
+	gint timeout=0;
+	gboolean is_root=FALSE;
+	gboolean uid_checked = FALSE, gid_checked = FALSE;
+
+	status_path = g_strdup_printf("/proc/%d/status", (gint) tpgid);
+	// g_debug("Trying get the status in %s\n", status_path);
+	while (g_file_get_contents (status_path, &status, &length, NULL))
+	{
+		timeout++;
+		// g_debug("The status length is %d\n", length);
+		if (length==0)
+			// we should wait until "/proc/%d/status" is not empty
+			usleep(100000);
+		else
+		{
+			// g_debug("Status = %s", status);
+			gchar **status_line = g_strsplit_set(status, "\n", 0);
+			gchar **status_data;
+			gint i=0;
+			
+			while (status_line[i]!=NULL)
+			{
+				// g_debug("%d) %s",i ,status_line[i]);
+				status_data = g_strsplit_set(status_line[i], "\t", 0);
+
+				if (strcmp(status_data[0], "Uid:")==0)
+				{
+					is_root = check_status_data(status_data);
+					uid_checked = TRUE;
+				}
+				else if (strcmp(status_data[0], "Gid:")==0)
+				{
+					is_root = check_status_data(status_data);
+					gid_checked = TRUE;
+				}
+
+				g_strfreev(status_data);
+				if ((is_root) || (uid_checked && gid_checked))
+					break;
+				i++;
+			}
+			g_strfreev(status_line);
+			break;
+		}
+		// we only try for 10 times
+		if (timeout>=10)
+		{
+			// g_debug("We have tried for 10 times. FAULT!!");
+			// FIXME: should we free it here?
+			break;
+		}
+	}
+	g_free(status_path);
+
+	return is_root;
+}
+
+gboolean check_status_data(gchar **status_data)
+{
+	gint i;
+	for (i=1;i<5;i++)
+	{
+		// g_debug("Checking %s...", status_data[i]);
+		if (atoi(status_data[i])==0)
+		{
+			// g_debug("IT IS ROOT (%d)!", atoi(status_data[i]));
+			return TRUE;
+		}
+	}
+	return FALSE;
 }
 
 //void monitor_cmdline(GFileMonitor *monitor, pid_t pid)

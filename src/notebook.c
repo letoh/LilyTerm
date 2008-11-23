@@ -48,7 +48,9 @@ extern gint scrollback_lines;
 extern GtkWidget *menuitem_scrollback_lines;
 // Using pwd/cmdline on page name
 extern gchar *page_name;
+extern gboolean bold_current_page_name;
 extern gboolean page_shows_current_cmdline;
+extern gboolean page_shows_current_dir;
 extern gboolean window_shows_current_page;
 extern gchar *page_normal_color;
 extern gint page_width;
@@ -62,16 +64,15 @@ extern GtkWidget *window;
 extern GtkWidget *notebook;
 GtkWidget *current_vtebox=NULL;
 
-extern gboolean lost_focuse;
-extern gboolean update_hints;
-extern gboolean update_hints_once;
-extern gint style_set;
-gboolean add_remove_page = FALSE;
+// 0: Do nothing
+// 1: Update the hints with base size = font char size
+// 2: Update the hints with base size = 1
+extern gint update_hints;
+extern gint keep_vtebox_size;
 
 void add_page(gboolean run_once)
 {
-	if (add_remove_page) return;
-	add_remove_page = TRUE;
+	guint column, row;
 
 	// the component of a single page
 	struct Page *current_data = g_new0(struct Page, 1);
@@ -105,30 +106,27 @@ void add_page(gboolean run_once)
 		
 		// Got the font name ,column and row for prev page
 		current_data->font_name = g_strdup(prev_page->font_name);
-		current_data->column = vte_terminal_get_column_count(VTE_TERMINAL(current_vtebox));
-		current_data->row = vte_terminal_get_row_count(VTE_TERMINAL(current_vtebox));
+		column = vte_terminal_get_column_count(VTE_TERMINAL(current_vtebox));
+		row = vte_terminal_get_row_count(VTE_TERMINAL(current_vtebox));
 	}
 	else
 	{
 		 current_data->font_name = g_strdup(default_font_name);
-		 current_data->column = default_column;
-		 current_data->row = default_row;
+		 column = default_column;
+		 row = default_row;
 	}
-	// g_debug("Init New vtebox with %d x %d!", current_data->column, current_data->row);
+	// g_debug("Init New vtebox with %d x %d!", column, row);
 	// g_debug("Using the font : %s\n", current_data->font_name);
 
 	// Init new page. run_once: some settings only need run once.
-	// run_once only = TRUE when init LunaTerm in main().
-	init_new_page(current_data->vtebox, current_data->font_name, current_data->column, current_data->row, run_once);
+	// run_once only = TRUE when init LilyTerm in main().
+	init_new_page(current_data->vtebox, current_data->font_name, column, row, run_once);
 	gtk_box_pack_start(GTK_BOX(current_data->hbox), current_data->vtebox, TRUE, TRUE, 0);
 	// the close page event
 	g_signal_connect(G_OBJECT(current_data->vtebox), "child_exited", G_CALLBACK(close_page), FALSE);
 	// when get focus, update `current_vtebox', hints, and windows title
 	g_signal_connect(G_OBJECT(current_data->vtebox), "grab-focus", G_CALLBACK(vtebox_grab_focuse), NULL);
-	// after size-allocate, save the column x row info!
-	g_signal_connect_after(G_OBJECT(current_data->vtebox), "size-allocate", G_CALLBACK(vtebox_size_allocate), NULL);
-	// launch vtebox_style_set()! becouse the font size may not be corrent before size-request.
-	g_signal_connect(G_OBJECT(current_data->vtebox), "size-request", G_CALLBACK(vtebox_size_request), NULL);
+	
 	// show the menu
 	g_signal_connect(G_OBJECT(current_data->vtebox), "button-press-event",
 			 G_CALLBACK(vtebox_button_press), NULL);
@@ -137,12 +135,21 @@ void add_page(gboolean run_once)
 	current_data->scrollbar = gtk_vscrollbar_new(vte_terminal_get_adjustment(VTE_TERMINAL(current_data->vtebox)));
 	gtk_box_pack_start(GTK_BOX(current_data->hbox), current_data->scrollbar, FALSE, FALSE, 0);
 
-	// add the new page to notebook
-	current_data->current_page_no = gtk_notebook_append_page(GTK_NOTEBOOK(notebook), current_data->hbox, current_data->label);
+//	GdkColor root_color;
+//	gdk_color_parse("#FFFAFE", &root_color);
+//	gtk_widget_modify_bg(notebook, GTK_STATE_NORMAL, &root_color);
+	// add the new page to notebook.
+	// Note that due to historical reasons,
+	// GtkNotebook refuses to switch to a page unless the child widget is visible.
+	// Therefore, it is recommended to show child widgets before adding them to a notebook.
+	gtk_widget_show_all(current_data->hbox);
+	current_data->page_no = gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
+								 current_data->hbox, current_data->label);
+	// g_debug("The new page no is %d", current_data->page_no);
 
 #ifdef ENABLE_TAB_REORDER
-	gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(notebook), current_data->hbox,TRUE);
-	gtk_notebook_set_tab_detachable(GTK_NOTEBOOK(notebook), current_data->hbox,FALSE);
+	gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(notebook), current_data->hbox, TRUE);
+	gtk_notebook_set_tab_detachable(GTK_NOTEBOOK(notebook), current_data->hbox, FALSE);
 #endif
 	g_object_set(gtk_widget_get_parent(current_data->label), "can-focus", FALSE, NULL);
 	
@@ -150,8 +157,8 @@ void add_page(gboolean run_once)
 	//if (parameter != NULL)
 	//	g_debug ("Run Command: %s %s\n", command_line, *parameter);
 	current_data->pid = vte_terminal_fork_command(VTE_TERMINAL(current_data->vtebox),
-						  command_line, parameter, NULL,
-						  directory, TRUE, TRUE, TRUE);
+						      command_line, parameter, NULL,
+						      directory, TRUE, TRUE, TRUE);
 	current_data->pwd = g_strdup(directory);
 	// treat '-e option' as `custom_page_name'
 	if (parameter != NULL && page_shows_current_cmdline)
@@ -169,20 +176,18 @@ void add_page(gboolean run_once)
 	// g_free(pid);
 	
 	// set the tab name.
-	// we store stat_path here for performance.
-	current_data->stat_path = g_strdup_printf("/proc/%d/stat", (gint) current_data->pid);
 	current_data->tpgid = current_data->pid;
 	current_data->tab_color = page_normal_color;
+	current_data->is_root = check_is_root(current_data->pid);
+	current_data->is_bold = bold_current_page_name;
 	// we need to g_free it in update_tab_name(). so we need to set it to NULL first.
 	current_data->label->name = NULL;
-	//update_tab_name(current_data->stat_path, current_data->label, current_data->pid, current_data->tpgid,
-	//		current_data->current_page_no + 1, current_data->custom_page_name, directory);
-	// g_debug("Got label name from update_tab_name(): %s\n", current_data->label->name);
+	
 	if (scrollback_lines)
 		current_data->use_scrollback_lines = TRUE;
 
 	// Monitor cmdline
-	if (page_shows_current_cmdline)
+	if (page_shows_current_cmdline || page_shows_current_dir)
 		// monitor_cmdline(current_data->monitor, current_data->pid);
 		// monitor_cmdline(current_data->channel, current_data->pid);
 #ifdef USE_TIMEOUT_SECONDS
@@ -190,53 +195,42 @@ void add_page(gboolean run_once)
 #else
 		current_data->timeout_id = g_timeout_add (1000, (GSourceFunc)monitor_cmdline, current_data->vtebox);
 #endif
+	// g_debug("Timeout Added: %d (%d)", current_data->timeout_id, current_data->vtebox);
+	update_tab_name(current_data->vtebox, current_data->label, current_data->pid,
+			current_data->tpgid, current_data->page_no + 1,
+			current_data->custom_page_name, directory, current_data->is_root, current_data->is_bold);
+	// g_debug("Got label name from update_tab_name(): %s\n", current_data->label->name);
 
-	// Store the new page data
 	current_data->encoding = default_encoding;
-	// g_object_set_data(G_OBJECT(current_data->vtebox), "Data", current_data);
-	// g_object_set_data(G_OBJECT(current_data->label), "VteBox", current_data->vtebox);
 
 	// show the page bar if necessary
-	if (current_data->current_page_no == 1)
+	if (current_data->page_no == 1)
+	{
+		// It will done in update_page_name()
+		// keep_vtebox_size |= 2;
 		gtk_notebook_set_show_tabs(GTK_NOTEBOOK(notebook), TRUE);
+	}
 
 	// finish!
-	// g_debug("Showing the new page!");
-	gtk_widget_show_all(current_data->hbox);
-	//gtk_widget_queue_draw (current_data->vtebox);
-	//gtk_widget_set_redraw_on_allocate (current_data->vtebox, TRUE);
-	gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), current_data->current_page_no);
+	gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), current_data->page_no);
 	gtk_window_set_focus(GTK_WINDOW(window), current_data->vtebox);
-
-	// we move update_tab_name here becouse the page_name can't be update when add_remove_page = TRUE
-	add_remove_page = FALSE;
-	update_tab_name(current_data->stat_path, current_data->label, current_data->pid, current_data->tpgid,
-			current_data->current_page_no + 1, current_data->custom_page_name, directory);
 }
 
 gboolean close_page (GtkWidget *vtebox, gboolean need_safe_close)
 {
-	if (add_remove_page) return FALSE;
-	add_remove_page = TRUE;
-
 	gint total_page = gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook));
 	// g_debug("Total Page (Notebook):%d\n", total_page);
-
 	struct Page *current_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Data");
 	// g_debug("Deleting Page ID: %d\n", current_data->pid);
 
 	// only "child_exited" don't need need_safe_close to kill SHELL
 	if (need_safe_close)
-	{
-		gint tpgid = get_tpgid(current_data->stat_path, current_data->pid);
-		// g_debug("pid=%d, and tpgid=%d\n", current_data->pid, tpgid);
-		if (current_data->pid != tpgid)
+		if (current_data->pid != get_tpgid(current_data->pid))
 			if (dialog(NULL, 7)==FALSE)
 			{
-				add_remove_page = FALSE;
+				// g_debug("LilyTerm will countinue running.");
 				return FALSE;
 			}
-	}
 
 	// remove timeout event for page_shows_current_cmdline
 	if (page_shows_current_cmdline)
@@ -259,38 +253,42 @@ gboolean close_page (GtkWidget *vtebox, gboolean need_safe_close)
 	}
 	else
 	{
-		// remove current page
-		// g_debug ("The %d page is going to be removed!\n", current_data->current_page_no);
-		// use current_data->current_page_no. DANGEROUS!
-		gtk_notebook_remove_page(GTK_NOTEBOOK(notebook), current_data->current_page_no);
-		
 		// set the current page
-		// g_debug ("Setting current page to %d!\n", current_data->current_page_no);
-		if ( current_data->current_page_no < total_page-1 )
-			gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), current_data->current_page_no);
+		// g_debug ("Setting current page to %d!\n", current_data->page_no);
+		if ( current_data->page_no==total_page)
+			gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), current_data->page_no-1);
+		else
+			gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), current_data->page_no+1);
+		
+		// Note that due to historical reasons,
+		// GtkNotebook refuses to switch to a page unless the child widget is visible.
+		// Therefore, it is recommended to show child widgets before adding them to a notebook.
+		gtk_widget_hide_all(current_data->hbox);
+		// remove current page
+		// use current_data->page_no. DANGEROUS!
+		// g_debug ("The %d page is going to be removed!\n", current_data->page_no);
+		gtk_notebook_remove_page(GTK_NOTEBOOK(notebook), current_data->page_no);
 		
 		// hide the tab bar if necessary
 		if (total_page == 2)
 		{
 			// hide the page bar
+			keep_vtebox_size |= 6;
+			// we need to set the hints, or the window size may be incerrent.
+			// g_debug("window_resizable in remove_page!");
+			window_resizable(current_vtebox, 2, 1);
 			gtk_notebook_set_show_tabs(GTK_NOTEBOOK(notebook), FALSE);
-			// Yes, just set it to 1 x 1,
-			// and the window will be resized to correct geometry automatically.
-			gtk_window_resize(GTK_WINDOW(window), 1, 1);
-			update_hints = FALSE;
+			update_hints = 1;
 		}
 	}
+	
+	// g_debug("Reordering the page!");
+	if (current_data->page_no < total_page-1)
+		reorder_page_number(NULL, NULL);
 
 	// free the memory used by this page
 	// g_debug("freeing current_data!\n");
-	g_free(current_data->stat_path);
 	g_free(current_data);
-
-	add_remove_page = FALSE;
-
-	// we move reorder_page_number here becouse the page_name can't be update when add_remove_page = TRUE
-	if (current_data->current_page_no < total_page-1)
-		reorder_page_number(NULL, NULL);
 
 	return TRUE;
 }
@@ -299,107 +297,44 @@ void vtebox_grab_focuse(GtkWidget *vtebox, gpointer user_data)
 {
 	if (current_vtebox != vtebox || (current_vtebox == NULL))
 	{
-		// g_debug ("Update current_vtebox! : %d", vtebox);
-		current_vtebox = vtebox;
-	
-		// we should bind the hints information on vtebox.
-		// Or the geometry of vtebox may be changed when deleting the vtebox hold hints info.
-		// g_debug("Updating hints for %d page in vtebox_grab_focuse!\n", gtk_notebook_get_n_pages (notebook));
-		if (update_hints)
-			// if update_hints > 0, we should update the FONT hints for every vtebox.
-			window_resizable(vtebox, 2, -1);
-		else
-			// else, updte the hints without font. It can help to hold the currect vtebox size.
-			window_resizable(vtebox, 0, -1);
-	
-		if (window_shows_current_page)
+		if (bold_current_page_name)
 		{
-			struct Page *current_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Data");
+			if (current_vtebox != NULL)
+			{
+				struct Page *prev_data = (struct Page *)g_object_get_data(G_OBJECT(current_vtebox), "Data");
+				if (prev_data!=NULL)
+				{
+					prev_data->is_bold = FALSE;
+					update_page_name (current_vtebox, prev_data->label, prev_data->page_no+1,
+							  prev_data->custom_page_name, prev_data->tab_color,
+							  prev_data->is_root, FALSE);
+				}
+			}
+		}
+		// g_debug ("Update current_vtebox! (%d), and update_hints = %d", vtebox, update_hints);
+		current_vtebox = vtebox;
+		struct Page *current_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Data");
+		
+		if (keep_vtebox_size==0)
+		{
+			// g_debug("window_resizable in vtebox_grab_focuse!");
+			// we should bind the hints information on current vtebox.
+			// Or the geometry of vtebox may be changed when deleting the vtebox hold hints info.
+			// It can help to hold the currect vtebox size.
+			window_resizable(vtebox, update_hints, 1);
+		}
+		
+		if (window_shows_current_page)
 			if (current_data!=NULL)
 				update_window_title(current_data->label->name);
-		}
-	}
-}
 
-void set_vtebox_geometry(GtkWidget *vtebox)
-{
-	//g_debug("set_vtebox_geometry!");
-	//g_debug("Current %d vtebox size is %dx%d\n",
-	//	gtk_notebook_get_n_pages (notebook),
-	//	vte_terminal_get_column_count(VTE_TERMINAL(vtebox)),
-	//	vte_terminal_get_row_count(VTE_TERMINAL(vtebox)));
-
-	if (vtebox!=NULL)
-	{
-		// retore the vtebox size
-		struct Page *current_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Data");
-		if (current_data!=NULL)
+		if (bold_current_page_name)
 		{
-			gint vtebox_width, vtebox_height, x_pad, y_pad;
-			
-			//g_debug("vtebox char size (fixing): %d x %d",
-			//	vte_terminal_get_char_width(VTE_TERMINAL(vtebox)),
-			//	vte_terminal_get_char_height(VTE_TERMINAL(vtebox)));
-			
-			//g_debug("fixing vtebox to %d x %d", current_data->column, current_data->row);
-			vte_terminal_set_size (VTE_TERMINAL(vtebox), current_data->column, current_data->row);
-			
-			vte_terminal_get_padding(VTE_TERMINAL(vtebox), &x_pad, &y_pad);
-			vtebox_width = x_pad + vte_terminal_get_char_width(VTE_TERMINAL(vtebox)) * current_data->column;
-			vtebox_height = y_pad + vte_terminal_get_char_height(VTE_TERMINAL(vtebox)) * current_data->row;
-			gtk_widget_set_size_request(vtebox, vtebox_width, vtebox_height);
-
-			//g_debug("Restore the size to %d x %d ( %d x %d )\n",
-			//	vtebox_width, vtebox_height, current_data->column, current_data->row);
+			current_data->is_bold = TRUE;
+			update_page_name (current_vtebox, current_data->label, current_data->page_no+1,
+					  current_data->custom_page_name, current_data->tab_color,
+					  current_data->is_root, TRUE);
 		}
-	}
-}
-
-void vtebox_size_request (GtkWidget *vtebox, GtkRequisition *requisition, gpointer user_data)
-{
-	//g_debug("vtebox_size_request! : %d", vtebox);
-	//g_debug("Current %d vtebox size is %dx%d\n",
-	//	gtk_notebook_get_n_pages (notebook),
-	//	vte_terminal_get_column_count(VTE_TERMINAL(vtebox)),
-	//	vte_terminal_get_row_count(VTE_TERMINAL(vtebox)));
-
-	//g_debug("style_set = %d", style_set);
-	if (style_set)
-	{
-		set_vtebox_geometry(vtebox);
-
-	//	g_debug("Current %d vtebox size is %dx%d\n",
-	//		gtk_notebook_get_n_pages (notebook),
-	//		vte_terminal_get_column_count(VTE_TERMINAL(vtebox)),
-	//		vte_terminal_get_row_count(VTE_TERMINAL(vtebox)));
-	}
-}
-
-void vtebox_size_allocate (GtkWidget *vtebox, GtkAllocation *allocation, gpointer user_data)
-{
-	//g_debug("vtebox_size_allocate! : %d", vtebox);
-	//g_debug("Current %d vtebox size is %dx%d\n",
-	//	gtk_notebook_get_n_pages (notebook),
-	//	vte_terminal_get_column_count(VTE_TERMINAL(vtebox)),
-	//	vte_terminal_get_row_count(VTE_TERMINAL(vtebox)));
-	
-	if (lost_focuse || update_hints_once)
-	{
-		// g_debug("! Saving the column x row data of %d vtebox to %d x %d...\n",
-		//	gtk_notebook_get_n_pages (notebook),
-		//	vte_terminal_get_column_count(VTE_TERMINAL(vtebox)),
-		//	vte_terminal_get_row_count(VTE_TERMINAL(vtebox)));
-
-		struct Page *current_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Data");
-		current_data->column = vte_terminal_get_column_count(VTE_TERMINAL(vtebox));
-		current_data->row = vte_terminal_get_row_count(VTE_TERMINAL(vtebox));
-
-		if (!update_hints_once)
-			// if the size is changed by mouse moving, set the vtebox size.
-			// or it will recover to the original size after the mouse button release.
-			set_vtebox_geometry(vtebox);
-		
-		update_hints_once = FALSE;
 	}
 }
 

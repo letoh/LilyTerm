@@ -36,7 +36,6 @@
 
 #define RCFILE PACKAGE ".rc"
 #define KEYS 30
-#define LINUX_TPGID 7
 
 struct Page
 {
@@ -48,13 +47,16 @@ struct Page
 	pid_t pid;
 	// the pid of foreground program
 	pid_t tpgid;
-	// the path to /proc/pid/stat. *for performance*
-	gchar *stat_path;
+	// The custom page name which inputed by user
 	gchar *custom_page_name;
 	// Use colorful tab
 	gchar *tab_color;
 	// Current Directory
 	gchar *pwd;
+	// The running command is root privileges or not
+	gboolean is_root;
+	// The text of current page is bold or not
+	gboolean is_bold;
 
 	// the id of g_timeout_add_seconds()
 	guint timeout_id;
@@ -63,15 +65,12 @@ struct Page
 	gchar *font_name;
 	gint font_size;
 
-	// for restore the vtebox size
-	gint column;
-	gint row;
-
 	gboolean use_scrollback_lines;
 
 	GtkWidget *encoding;
+
 	// current page no on notebook. *for performance*
-	gint current_page_no;
+	gint page_no;
 };
 
 struct KeyValue

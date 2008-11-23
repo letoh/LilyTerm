@@ -1,3 +1,23 @@
+2008-6-7 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
+  version 0.9.3
+
+    The default function key to close a tab is changed to <Ctrl><Q>.
+
+    FIX:
+	* The page name won't be updated if page_shows_current_cmdline = 0 and
+	  page_shows_current_dir = 1.
+	* Better compatibility with fluxbox and evilwm. Now the size of
+	  LilyTerm should be increased/decreased correctly in all window
+	  managers.
+
+    New Feature:
+	* The text on tab will be bold when on focus or action.
+	  You may use bold_current_page_name = 0 in profile to disable this.
+	* The text color of tab will be changed if running command with root
+	  privileges.
+	* The text color can be changed by right click menu.
+
 2008-5-27 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
 
   version 0.9.2, a hotfix for 0.9.1
@@ -31,7 +51,7 @@
 	  
 	  in your profile, or use `use_color_page = 0' to disable it.
 	* Shows the PWD (current directory) on page name.
-	  Enable it will NOT cause performance program. Lilyterm with 100 tabs
+	  Enable it will NOT cause performance problem. Lilyterm with 100 tabs
 	  causes around 2.3% CPU loading on a Celeron 850 PC.
 	  You may use `page_shows_current_dir = 0' in profile to disable it.
 	* Shows PWD or Cmdline on page name will stop updating when LilyTerm

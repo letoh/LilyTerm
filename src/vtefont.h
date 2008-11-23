@@ -22,6 +22,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
 #ifndef VTEFONT_H
 #define VTEFONT_H
 
@@ -36,7 +37,7 @@ void get_resize_font(gint type);
 void apply_font_to_every_vtebox(gint colum, gint row);
 
 extern void window_resizable(GtkWidget *vtebox, gint run_once, gint minsize);
-extern void set_vtebox_geometry (GtkWidget *vtebox);
+// extern void vtebox_style_set (GtkWidget *vtebox, GtkStyle *previous_style, gpointer user_data);
 extern void vtebox_size_request (GtkWidget *vtebox, GtkRequisition *requisition, gpointer user_data);
 
 #endif

@@ -22,6 +22,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
 #include "main.h"
 
 // For command line options.
@@ -37,16 +38,22 @@ extern struct KeyValue pagekeys[KEYS];
 gboolean enable_function_key = TRUE;
 
 // Trying to keep the vtebox size:
-// 1, When the page bar was hidden. (on_focuse), do nothing
-// 2, When the page bar was shown. (on_focuse), using gtk_window_resize.
-// 3, When the font was changed by right click menu. (lost_focuse), using gtk_widget_set_size_request
-// 4, Increase/decrease window size. (on_focuse), using gtk_widget_set_size_request
-// 5, Resotre to system/default font. (on_focuse), using gtk_widget_set_size_request
-// 6, Theme has changed. (lost_focuse) (need column * row info), We save the column * row info for it when lost_focuse.
-// 7, Using Dir/Cmdline on pagename. (on_focuse), do nothing
+// 1, When the page bar was hidden.
+// 2, When the page bar was shown.
+// 3, When the font was changed by right click menu.
+// 4, Increase/decrease window size.
+// 5, Resotre to system/default font.
+// 6, Theme has been changed.
+// 7, Using Dir/Cmdline on pagename.
 
 gboolean lost_focuse = FALSE;
-gint style_set = 0;
+//  1    : Updating Page Name.
+//  2,  4: Showing/Hiding tab bar, Only run window_size_request() once. 
+//  8    : Changing Themes.
+// 16, 32: Resing Window, Only run window_size_request() once.
+gint keep_vtebox_size = 0;
+extern gint update_hints;
+// gint init_tab_number;
 
 int main( int   argc,
 	  char *argv[] )
@@ -83,6 +90,7 @@ int main( int   argc,
 	g_signal_connect(G_OBJECT(window), "focus-out-event", G_CALLBACK(window_lost_focuse), NULL);
 	// if the theme/fonts changed
 	g_signal_connect_after(G_OBJECT(window), "style-set", G_CALLBACK(window_style_set), NULL);
+	g_signal_connect(G_OBJECT(window), "size_request", G_CALLBACK(window_size_request), NULL);
 	g_signal_connect(G_OBJECT(window), "size-allocate", G_CALLBACK(window_size_allocate), NULL);
 
 	// create notebook
@@ -93,9 +101,11 @@ int main( int   argc,
 #ifdef ENABLE_TAB_REORDER
 	g_signal_connect(G_OBJECT(notebook), "page-reordered", G_CALLBACK(reorder_page_number), NULL);
 #endif
-
 	// add a new page to notebook. run_once=TRUE.
 	add_page(TRUE);
+	//int i;
+	//for (i=1;i<init_tab_number;i++)
+	//	 add_page(FALSE);
 
 	// gtk_window_set_gravity(GTK_WINDOW(window), GDK_GRAVITY_NORTH);
 	gtk_window_move (GTK_WINDOW(window), 0, 0);
@@ -175,6 +185,16 @@ void command_option(int  *argc,
 			//for (j=0;j<*argc;j++)
 			//	g_debug("%2d (Total %d): %s\n",j, *argc, argv[j]);
 		}
+		//else if ((!strcmp(argv[i], "-t")) || (!strcmp(argv[i], "--tab")))
+		//{
+		//	if (++i==*argc)
+		//		g_critical("missing tab number after -t/--tab!\n");
+		//	else
+		//		init_tab_number = atoi(argv[i]);
+		//	if (init_tab_number<1)
+		//		init_tab_number=1;
+		//	// g_debug("Init LilyTerm with %d page(s)!", init_tab_number);
+		//}
 	}
 	// trying to got witch profile to use
 	if (profile==NULL)
@@ -227,7 +247,7 @@ GString *got_help_message()
 								PACKAGE_NAME, g_get_user_config_dir(), RCFILE);
 	g_string_append( help_message,	_("Default shortcut key: (It may custom by editing user's profile)\n\n"));
 	g_string_append( help_message,  _("  * <Ctrl><`>\t\tDisable/Enable function keys\n"));
-	g_string_append( help_message,	_("  * <Ctrl><T/W>\t\tAdd a New tab/Close current tab\n"));
+	g_string_append( help_message,	_("  * <Ctrl><T/Q>\t\tAdd a New tab/Close current tab\n"));
 	g_string_append( help_message,	_("  * <Ctrl><E>\t\tRename current tab\n"));
 	g_string_append( help_message,	_("  * <Ctrl><PgUp/PgDn>\tSwitch to Prev/Next tab\n"));
 	g_string_append( help_message,	_("  * <Ctrl><Home/End>\tSwitch to First/Last tab\n"));
@@ -243,12 +263,15 @@ GString *got_help_message()
 	g_string_append( help_message,	_("\t\t\t(i.e. Emulate a middle button mouse click to past the text)\n\n"));
 	g_string_append_printf( help_message,	
 					_("Please report bug to %s. Thank you for using %s!\n"),
-								PACKAGE_BUGREPORT, PACKAGE);
+								PACKAGE_BUGREPORT, PACKAGE_NAME);
 	return help_message;
 }
 
 gboolean window_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 {
+	if (keep_vtebox_size)
+		return TRUE;
+	
 	// don't check if no ctrl/shift/alt key pressed!
 	if (event->state & ALL_ACCELS_MASK)
 	{
@@ -338,14 +361,14 @@ void deal_key_press(gint type)
 			break;
 		case 4:
 			// switch to pre page
-			if (current_data->current_page_no)
+			if (current_data->page_no)
 				gtk_notebook_prev_page(GTK_NOTEBOOK(notebook));
 			else
 				gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), total_page -1);
 			break;
 		case 5:
 			// switch to next page
-			if (current_data->current_page_no == (gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook)) - 1))
+			if (current_data->page_no == (gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook)) - 1))
 				gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), 0);
 			else
 				gtk_notebook_next_page(GTK_NOTEBOOK(notebook));
@@ -361,15 +384,15 @@ void deal_key_press(gint type)
 		case 8:
 			// move current page forward
 			gtk_notebook_reorder_child(GTK_NOTEBOOK(notebook), current_data->hbox, 
-						   current_data->current_page_no -1);
+						   current_data->page_no -1);
 			break;
 		case 9:
 			// move current page backward
-			if (current_data->current_page_no == (gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook))-1))
+			if (current_data->page_no == (gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook))-1))
 				 gtk_notebook_reorder_child(GTK_NOTEBOOK(notebook), current_data->hbox, 0);
 			else
 				gtk_notebook_reorder_child(GTK_NOTEBOOK(notebook),
-							   current_data->hbox, current_data->current_page_no+1);
+							   current_data->hbox, current_data->page_no+1);
 			break;
 		case 10:
 			// move current page to first
@@ -419,14 +442,7 @@ void deal_key_press(gint type)
 }
 gboolean window_get_focuse(GtkWidget *window, GdkEventFocus *event, gpointer user_data)
 {
-	//g_debug("! window_get_focuse! and style_set = %d", style_set);
-	//g_debug("Current %d vtebox size is %dx%d\n",
-	//	gtk_notebook_get_n_pages (notebook),
-	//	vte_terminal_get_column_count(VTE_TERMINAL(current_vtebox)),
-	//	vte_terminal_get_row_count(VTE_TERMINAL(current_vtebox)));
-	
-	if (lost_focuse && current_vtebox!=NULL && (!style_set))
-		window_resizable(current_vtebox, 0, -1);
+	//g_debug("! window_get_focuse!");
 
 	lost_focuse = FALSE;
 	return FALSE;
@@ -435,13 +451,6 @@ gboolean window_get_focuse(GtkWidget *window, GdkEventFocus *event, gpointer use
 gboolean window_lost_focuse (GtkWidget *window, GdkEventFocus *event, gpointer user_data)
 {
 	//g_debug("! vteboxvte_lost_focuse!");
-	//g_debug("Current %d vtebox size is %dx%d\n",
-	//	gtk_notebook_get_n_pages (notebook),
-	//	vte_terminal_get_column_count(VTE_TERMINAL(current_vtebox)),
-	//	vte_terminal_get_row_count(VTE_TERMINAL(current_vtebox)));
-
-	if (current_vtebox!=NULL && (!style_set))
-		window_resizable(current_vtebox, 0, 1);
 
 	lost_focuse = TRUE;
 	return FALSE;
@@ -449,38 +458,44 @@ gboolean window_lost_focuse (GtkWidget *window, GdkEventFocus *event, gpointer u
 
 void window_style_set (GtkWidget *window, GtkStyle *previous_style, gpointer user_data)
 {
-	//g_debug("window_style_set!");
-	//g_debug("Current %d vtebox size is %dx%d\n",
-	//	gtk_notebook_get_n_pages (notebook),
-	//	vte_terminal_get_column_count(VTE_TERMINAL(current_vtebox)),
-	//	vte_terminal_get_row_count(VTE_TERMINAL(current_vtebox)));
-	
-	// g_debug("Updating hints for %d page to 0!\n", gtk_notebook_get_n_pages (notebook));
-	window_resizable(current_vtebox, 2, -1);
-	gtk_window_resize(GTK_WINDOW(window), 1, 1);
-	// we need to launch window_size_allocate twice.
-	style_set = 2;
+	// g_debug("window_style_set!");
+	keep_vtebox_size |= 8;
+	// g_debug("window_resizable in window_style_set! keep_vtebox_size = %d", keep_vtebox_size);
+	window_resizable(current_vtebox, 2, 1);
+}
+
+void window_size_request (GtkWidget *window, GtkRequisition *requisition, gpointer user_data)
+{
+	// g_debug("window_size-request! and keep_vtebox_size = %d", keep_vtebox_size);
+	if (keep_vtebox_size&0x1b)
+	{
+		// g_debug("Got keep_vtebox_size (before) = %d", keep_vtebox_size);
+		GtkRequisition window_requisition;
+
+		gtk_widget_get_child_requisition (window, &window_requisition);
+		// g_debug("! The requested window requisition is %d x %d",
+		//	window_requisition.width, window_requisition.height);
+		gtk_window_resize(GTK_WINDOW(window), window_requisition.width, window_requisition.height);
+
+		keep_vtebox_size &= 0x2d;
+
+		// g_debug("Got keep_vtebox_size (after) = %d\n", keep_vtebox_size);
+	}
 }
 
 void window_size_allocate (GtkWidget *window, GtkAllocation *allocation, gpointer user_data)
 {
-	//g_debug("window_size-allocate!");
-	if (style_set)
+	// g_debug("window_size-allocate!, and keep_vtebox_size = %d", keep_vtebox_size);
+
+	if (keep_vtebox_size)
 	{
-		style_set --;
-		// g_debug("! window_size_allocate");
-		
-		if (style_set==0)
-		{
-			// g_debug("Updating hints for %d page to FONT!\n", gtk_notebook_get_n_pages (notebook));
-			if (lost_focuse)
-				window_resizable(current_vtebox, 1, 1);
-			else
-				window_resizable(current_vtebox, 1, -1);
-		}
+		keep_vtebox_size = 0;
+		// g_debug("window_resizable in window_size_allocate!");
+		window_resizable(current_vtebox, update_hints, 1);
 	}
 
 	// GtkRequisition window_requisition;
 	// gtk_window_get_size(GTK_WINDOW(window), &window_requisition.width, &window_requisition.height);
 	// g_debug("! The final window size is %d x %d", window_requisition.width, window_requisition.height);
 }
+

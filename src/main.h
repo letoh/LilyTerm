@@ -62,7 +62,6 @@ void window_size_allocate (GtkWidget *window, GtkAllocation *allocation, gpointe
 gboolean window_get_focuse(GtkWidget *window, GdkEventFocus *event, gpointer user_data);
 gboolean window_lost_focuse (GtkWidget *window, GdkEventFocus *event, gpointer user_data);
 
-
 extern void add_page(gint run_once);
 extern GString *save_user_settings(GtkWidget *widget, GtkWidget *current_vtebox);
 extern void window_resizable(GtkWidget *vtebox, gint run_once, gint minsize);

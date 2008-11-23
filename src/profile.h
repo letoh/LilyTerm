@@ -53,7 +53,7 @@ gint check_integer_value(GKeyFile *keyfile, const gchar *group_name,
 void strdup_settings();
 
 gboolean accelerator_parse (const gchar *key_name, const gchar *key_value, guint *key, guint *mods);
-void window_resizable(GtkWidget *vtebox, gboolean run_once, gint minsize);
+void window_resizable(GtkWidget *vtebox, gint run_once, gint minsize);
 void get_user_settings();
 void init_rgba();
 gboolean set_background_saturation (GtkRange *range, GtkScrollType scroll, gdouble value, GtkWidget *vtebox);
