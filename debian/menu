@@ -1,6 +1,0 @@
-?package(lilyterm):needs="X11"\
-  section="XShells"\
-  title="LilyTerm"\
-  command="/usr/bin/lilyterm"\
-  longtitle="A light and easy to use libvte based X Terminal Emulator"\
-  icon="/usr/share/pixmaps/lilyterm.xpm"

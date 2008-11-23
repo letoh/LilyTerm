@@ -1,0 +1,321 @@
+# German translation for Lilyterm.
+# Copyright (C) 2008 Mario Blättermann
+# This file is distributed under the same license as the Lilyterm package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: 0.8.9\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-05-25 19:30+0800\n"
+"PO-Revision-Date: 2008-05-02 13:24+0200\n"
+"Last-Translator: Mario Blättermann <mario.blaettermann@t-online.de>\n"
+"Language-Team: Deutsch <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: dialog.c:112
+msgid "Rename the tab"
+msgstr "Reiter umbenennen"
+
+#: dialog.c:115
+msgid "Change the saturation of background"
+msgstr "Durchsichtigkeit ändern"
+
+#: dialog.c:118
+msgid "Confirm to close multi tabs"
+msgstr "Schließen mehrerer Reiter bestätigen"
+
+#: dialog.c:121
+msgid "Get the key value for using in profile"
+msgstr "Tastencode zur Verwendung in der Konfiguration ermitteln"
+
+#: dialog.c:124 menu.c:242
+msgid "Usage"
+msgstr "Anwendung"
+
+#: dialog.c:127
+msgid "Error when writing profile"
+msgstr "Fehler beim Speichern des Profils"
+
+#: dialog.c:130
+msgid "Confirm to close running foreground program"
+msgstr "Schließen eines Programms bestätigen"
+
+#: dialog.c:133
+msgid "Change the opacity of window"
+msgstr "Durchsichtigkeit des Fensters ändern"
+
+#: dialog.c:136 menu.c:96
+msgid "Change the foreground color"
+msgstr "Vordergrundfarbe ändern"
+
+#: dialog.c:139 menu.c:103
+msgid "Change the background color"
+msgstr "Hintergrundfarbe ändern"
+
+#: dialog.c:298
+msgid "Please input the Label Name of this tab:"
+msgstr "Name für diesen Reiter eingeben:"
+
+#: dialog.c:301
+msgid "Change the Saturation of background:"
+msgstr "Durchsichtigkeit des Hintergrunds ändern:"
+
+#: dialog.c:304
+msgid "You are about to close multi tabs. Continue anyway?"
+msgstr "Sie haben mehrere Reiter geöffnet. Alle Reiter schließen?"
+
+#: dialog.c:307
+msgid ""
+"You may press any key here to get the key value for using in profile.\n"
+"\n"
+"Press [Copy] to copy the key value to clipboard;\n"
+"And press [Close] to exit."
+msgstr ""
+"Drücken Sie eine beliebige Taste, um deren Code in der Konfiguration zu "
+"verwenden.\n"
+"\n"
+"Drücken sie auf [Kopieren] um den Code in der Zwischenablage zu speichern;\n"
+"dann drücken Sie [Schließen] zum Beenden."
+
+#: dialog.c:321
+#, c-format
+msgid ""
+"Error while writing profile '%s/%s':\n"
+"\n"
+"%s"
+msgstr ""
+"Fehler beim Speichern des Profils '%s/%s':\n"
+"\n"
+"%s"
+
+#: dialog.c:328
+#, c-format
+msgid ""
+"There is still a running foreground program on #%d tab:\n"
+"\n"
+"\t%s\n"
+"\n"
+"Continue anyway?\n"
+msgstr ""
+"Es läuft noch ein Programm im #%d Reiter:\n"
+"\n"
+"\t%s?nWirklich schließen?\n"
+
+#: dialog.c:335
+msgid "Change the Opacity of window:"
+msgstr "Durchsichtigkeit des Fensters ändern"
+
+#: dialog.c:429
+msgid "Label Name:"
+msgstr "Beschriftung:"
+
+#: dialog.c:468
+msgid "Key Value:"
+msgstr "Tastencode:"
+
+#: main.c:215
+#, c-format
+msgid ""
+"%s is a libvte based X Terminal Emulater.\n"
+"\n"
+msgstr ""
+"%s ist ein auf Libvte basierender Terminalemulator.\n"
+"\n"
+
+#: main.c:217
+#, c-format
+msgid "Use -e/--execute {Command} to run a command after %s start.\n"
+msgstr ""
+"Benutzen Sie -e/--execute {Befehl} um einen Befehl nach dem %s-Start "
+"auszuführen.\n"
+
+#: main.c:218
+msgid "Use -v/--version to show the version infomation.\n"
+msgstr "Benutzen Sie -v/--version um die Versionsinformationen anzuzeigen.\n"
+
+#: main.c:219
+msgid "Use -p/--profile to got a profile sample.\n"
+msgstr "Benutzen Sie -p/--profile für eine Beispielkonfiguration.\n"
+
+#: main.c:221
+#, c-format
+msgid ""
+"Use -u/--user_profile {%s} to use a specified profile.\n"
+"\n"
+msgstr ""
+"Benutzen Sie -u/--user_profile {%s} um ein bestimmtes Profil zu verwenden.\n"
+"\n"
+
+#: main.c:224
+#, c-format
+msgid "The %s system config is: %s/%s\n"
+msgstr "Die %s Systemweite Konfiguration: %s/%s\n"
+
+#: main.c:226
+#, c-format
+msgid ""
+"And your %s profile is: %s/%s\n"
+"\n"
+msgstr ""
+"Ihr %s-Benutzerprofil: %s/%s\n"
+"\n"
+
+#: main.c:228
+msgid ""
+"Default shortcut key: (It may custom by editing user's profile)\n"
+"\n"
+msgstr "Standard-Tastenkürzel: (können im Benutzerprofil geändert werden)\n"
+
+#: main.c:229
+msgid "  * <Ctrl><`>\t\tDisable/Enable function keys\n"
+msgstr "  * <Strg><`>\t\t\t\tDeaktivieren/Aktivieren der Funktionstasten\n"
+
+#: main.c:230
+msgid "  * <Ctrl><T/W>\t\tAdd a New tab/Close current tab\n"
+msgstr ""
+"  * <Strg><T/W>\t\t\t\tNeuen Reiter hinzufügen/Aktuellen Reiter schließen\n"
+
+#: main.c:231
+msgid "  * <Ctrl><E>\t\tRename current tab\n"
+msgstr "  * <Strg><E>\t\t\t\tAktuellen Reiter umbenennen\n"
+
+#: main.c:232
+msgid "  * <Ctrl><PgUp/PgDn>\tSwitch to Prev/Next tab\n"
+msgstr ""
+"  * <Strg><Bild hoch/Bild runter>\tZum vorherigen/nächsten Reiter wechseln\n"
+
+#: main.c:233
+msgid "  * <Ctrl><Home/End>\tSwitch to First/Last tab\n"
+msgstr "  * <Strg><Pos1/Ende>\t\t\tZum ersten/letzten Reiter wechseln\n"
+
+#: main.c:234
+msgid "  * <Ctrl><Left/Right>\tMove current page Forward/Backward\n"
+msgstr ""
+"  * <Strg><Links/Rechts>\t\tAktuellen Reiter nach links/rechts verschieben\n"
+
+#: main.c:235
+msgid "  * <Ctrl><Up/Down>\tMove current page to First/Last\n"
+msgstr ""
+"  * <Strg><Rauf/Runter>\t\t\tAktuellen Reiter ganz nach links/ganz nach "
+"rechts verschieben\n"
+
+#: main.c:236
+msgid "  * <Ctrl><F1~F12>\tSwitch to 1st ~ 12th tab\n"
+msgstr "  * <Ctrl><F1~F12>\t\t\tZum ersten ~ zwölften Reiter springen\n"
+
+#: main.c:237
+msgid "  * <Ctrl><O>\t\tSelect all the text in the Vte Terminal box\n"
+msgstr "  * <Strg><O>\t\t\t\tGesamten Inhalt des Terminals auswählen\n"
+
+#: main.c:238
+msgid "  * <Ctrl><X>\t\tCopy the text to clipboard\n"
+msgstr "  * <Strg><X>\t\t\t\tText in die Zwischenablage kopieren\n"
+
+#: main.c:239
+msgid "  * <Ctrl><V>\t\tPast the text in clipboard\n"
+msgstr "  * <Strg><V>\t\t\t\tText aus der Zwischenablage einfügen\n"
+
+#: main.c:240
+msgid "  * <Ctrl><+/->\t\tIncrease/Decrease the font size of current tab\n"
+msgstr ""
+"  * <Strg><+/->\t\t\t\tSchrift im aktuellen Reiter vergrößern/verkleinern\n"
+
+#: main.c:241
+msgid "  * <Ctrl><Enter>\tReset the font size of current tab\n"
+msgstr "  * <Strg><Enter>\t\t\tSchriftgröße im aktuellen Reiter zurücksetzen\n"
+
+#: main.c:242
+msgid "  * <Shift><Insert>\tPast the text in primary clipboard\n"
+msgstr ""
+"  * <Umschalt><Einfg>\t\t\tText aus der ersten Position der Zwischenablage "
+"einfügen\n"
+
+#: main.c:243
+msgid ""
+"\t\t\t(i.e. Emulate a middle button mouse click to past the text)\n"
+"\n"
+msgstr ""
+"\t\t\t\t\t(Emuliert die mittlere Maustaste, um Text einzufügen)\n"
+"\n"
+
+#: main.c:245
+#, c-format
+msgid "Please report bug to %s. Thank you for using %s!\n"
+msgstr "Fehler bitte melden an %s. Danke dass Sie %s verwenden!\n"
+
+#: menu.c:71
+msgid "System Default"
+msgstr "Systemstandard"
+
+#: menu.c:120
+msgid "Transparent Window"
+msgstr "Transparentes Fenster"
+
+#: menu.c:124
+msgid "Window Opacity"
+msgstr "Durchsichtigkeit des Fensters"
+
+#: menu.c:136
+msgid "Transparent Background"
+msgstr "Transparenter Hintergrund"
+
+#: menu.c:140
+msgid "Background Saturation"
+msgstr "Durchsichtigkeit des Hintergrunds"
+
+#: menu.c:153
+msgid "Scrollback lines"
+msgstr ""
+
+#: menu.c:158
+msgid "Clean scrollback lines of this tab"
+msgstr ""
+
+#: menu.c:172
+msgid "Switch input methods"
+msgstr "Eingabemethode ändern"
+
+#: menu.c:182
+msgid "Change the font"
+msgstr "Schriften ändern"
+
+#: menu.c:189
+msgid "Rename this tab"
+msgstr "Reiter umbenennen"
+
+#: menu.c:202
+msgid "Increase window size"
+msgstr "Fenster vergrößern"
+
+#: menu.c:207
+msgid "Decrease window size"
+msgstr "Fenster verkleinern"
+
+#: menu.c:217
+msgid "Reset to default font/size"
+msgstr "Schrift/Größe auf Standardeinstellungen zurücksetzen"
+
+#: menu.c:223
+msgid "Reset to system font/size"
+msgstr "Zurücksetzen auf Systemschrift und -größe"
+
+#: menu.c:231
+msgid "Reset the content of this tab"
+msgstr "Inhalt dieses Reiters zurücksetzen"
+
+#: menu.c:249
+msgid "Get function key value"
+msgstr "Funktionstastencode holen "
+
+#: menu.c:257
+msgid "Save settings"
+msgstr "Einstellungen speichern"
+
+#: menu.c:340
+msgid "Font Selection"
+msgstr "Schriftauswahl"
+
+#~ msgid "Profile sample"
+#~ msgstr "Beispielkonfiguration"
