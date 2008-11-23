@@ -23,33 +23,41 @@
  */
 
 
-#ifndef NOTEBOOK_H
-#define NOTEBOOK_H
+#ifndef WINDOW_H
+#define WINDOW_H
 
 #include <gtk/gtk.h>
 #include <vte/vte.h>
+// for L10n
+#include <locale.h>
 #include <glib/gi18n.h>
-#include <glib.h>
-// for kill
-#include <signal.h>
 // for exit()
 #include <stdlib.h>
-// for sockaddr_un
-#include <sys/un.h>
+// for strcmp()
+#include <string.h>
 
 #include "data.h"
 #include "profile.h"
+#include "notebook.h"
+#include "menu.h"
 #include "dialog.h"
 #include "pagename.h"
-#include "menu.h"
-#include "main.h"
+#include "vtefont.h"
 
-GtkWidget *add_page(GtkWidget *window, GtkWidget *notebook, GtkWidget *menuitem, gchar *locale, gboolean run_once);
-gboolean close_page (GtkWidget *vtebox, gboolean need_safe_close);
-gboolean vtebox_button_press(GtkWidget *widget, GdkEventButton *event, GtkWidget *window);
-void vtebox_grab_focuse(GtkWidget *vtebox,GtkWidget *window);
-void vtebox_style_set (GtkWidget *vtebox, GtkStyle *previous_style, gpointer user_data);
-void vtebox_size_request (GtkWidget *vtebox, GtkRequisition *requisition, gpointer user_data);
-void vtebox_size_allocate (GtkWidget *vtebox, GtkAllocation *allocation, gpointer user_data);
+#define ALL_ACCELS_MASK (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK | GDK_MOD3_MASK | GDK_MOD4_MASK | GDK_MOD5_MASK)
+#define SHIFT_ONLY_MASK (GDK_CONTROL_MASK | GDK_MOD1_MASK | GDK_MOD3_MASK | GDK_MOD4_MASK | GDK_MOD5_MASK)
+
+void new_window(int argc, char *argv[]);
+void window_option(struct Window *win_data, int argc, char *argv[]);
+gboolean window_quit(GtkWidget *window, GdkEvent *event, struct Window *win_data);
+GString *got_help_message();
+gchar *got_profile_sample();
+gboolean window_key_press(GtkWidget *widget, GdkEventKey *event, struct Window *win_data);
+void deal_key_press(GtkWidget *window, gint type, struct Window *win_data);
+void window_style_set (GtkWidget *window, GtkStyle *previous_style, struct Window *win_data);
+void window_size_request (GtkWidget *window, GtkRequisition *requisition, struct Window *win_data);
+void window_size_allocate (GtkWidget *window, GtkAllocation *allocation, struct Window *win_data);
+gboolean window_get_focuse(GtkWidget *window, GdkEventFocus *event, struct Window *win_data);
+gboolean window_lost_focuse (GtkWidget *window, GdkEventFocus *event, struct Window *win_data);
 
 #endif

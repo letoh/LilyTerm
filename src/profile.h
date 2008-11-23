@@ -28,12 +28,16 @@
 
 #include <gtk/gtk.h>
 #include <vte/vte.h>
+// for L10n
+#include <locale.h>
+#include <glib/gi18n.h>
 // for strlen()
 #include <string.h>
 // for aoti() aotf()
 #include <stdlib.h>
-// for RCFILE, KEYS, struct KeyValue
+
 #include "data.h"
+#include "dialog.h"
 
 #define MOD 7
 struct ModKey
@@ -42,26 +46,26 @@ struct ModKey
 	guint mod;
 };
 
-void get_default_locale();
-void init_new_page(GtkWidget *vtebox, char* font_name, gint column, gint row, gint run_once);
-
+gchar *get_default_locale();
+void init_new_page(GtkWidget *window, struct Window *win_data, GtkWidget *vtebox, char* font_name, gint column, gint row, gint run_once);
+void init_window_option(struct Window *win_data);
+void init_window_parameter(struct Window *win_data);
+void init_function_keys();
+void init_mod_keys();
+void get_user_settings(GtkWidget *window, struct Window *win_data);
 gboolean check_boolean_value(GKeyFile *keyfile, const gchar *group_name, const gchar *key, const gboolean default_vaule);
 gchar *check_string_value(GKeyFile *keyfile, const gchar *group_name,
-			  const gchar *key, const gchar *default_vaule, gboolean enable_empty);
+			const gchar *key, gchar *default_value, gboolean enable_empty);
 gint check_integer_value(GKeyFile *keyfile, const gchar *group_name,
 			 const gchar *key, const gint default_value, gboolean enable_empty, gboolean enable_zero);
-void strdup_settings();
 
 gboolean accelerator_parse (const gchar *key_name, const gchar *key_value, guint *key, guint *mods);
-void window_resizable(GtkWidget *vtebox, gint run_once, gint minsize);
-void get_user_settings();
-void init_rgba();
-gboolean set_background_saturation (GtkRange *range, GtkScrollType scroll, gdouble value, GtkWidget *vtebox);
-gboolean set_window_opacity (GtkRange *range, GtkScrollType scroll, gdouble value, gpointer user_data);
+void init_rgba(GtkWidget *window, struct Window *win_data);
+gboolean set_background_saturation(GtkRange *range, GtkScrollType scroll, gdouble value, GtkWidget *vtebox);
+gboolean set_window_opacity (GtkRange *range, GtkScrollType scroll, gdouble value, GtkWidget *window);
+void window_resizable(GtkWidget *window, GtkWidget *vtebox, gint run_once, gint minsize);
 GString *save_user_settings(GtkWidget *widget, GtkWidget *current_vtebox);
-void free_user_settings_data(GError *error, gchar *profile, GString *contents, GKeyFile *keyfile);
+void free_user_settings_data(GError *error, gchar *profile, GString *contents, GKeyFile *keyfile, gboolean use_custom_profile);
 void init_pagekeys();
-
-extern gboolean dialog(GtkWidget *widget, gint style);
 
 #endif

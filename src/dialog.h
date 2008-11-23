@@ -32,28 +32,51 @@
 #include <glib/gi18n.h>
 // for strlen()
 #include <string.h>
-// for struct Page
+
 #include "data.h"
+#include "profile.h"
+#include "window.h"
+#include "notebook.h"
+#include "pagename.h"
+
+struct Dialog
+{
+#ifdef ENABLE_RGBA
+	gboolean original_transparent_window;
+	gdouble original_window_opacity;
+#endif
+	gboolean original_transparent_background;
+	
+	// For restore to original count of tabs when change the color of tab names.
+	gint total_page;
+	gint current_page_no;
+
+	GtkWidget *adjustment;
+	gboolean tab_1_is_bold;
+
+	// The data come from win_data
+	gboolean *kill_color_demo_vte;
+};
+
+struct ColorSelect
+{
+	// the function type.
+	gint type;
+	gboolean recover;
+
+	gchar *demo_text;
+	GtkWidget *demo_vtebox;
+
+	gchar *original_page_color;
+	GdkColor original_color;
+	GdkColor fg_color;
+	GdkColor bg_color;
+};
 
 gboolean dialog(GtkWidget *widget, gint style);
-extern gboolean set_background_saturation(GtkRange *range, GtkScrollType scroll, gdouble value, GtkWidget *vtebox);
-extern gboolean set_window_opacity(GtkRange *range, GtkScrollType scroll, gdouble value, gpointer user_data);
-
 gboolean dialog_key_press(GtkWidget *widget, GdkEventKey *event, GtkWidget *key_value_label);
 gchar *dialog_key_press_join_string(gchar *value, gchar *separator, gchar *mask);
 void set_vtebox_color (GtkColorSelection *colorselection, GtkWidget *vtebox);
-void recover_page_colors();
-
-extern gboolean close_page(GtkWidget *vtebox, gboolean need_safe_close);
-extern GString *got_help_message();
-extern gchar *got_profile_sample();
-extern void add_page(gboolean run_once);
-extern void update_tab_name(GtkWidget *vtebox, GtkWidget *label, pid_t pid, pid_t tpgid,
-		     gint page_no, gchar *custom_page_name, const gchar *pwd, gboolean is_root, gboolean is_bold);
-extern void update_page_name(GtkWidget *vtebox, GtkWidget *label, gint page_no, gchar *custom_page_name,
-			     const gchar* tab_color, gboolean is_root, gboolean bold);
-extern void change_notebook_color(gboolean is_root);
-extern gint get_tpgid(pid_t pid);
-extern gchar *get_cmdline(pid_t tpgid);
+void recover_page_colors(GtkWidget *dialog, GtkWidget *window, GtkWidget *notebook);
 
 #endif

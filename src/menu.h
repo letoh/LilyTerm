@@ -30,22 +30,21 @@
 #include <vte/vte.h>
 #include <glib/gi18n.h>
 #include <string.h>
-// for Page struct
-#include "data.h"
 
-void create_menu();
-void set_locale(GtkWidget *widget, gchar *locale);
-void set_trans_bg(GtkWidget *widget, gpointer user_data);
-void set_trans_win(GtkWidget *widget, gpointer user_data);
-extern gboolean set_background_saturation (GtkRange *range, GtkScrollType scroll, gdouble value, GtkWidget *vtebox);
-extern gboolean set_window_opacity(GtkRange *range, GtkScrollType scroll, gdouble value, gpointer user_data);
+#include "data.h"
+#include "profile.h"
+#include "dialog.h"
+#include "vtefont.h"
+#include "notebook.h"
+
+void create_menu(GtkWidget *window);
+void set_encoding(GtkWidget *menuitem, GtkWidget *vtebox);
+void new_tab_with_locale(GtkWidget *local_menu_item, GtkWidget *menuitem);
+void set_trans_bg(GtkWidget *widget, GtkWidget *window);
+void set_trans_win(GtkWidget *widget, GtkWidget *window);
 void clean_scrollback_lines(GtkWidget *widget, gboolean type);
 void reset_vtebox(GtkWidget *widget, gpointer user_data);
-void select_font(GtkWidget *widget, gpointer user_data);
+void select_font(GtkWidget *widget, GtkWidget *window);
 void reset_vtebox_font_size(GtkWidget *widget, gboolean reset_all);
-
-extern gboolean dialog (GtkWidget *widget, gint style);
-extern void set_vtebox_font(GtkWidget *widget, gint type);
-extern GString *save_user_settings(GtkWidget *widget, GtkWidget *current_vtebox);
 
 #endif

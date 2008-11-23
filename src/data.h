@@ -37,8 +37,141 @@
 #define RCFILE PACKAGE ".rc"
 #define KEYS 30
 
+// KeyValue: only need to init once when LilyTerm starts.
+// so that we don't need to free them.
+struct KeyValue
+{
+	gchar *name;
+	gchar *comment;
+};
+
+// User_KeyValue: can be custom by profile.
+// Every LilyTerm window has it's own User_KeyValue
+struct User_KeyValue
+{
+	gchar *value;
+	guint key;
+	guint mods;
+};
+
+struct Window
+{
+	// The first command in -e option
+	gchar *command_line;
+	// the argc after -e option
+	gint parameter;
+	// The argv[] after -e option
+	gchar **parameters;
+	// For -t option
+	gint init_tab_number;
+
+	// the component of a single window
+	GtkWidget *notebook;
+	GtkWidget *current_vtebox;
+
+	// the component of a single menu
+	GtkWidget *menu;
+	// 1st item, System Default. for showing menu for the first time
+	GtkWidget *default_encoding;
+#ifdef ENABLE_RGBA
+	GtkWidget *menuitem_trans_win;
+#endif
+	GtkWidget *menuitem_trans_bg;
+	GtkWidget *menuitem_scrollback_lines;
+	gboolean use_custom_profile;
+	gchar *profile;
+
+	// default settings
+	gchar *page_name;
+	gchar *page_names;
+	gchar **splited_page_names;
+	gint page_names_no;
+	gboolean reuse_page_names;
+	gboolean page_shows_number;
+	gboolean page_shows_current_cmdline;
+	gboolean page_shows_current_dir;
+	gboolean page_shows_encoding;
+	gboolean use_color_page;
+	gboolean check_root_privileges;
+	gboolean bold_current_page_name;
+	gboolean bold_action_page_name;
+	gchar *page_cmdline_color;
+	gchar *page_dir_color;
+	gchar *page_custom_color;
+	gchar *page_root_color;
+	gchar *page_normal_color;
+	gboolean window_shows_current_page;
+	gint page_width;
+	gboolean fixed_page_width;
+
+	gchar *foreground_color;
+	gchar *background_color;
+	GdkColor fg_color;
+	GdkColor bg_color;
+	gchar *default_font_name;
+	gchar *system_font_name;
+	gint default_column;
+	gint default_row;
+	gint system_column;
+	gint system_row;
+	// 0: do NOT use rgba
+	// 1: force to use rgba
+	// 2: decide by gdk_screen_is_composited()
+	gint use_rgba;
+	gint original_use_rgba;
+#ifdef ENABLE_RGBA
+	gint transparent_window;
+	gdouble window_opacity;
+#endif
+	gint transparent_background;
+	gdouble background_saturation;
+	gchar *word_chars;
+	gint scrollback_lines;
+
+	gboolean show_color_selection_menu;
+	gboolean show_resize_menu;
+	gboolean show_transparent_menu;
+	gboolean show_input_method_menu;
+	gboolean show_get_function_key_menu;
+	// the default_locale is got from environment
+	gchar *default_locale;
+	gchar *locales_list;
+	gchar **supported_locales;
+	
+	struct User_KeyValue user_keys[KEYS];
+
+	// 0: Do nothing
+	// 1: Update the hints with base size = font char size
+	// 2: Update the hints with base size = 1
+	gint update_hints;
+	gboolean enable_function_key;
+	// Trying to keep the vtebox size:
+	// 1, When the page bar was hidden.
+	// 2, When the page bar was shown.
+	// 3, When the font was changed by right click menu.
+	// 4, Increase/decrease window size.
+	// 5, Resotre to system/default font.
+	// 6, Theme has been changed.
+	// 7, Using Dir/Cmdline on pagename.
+	gboolean lost_focuse;
+	//  1    : Updating Page Name.
+	//  2,  4: Showing/Hiding tab bar, Only run window_size_request() once. 
+	//  8    : Changing Themes.
+	// 16, 32: Resing Window, Only run window_size_request() once.
+	gint keep_vtebox_size;
+	gboolean query_coding;
+	gboolean kill_color_demo_vte;
+	// for the error messege shown in dialog. Do NOT to free it!
+	gchar *temp_str;
+	// Only using in <Ctrl><Enter>
+	gchar *restore_font_name;
+};
+
 struct Page
 {
+	GtkWidget *window;
+	GtkWidget *notebook;
+
 	GtkWidget *label;
 	GtkWidget *hbox;
 	GtkWidget *vtebox;
@@ -49,7 +182,7 @@ struct Page
 	pid_t tpgid;
 	// The custom page name which inputed by user
 	gchar *custom_page_name;
-	// Use colorful tab
+	// The color for this tab. *DON'T FREE IT*
 	gchar *tab_color;
 	// Current Directory
 	gchar *pwd;
@@ -63,23 +196,26 @@ struct Page
 
 	// for resize font
 	gchar *font_name;
+	// font_size = 0: use the data in font_name.
 	gint font_size;
 
 	gboolean use_scrollback_lines;
 
+	// the encoding menuitem which this page is using.
 	GtkWidget *encoding;
+	// locale: a string like "LC=ALL zh_TW.Big5".
+	gchar *locale;
 
 	// current page no on notebook. *for performance*
 	gint page_no;
-};
 
-struct KeyValue
-{
-	gchar *name;
-	gchar *value;
-	guint key;
-	guint mods;
-	gchar *comment;
+	// some data came from window. for the performance of monitor_cmdline
+	gboolean *lost_focuse;
+	gint *keep_vtebox_size;
+	gboolean *check_root_privileges;
+	gboolean *page_shows_current_dir;
+	gboolean *page_shows_current_cmdline;
+	gboolean *bold_action_page_name;
 };
 
 #endif

@@ -1,3 +1,45 @@
+2008-7-1 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
+  version 0.9.4
+
+    For GCIN Users:
+
+	If it always segfault when close the 1st page of LilyTerm,
+	Please update GCIN to 1.4.1 to avoid this problem.
+
+    LilyTerm supports 'Single Process Mode' from this version.
+
+    When LilyTerm is running with 'Single Process Mode', Multi LilyTerm will
+    use only one process. The newer launched LilyTerm will be just a new window
+    of 1st launched LilyTerm, so that we may reduce the usage of memory.
+
+    Unlike roxterm, gnome-terminal or xfce4-termianl, Every single window of
+    LilyTerm is independent. They may has it's own settings and profile, and
+    won't bother each other.
+
+    The disadvantage of 'Single Process' mode is, if the LilyTerm crashed, All
+    the LilyTerm will be dead at the same time.
+
+    You may use -s/--saparate command line options to run LilyTerm in 'Saparate
+    Process Mode'.
+
+    New Feature:
+	* Applied updated German translation.
+	  VERY THANKS to Mario Blättermann.
+	* A warning dialog when creating child process fail.
+	* Add [New tab with specified locale] to right click menu.
+	  You need to set the locales_list with full locale name in profile to
+	  enable this.
+	  for instance with locales_list = ja_JP.EUC-JP zh_CN.GB2312 zh_TW.Big5.
+	* If you used a specified profile with -p option, [Save Settings] will
+	  save the settings on the specified profile.
+	* Add -x and -t/--tab command line options support.
+	  -x is the same as -e/-execute. For compatible with gnome-terminal.
+	  (BTW, xterm is support -e only.)
+	  And, you may use -t/--tab {number} to open multi tabs when startup.
+	* Shows the encoding on page name.
+	  You may disable it by put `page_shows_encoding = 0' in your profile.
+
 2008-6-7 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
 
   version 0.9.3
@@ -5,6 +47,8 @@
     The default function key to close a tab is changed to <Ctrl><Q>.
 
     FIX:
+	* Applied updated German translation.
+	  VERY THANKS to Mario Blättermann.
 	* The page name won't be updated if page_shows_current_cmdline = 0 and
 	  page_shows_current_dir = 1.
 	* Better compatibility with fluxbox and evilwm. Now the size of
@@ -96,7 +140,7 @@
 	* Better compatibility when the font rendering / theme changed too fast.
 
     New Feature:
-        * Window opacity is supported, and it will enabled by default if the
+	* Window opacity is supported, and it will enabled by default if the
 	  screen is composited.
 	  You may use `window_opacity = 0.15' in your profile to specify the
 	  opacity.

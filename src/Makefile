@@ -2,9 +2,11 @@ bindir = /usr/bin
 etcdir = /etc/xdg
 datadir = /usr/share
 CC = gcc
-CFLAGS = $$CFLAGS -Wall -g
+CFLAGS = $$CFLAGS -Wall -g -Os
+LDFLAGS = -L/usr/local/lib -lvte -lgtk-x11-2.0
 
-INCLUDES = -DENABLE_RGBA \
+INCLUDES = -DENABLE_DEVELOP \
+	   -DENABLE_RGBA \
 	   -DUSE_TIMEOUT_SECONDS \
 	   -DENABLE_TAB_REORDER \
 	   -DENABLE_SELECT_ALL \
@@ -18,29 +20,32 @@ INCLUDES = -DENABLE_RGBA \
 
 .PHONY: all
 all: debug
-	strip lilyterm
+	strip --remove-section=.comment --remove-section=.note lilyterm
 
-menu.o: data.h menu.h menu.c
-	$(CC) $(CFLAGS) $(INCLUDES) -c menu.c `pkg-config --cflags gtk+-2.0`
+vtefont.o: data.h profile.h profile.h notebook.h menu.h dialog.h pagename.h vtefont.h vtefont.h vtefont.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c vtefont.c `pkg-config --cflags gtk+-2.0 vte`
 
-profile.o: data.h profile.h profile.c
-	$(CC) $(CFLAGS) $(INCLUDES) -c profile.c `pkg-config --cflags gtk+-2.0`
+menu.o: data.h profile.h dialog.h vtefont.h notebook.h menu.h menu.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c menu.c `pkg-config --cflags gtk+-2.0 vte`
 
-dialog.o: data.h dialog.h dialog.c
-	$(CC) $(CFLAGS) $(INCLUDES) -c dialog.c `pkg-config --cflags gtk+-2.0`
+dialog.o: data.h profile.h window.h notebook.h pagename.h dialog.h dialog.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c dialog.c `pkg-config --cflags gtk+-2.0 vte`
 
-pagename.o: data.h pagename.h pagename.c
+profile.o: data.h dialog.h profile.h profile.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c profile.c `pkg-config --cflags gtk+-2.0 vte`
+
+pagename.o: data.h profile.h notebook.h pagename.h pagename.c
 	# $(CC) $(CFLAGS) $(INCLUDES) -c pagename.c `pkg-config --cflags gtk+-2.0 libgtop-2.0`
-	$(CC) $(CFLAGS) $(INCLUDES) -c pagename.c `pkg-config --cflags gtk+-2.0`
+	$(CC) $(CFLAGS) $(INCLUDES) -c pagename.c `pkg-config --cflags gtk+-2.0 vte`
 
-notebook.o: data.h notebook.h notebook.c
-	$(CC) $(CFLAGS) $(INCLUDES) -c notebook.c `pkg-config --cflags gtk+-2.0`
+notebook.o: data.h profile.h dialog.h pagename.h menu.h main.h notebook.h notebook.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c notebook.c `pkg-config --cflags gtk+-2.0 vte`
 
-vtefont.o: data.h vtefont.h vtefont.c
-	$(CC) $(CFLAGS) $(INCLUDES) -c vtefont.c `pkg-config --cflags gtk+-2.0`
+window.o: data.h profile.h notebook.h menu.h dialog.h pagename.h vtefont.h window.h window.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c window.c `pkg-config --cflags gtk+-2.0 vte`
 
-main.o: data.h main.h main.c
-	$(CC) $(CFLAGS) $(INCLUDES) -c main.c `pkg-config --cflags gtk+-2.0`
+main.o: data.h window.h main.h main.c
+	$(CC) $(CFLAGS) $(INCLUDES) -c main.c `pkg-config --cflags gtk+-2.0 vte`
 
 .PHONY: clean
 clean:
@@ -76,7 +81,6 @@ uninstall:
 	-rm -f $(datadir)/locale/de/LC_MESSAGES/lilyterm.mo
 	-rmdir -p $(datadir)/locale/de/LC_MESSAGES
 
-
 .PHONY: data
 data: debug
 	xgettext --from-code=UTF-8 -k_ -o ../po/lilyterm.pot *.c
@@ -87,8 +91,9 @@ data: debug
 	./lilyterm -p > ../data/lilyterm.rc
 
 .PHONY: debug
-debug: menu.o profile.o dialog.o pagename.o notebook.o vtefont.o main.o
-	# $(CC) $(CFLAGS) -o lilyterm menu.o profile.o dialog.o pagename.o notebook.o vtefont.o main.o `pkg-config --cflags --libs gtk+-2.0 vte libgtop-2.0`
-	$(CC) $(CFLAGS) -o lilyterm menu.o profile.o dialog.o pagename.o notebook.o vtefont.o main.o `pkg-config --cflags --libs gtk+-2.0 vte`
+debug: menu.o profile.o dialog.o pagename.o notebook.o vtefont.o window.o main.o
+	$(CC) $(LDFLAGS) $(CFLAGS) -o lilyterm \
+		menu.o profile.o dialog.o pagename.o notebook.o vtefont.o window.o main.o \
+		`pkg-config --cflags --libs gtk+-2.0 vte`
 	msgfmt -o ../po/zh_TW.mo ../po/zh_TW.po
 	msgfmt -o ../po/de.mo ../po/de.po

@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LilyTerm 0.8.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-06-08 23:45+0800\n"
+"POT-Creation-Date: 2008-07-02 18:50+0800\n"
 "PO-Revision-Date: 2008-03-21 00:30+0800\n"
 "Last-Translator: Tetralet <tetralet@gmail.com>\n"
 "Language-Team: Tetralet <tetralet@gmail.com>\n"
@@ -13,79 +13,83 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: dialog.c:132 menu.c:236
+#: dialog.c:101 menu.c:257
 msgid "Rename this tab"
 msgstr "變更此分頁的名稱"
 
-#: dialog.c:135
+#: dialog.c:104
 msgid "Change the saturation of background"
 msgstr "改變背景的透明度"
 
-#: dialog.c:138
+#: dialog.c:107
 msgid "Confirm to close multi tabs"
 msgstr "確認是否關閉多個分頁"
 
-#: dialog.c:141
+#: dialog.c:110
 msgid "Get the key value for using in profile"
 msgstr "取得可用於設定檔的鍵值"
 
-#: dialog.c:144 menu.c:289
+#: dialog.c:113 menu.c:310
 msgid "Usage"
 msgstr "使用說明"
 
-#: dialog.c:147
+#: dialog.c:116
 msgid "Error when writing profile"
 msgstr "在寫入設定檔時發生錯誤"
 
-#: dialog.c:150
+#: dialog.c:119
 msgid "Confirm to close running foreground program"
 msgstr "確認是否關閉正在前景執行中的程式"
 
-#: dialog.c:153
+#: dialog.c:122
 msgid "Change the opacity of window"
 msgstr "改變視窗的透明度"
 
-#: dialog.c:156
+#: dialog.c:125
 msgid "Change the foreground color in terminal"
 msgstr "改變終端機的文字顏色"
 
-#: dialog.c:159
+#: dialog.c:128
 msgid "Change the background color in terminal"
 msgstr "改變終端機的背景顏色"
 
-#: dialog.c:162
+#: dialog.c:131
 msgid "Change the command line color on tab"
 msgstr "改變分頁上的指令顏色"
 
-#: dialog.c:165
+#: dialog.c:134
 msgid "Change the current directory color on tab"
 msgstr "改變分頁上的目錄顏色"
 
-#: dialog.c:168
+#: dialog.c:137
 msgid "Change the custom tab text color"
 msgstr "改變分頁上的自訂文字顏色"
 
-#: dialog.c:171
+#: dialog.c:140
 msgid "Change the root privileges color on tab"
 msgstr "改變分頁上的 root 權限顏色"
 
-#: dialog.c:174
+#: dialog.c:143
 msgid "Change the normal tab text color"
 msgstr "改變分頁上的一般文字顏色"
 
-#: dialog.c:348
+#: dialog.c:146
+msgid "Error when creating child process"
+msgstr "在建立子行程時發生錯誤"
+
+#: dialog.c:332
 msgid "Please input the Label Name of this tab:"
 msgstr "請輸入這個分頁的名稱："
 
-#: dialog.c:351
+#: dialog.c:335
 msgid "Change the Saturation of background:"
 msgstr "改變背景的透明度"
 
-#: dialog.c:354
+#: dialog.c:338
 msgid "You are about to close multi tabs. Continue anyway?"
 msgstr "您將要關閉多個分頁。是否無論如何仍繼續？"
 
-#: dialog.c:357
+#: dialog.c:341
 msgid ""
 "You may press any key here to get the key value for using in profile.\n"
 "\n"
@@ -97,7 +101,18 @@ msgstr ""
 "按下【複製】可將鍵值複製至剪貼簿；\n"
 "按下【關閉】離開。"
 
-#: dialog.c:371
+#: dialog.c:357
+#, c-format
+msgid ""
+"Error while writing profile '%s':\n"
+"\n"
+"%s"
+msgstr ""
+"在寫入設定檔 %s 時發生錯誤：\n"
+"\n"
+"%s"
+
+#: dialog.c:360
 #, c-format
 msgid ""
 "Error while writing profile '%s/%s':\n"
@@ -108,7 +123,7 @@ msgstr ""
 "\n"
 "%s"
 
-#: dialog.c:378
+#: dialog.c:368
 #, c-format
 msgid ""
 "There is still a running foreground program on #%d tab:\n"
@@ -123,43 +138,54 @@ msgstr ""
 "\n"
 "是否無論如何仍繼續？\n"
 
-#: dialog.c:385
+#: dialog.c:375
 msgid "Change the Opacity of window:"
 msgstr "改變視窗的透明度："
 
-#: dialog.c:505
+#: dialog.c:435
+#, c-format
+msgid ""
+"Error while creating the child process:\n"
+"\n"
+"%s"
+msgstr ""
+"在建立此子行程時發生錯誤：\n"
+"\n"
+"%s"
+
+#: dialog.c:515
 msgid "Label Name:"
 msgstr "分頁名稱："
 
-#: dialog.c:544
+#: dialog.c:554
 msgid "Key Value:"
 msgstr "鍵值："
 
-#: dialog.c:617 dialog.c:936
+#: dialog.c:642 dialog.c:986
 msgid "Bold Demo Text"
 msgstr "粗體範例文字"
 
-#: dialog.c:621
+#: dialog.c:646
 msgid "Running Command"
 msgstr "正在執行的指令"
 
-#: dialog.c:625
+#: dialog.c:650
 msgid "Current Dir"
 msgstr "目前的目錄"
 
-#: dialog.c:629
+#: dialog.c:654
 msgid "Custom Tab Name"
 msgstr "自訂的分頁名稱"
 
-#: dialog.c:633
+#: dialog.c:658
 msgid "Root Privileges"
 msgstr "Root 權限"
 
-#: dialog.c:637
+#: dialog.c:662
 msgid "Normal Text"
 msgstr "一般文字"
 
-#: main.c:235
+#: main.c:113
 #, c-format
 msgid ""
 "%s is a libvte based X Terminal Emulater.\n"
@@ -168,20 +194,31 @@ msgstr ""
 "%s 是一個基於 libvte 的 X 終端機模擬器。\n"
 "\n"
 
-#: main.c:237
-#, c-format
-msgid "Use -e/--execute {Command} to run a command after %s start.\n"
-msgstr "使用 -e/--execute {指令} 來讓 %s 在啟動後執行某一特定程式。\n"
+#: main.c:114
+msgid ""
+"Use -e/-x/--execute {Command} to run a command when startup. (Must be the "
+"final option).\n"
+msgstr ""
+"使用 -e/-x/--execute {指令} 來在啟動後執行某一特定程式。（須為最後一個選"
+"項）\n"
 
-#: main.c:238
+#: main.c:116
+msgid "Use -t/--tab {number} to open multi tabs when startup.\n"
+msgstr "使用 -t/--tab {數目} 來在啟動後開啟多個分頁。\n"
+
+#: main.c:117
+msgid "Use -s/--separate to run in separate process.\n"
+msgstr "使用 -s/--separate 來以獨立行程運行。\n"
+
+#: main.c:118
 msgid "Use -v/--version to show the version infomation.\n"
 msgstr "使用 -v/--version 來顯示版本資訊。\n"
 
-#: main.c:239
+#: main.c:119
 msgid "Use -p/--profile to got a profile sample.\n"
 msgstr "使用 -p/--profile 以取得設定檔範例。\n"
 
-#: main.c:241
+#: main.c:121
 #, c-format
 msgid ""
 "Use -u/--user_profile {%s} to use a specified profile.\n"
@@ -190,12 +227,12 @@ msgstr ""
 "使用 -u/--user_profile {%s} 來指定使用某個特定的設定檔。\n"
 "\n"
 
-#: main.c:244
+#: main.c:124
 #, c-format
 msgid "The %s system config is: %s/%s\n"
 msgstr "%s 的系統設定檔為：%s/%s\n"
 
-#: main.c:246
+#: main.c:126
 #, c-format
 msgid ""
 "And your %s profile is: %s/%s\n"
@@ -204,7 +241,7 @@ msgstr ""
 "而您的 %s 個人設定檔則為：%s/%s\n"
 "\n"
 
-#: main.c:248
+#: main.c:128
 msgid ""
 "Default shortcut key: (It may custom by editing user's profile)\n"
 "\n"
@@ -212,63 +249,63 @@ msgstr ""
 "預設的快捷鍵：（可經由編輯個人設定檔來自訂）\n"
 "\n"
 
-#: main.c:249
+#: main.c:129
 msgid "  * <Ctrl><`>\t\tDisable/Enable function keys\n"
 msgstr "  * <Ctrl><`>\t\t啟用/關閉功能鍵\n"
 
-#: main.c:250
+#: main.c:130
 msgid "  * <Ctrl><T/Q>\t\tAdd a New tab/Close current tab\n"
 msgstr "  * <Ctrl><T/Q>\t\t新增分頁/關閉目前的分頁\n"
 
-#: main.c:251
+#: main.c:131
 msgid "  * <Ctrl><E>\t\tRename current tab\n"
 msgstr "  * <Ctrl><E>\t\t更改目前分頁的名稱\n"
 
-#: main.c:252
+#: main.c:132
 msgid "  * <Ctrl><PgUp/PgDn>\tSwitch to Prev/Next tab\n"
 msgstr "  * <Ctrl><PgUp/PgDn>\t切換至上/下一個分頁\n"
 
-#: main.c:253
+#: main.c:133
 msgid "  * <Ctrl><Home/End>\tSwitch to First/Last tab\n"
 msgstr "  * <Ctrl><Home/End>\t切換至第一/最後一個分頁\n"
 
-#: main.c:254
+#: main.c:134
 msgid "  * <Ctrl><Left/Right>\tMove current page Forward/Backward\n"
 msgstr "  * <Ctrl><Left/Right>\t往前/後移動該分頁\n"
 
-#: main.c:255
+#: main.c:135
 msgid "  * <Ctrl><Up/Down>\tMove current page to First/Last\n"
 msgstr "  * <Ctrl><Up/Down>\t將該分頁移至第一/最後一頁\n"
 
-#: main.c:256
+#: main.c:136
 msgid "  * <Ctrl><F1~F12>\tSwitch to 1st ~ 12th tab\n"
 msgstr "  * <Ctrl><F1~F12>\t切換到第 1 至 12 個分頁\n"
 
-#: main.c:257
+#: main.c:137
 msgid "  * <Ctrl><O>\t\tSelect all the text in the Vte Terminal box\n"
 msgstr "  * <Ctrl><O>\t\t全選 Vte 終端機視窗裡的文字\n"
 
-#: main.c:258
+#: main.c:138
 msgid "  * <Ctrl><X>\t\tCopy the text to clipboard\n"
 msgstr "  * <Ctrl><X>\t\t將文字複製至剪貼簿\n"
 
-#: main.c:259
+#: main.c:139
 msgid "  * <Ctrl><V>\t\tPast the text in clipboard\n"
 msgstr "  * <Ctrl><V>\t\t貼上剪貼簿中的文字\n"
 
-#: main.c:260
+#: main.c:140
 msgid "  * <Ctrl><+/->\t\tIncrease/Decrease the font size of current tab\n"
 msgstr "  * <Ctrl><+/->\t\t放大/縮小目前分頁的字體\n"
 
-#: main.c:261
+#: main.c:141
 msgid "  * <Ctrl><Enter>\tReset the font size of current tab\n"
 msgstr "  * <Ctrl><Enter>\t重置目前分頁的字體\n"
 
-#: main.c:262
+#: main.c:142
 msgid "  * <Shift><Insert>\tPast the text in primary clipboard\n"
 msgstr "  * <Shift><Insert>\t貼上主要剪貼簿中的文字\n"
 
-#: main.c:263
+#: main.c:143
 msgid ""
 "\t\t\t(i.e. Emulate a middle button mouse click to past the text)\n"
 "\n"
@@ -276,107 +313,118 @@ msgstr ""
 "\t\t\t（即：模擬按下了滑鼠中鍵貼上文字）\n"
 "\n"
 
-#: main.c:265
+#: main.c:145
 #, c-format
 msgid "Please report bug to %s. Thank you for using %s!\n"
 msgstr "請向 %s 回報錯誤。感謝您使用 %s！\n"
 
-#: menu.c:72
-msgid "System Default"
-msgstr "系統預設值"
+#: menu.c:49
+msgid "Change text coding"
+msgstr "改變文字編碼"
 
-#: menu.c:97
+#: menu.c:56
+msgid "New tab with specified locale"
+msgstr "以特定 locale 開新分頁"
+
+#: menu.c:118
 msgid "Change colors"
 msgstr "改變顏色"
 
-#: menu.c:105
+#: menu.c:126
 msgid "Change the foreground color"
 msgstr "改變文字的顏色"
 
-#: menu.c:112
+#: menu.c:133
 msgid "Change the background color"
 msgstr "改變背景的顏色"
 
-#: menu.c:121
+#: menu.c:142
 msgid "Change the cmdline color on tab"
 msgstr "改變分頁上的命令列顏色"
 
-#: menu.c:128
+#: menu.c:149
 msgid "Change the dir color on tab"
 msgstr "改變分頁上的目錄顏色"
 
-#: menu.c:135
+#: menu.c:156
 msgid "Change the custom color on tab"
 msgstr "改變分頁上的自訂顏色"
 
-#: menu.c:142
+#: menu.c:163
 msgid "Change the root color on tab"
 msgstr "改變分頁上的 root 顏色"
 
-#: menu.c:149
+#: menu.c:170
 msgid "Change the normal color on tab"
 msgstr "改變分頁上的一般顏色"
 
-#: menu.c:167
+#: menu.c:188
 msgid "Transparent Window"
 msgstr "透明視窗"
 
-#: menu.c:171
+#: menu.c:192
 msgid "Window Opacity"
 msgstr "視窗透明度"
 
-#: menu.c:183
+#: menu.c:204
 msgid "Transparent Background"
 msgstr "透明背景"
 
-#: menu.c:187
+#: menu.c:208
 msgid "Background Saturation"
 msgstr "背景透明度"
 
-#: menu.c:200
+#: menu.c:221
 msgid "Scrollback lines"
 msgstr "歷史捲軸"
 
-#: menu.c:205
+#: menu.c:226
 msgid "Clean scrollback lines of this tab"
 msgstr "清除此分頁的歷史捲軸"
 
-#: menu.c:219
+#: menu.c:240
 msgid "Switch input methods"
 msgstr "切換輸入法"
 
-#: menu.c:229
+#: menu.c:250
 msgid "Change the font"
 msgstr "改變字型"
 
-#: menu.c:249
+#: menu.c:270
 msgid "Increase window size"
 msgstr "放大視窗"
 
-#: menu.c:254
+#: menu.c:275
 msgid "Decrease window size"
 msgstr "縮小視窗"
 
-#: menu.c:264
+#: menu.c:285
 msgid "Reset to default font/size"
 msgstr "重置為預設字型及大小"
 
-#: menu.c:270
+#: menu.c:291
 msgid "Reset to system font/size"
 msgstr "重置為系統字型及大小"
 
-#: menu.c:278
+#: menu.c:299
 msgid "Reset the content of this tab"
 msgstr "重置此分頁的內容"
 
-#: menu.c:296
+#: menu.c:317
 msgid "Get function key value"
 msgstr "取得功能鍵值"
 
-#: menu.c:304
+#: menu.c:325
 msgid "Save settings"
 msgstr "儲存設定"
 
-#: menu.c:387
+#: menu.c:448
 msgid "Font Selection"
 msgstr "選擇字型"
+
+#: profile.c:510
+msgid "System Default"
+msgstr "系統預設值"
+
+#~ msgid "%s - %s (Separate)"
+#~ msgstr "%s - %s（獨）"

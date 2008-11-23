@@ -25,50 +25,17 @@
 
 #include "dialog.h"
 
-// The defalut Page Name
-extern gchar *page_name;
-extern gboolean page_number;
-
-extern GtkWidget *window;
-extern GtkWidget *notebook;
 extern GtkWidget *current_vtebox;
 
-extern gboolean use_rgba;
-#ifdef ENABLE_RGBA
-extern gint transparent_window;
-gboolean original_transparent_window;
-extern gdouble window_opacity;
-gdouble original_window_opacity;
-#endif
-extern gdouble background_saturation;
-extern gint transparent_background;
-gboolean original_transparent_background;
-
-gint total_page;
-gint current_page_no;
-gchar *demo_text;
-GtkWidget *demo_vtebox;
-gchar *original_page_color = NULL;
-extern gchar *page_cmdline_color;
-extern gchar *page_dir_color;
-extern gchar *page_custom_color;
-extern gchar *page_normal_color;
-extern gchar *page_root_color;
-gboolean tab_1_is_bold;
-
-GdkColor original_color;
-extern gchar *foreground_color;
-extern gchar *background_color;
-GdkColor fg_color;
-GdkColor bg_color;
-gboolean is_fg;
-
-GtkWidget *adjustment;
-
-extern GError *error;
-
-gboolean dialog (GtkWidget *widget, gint style)
+gboolean dialog(GtkWidget *widget, gint style)
 {
+	if (current_vtebox==NULL) return FALSE;
+
+	GtkWidget *vtebox = current_vtebox;
+	struct Dialog *dialog_data = g_new0(struct Dialog, 1);
+	struct ColorSelect *color_data = g_new0(struct ColorSelect, 1);
+	color_data->original_page_color = NULL;
+
 	// g_debug("Running dialog mod%d\n", style);
 	
 	// style  1: change the tab's name
@@ -86,21 +53,23 @@ gboolean dialog (GtkWidget *widget, gint style)
 	// style 13: change the text color of custom page name
 	// style 14: change the text color of root privileges cmdline
 	// style 15: change the text color of normal text
-	// style 16: change the background color of root privileges page
+	// style 16: fault when creating the child process
 	
 	// string: can NOT be free()
 	// temp_str: SHOULD be free()
-	gchar *string=NULL, *temp_str[2]= {NULL};
-	GtkWidget *dialog, *main_hbox, *icon_vbox, *icon, *main_right_vbox,
-		  *state_vbox, *title_hbox, *title, *label, *entry, *entry_hbox, *key_value_label,
-		  *state_bottom_hbox;
+	gchar *string=NULL, *temp_str[2]={NULL};
+	GtkWidget *dialog = NULL, *main_hbox, *icon_vbox, *icon = NULL, *main_right_vbox,
+		  *state_vbox, *title_hbox, *title = NULL, *label, *entry = NULL,
+		  *entry_hbox = NULL, *key_value_label = NULL, *state_bottom_hbox;
 	gboolean response = TRUE;
 
+	struct Page *page_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Page_Data");
+	struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(page_data->window), "Win_Data");
+	// g_debug("Get win_data = %d when creating dialog!", win_data);
 	// For change the text color of tab
-	total_page = gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook));
-	current_page_no = gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook));
+	dialog_data->total_page = gtk_notebook_get_n_pages(GTK_NOTEBOOK(page_data->notebook));
+	dialog_data->current_page_no = gtk_notebook_get_current_page(GTK_NOTEBOOK(page_data->notebook));
 
-	struct Page *current_data = (struct Page *)g_object_get_data(G_OBJECT(current_vtebox), "Data");
 	// g_object_get (gtk_settings_get_default(), "gtk-alternative-button-order", &BOTTON_ORDER, NULL);
 	gboolean BOTTON_ORDER = gtk_alternative_dialog_button_order(NULL);
 	// g_debug("gtk_alternative_dialog_button_order = %d" ,gtk_alternative_dialog_button_order (NULL));
@@ -173,6 +142,9 @@ gboolean dialog (GtkWidget *widget, gint style)
 		case 15:
 			string=_("Change the normal tab text color");
 			break;
+		case 16:
+			string=_("Error when creating child process");
+			break;
 	}
 
 	// Create the dialog window
@@ -192,7 +164,7 @@ gboolean dialog (GtkWidget *widget, gint style)
 		case 15:
 			if (BOTTON_ORDER)
 				dialog = gtk_dialog_new_with_buttons (string,
-								      GTK_WINDOW(window),
+								      GTK_WINDOW(page_data->window),
 								      GTK_DIALOG_NO_SEPARATOR | 
 									GTK_DIALOG_DESTROY_WITH_PARENT,
 								      GTK_STOCK_OK,
@@ -202,7 +174,7 @@ gboolean dialog (GtkWidget *widget, gint style)
 								      NULL);
 			else
 				dialog = gtk_dialog_new_with_buttons (string,
-								      GTK_WINDOW(window),
+								      GTK_WINDOW(page_data->window),
 								      GTK_DIALOG_NO_SEPARATOR |
 									GTK_DIALOG_DESTROY_WITH_PARENT,
 								      GTK_STOCK_CANCEL,
@@ -214,7 +186,7 @@ gboolean dialog (GtkWidget *widget, gint style)
 		case 4:
 			if (BOTTON_ORDER)
 				dialog = gtk_dialog_new_with_buttons (string,
-								      GTK_WINDOW(window),
+								      GTK_WINDOW(page_data->window),
 								      GTK_DIALOG_NO_SEPARATOR |
 									GTK_DIALOG_DESTROY_WITH_PARENT,
 								      GTK_STOCK_COPY,
@@ -224,7 +196,7 @@ gboolean dialog (GtkWidget *widget, gint style)
 								      NULL);
 			else
 				dialog = gtk_dialog_new_with_buttons (string,
-								      GTK_WINDOW(window),
+								      GTK_WINDOW(page_data->window),
 								      GTK_DIALOG_NO_SEPARATOR |
 									GTK_DIALOG_DESTROY_WITH_PARENT,
 								      GTK_STOCK_CLOSE,
@@ -235,8 +207,9 @@ gboolean dialog (GtkWidget *widget, gint style)
 			break;
 		case 5:
 		case 6:
+		case 16:
 			dialog = gtk_dialog_new_with_buttons (string,
-							      GTK_WINDOW(window),
+							      GTK_WINDOW(page_data->window),
 							      GTK_DIALOG_NO_SEPARATOR | 
 								GTK_DIALOG_DESTROY_WITH_PARENT,
 							      GTK_STOCK_OK,
@@ -245,6 +218,13 @@ gboolean dialog (GtkWidget *widget, gint style)
 			break;
 	}
 	
+	// save the dialog data first
+	g_object_set_data(G_OBJECT(dialog), "Dialog_Data", dialog_data);
+
+	// It is for "Error when creating child process" dialog only.
+	if (!GTK_WIDGET_MAPPED(page_data->window))
+		gtk_window_set_position (GTK_WINDOW (dialog), GTK_WIN_POS_CENTER);
+
 	// resizable
 	switch (style)
 	{
@@ -261,6 +241,7 @@ gboolean dialog (GtkWidget *widget, gint style)
 		case 13:
 		case 14:
 		case 15:
+		case 16:
 			gtk_window_set_resizable (GTK_WINDOW (dialog), FALSE);
 			break;
 		case 2:
@@ -279,6 +260,7 @@ gboolean dialog (GtkWidget *widget, gint style)
 		case 6:
 		case 7:
 		case 8:
+		case 16:
 			gtk_container_set_border_width (GTK_CONTAINER (dialog), 10);
 			break;
 		case 5:
@@ -311,6 +293,7 @@ gboolean dialog (GtkWidget *widget, gint style)
 		case 6:
 		case 7:
 		case 8:
+		case 16:
 			icon_vbox = gtk_vbox_new (FALSE, 30);
 			gtk_box_pack_start (GTK_BOX(main_hbox), icon_vbox, FALSE, FALSE, 0);
 			switch (style)
@@ -328,6 +311,7 @@ gboolean dialog (GtkWidget *widget, gint style)
 									 GTK_ICON_SIZE_DIALOG);
 					break;
 				case 6:
+				case 16:
 					icon = gtk_image_new_from_stock (GTK_STOCK_DIALOG_ERROR,
 									 GTK_ICON_SIZE_DIALOG);
 			}
@@ -360,6 +344,7 @@ gboolean dialog (GtkWidget *widget, gint style)
 			break;
 		case 5:
 		{
+			// make the help_msg to be fixed width
 			GString *help_msg = got_help_message();
 			temp_str[1] = g_markup_escape_text(help_msg->str, -1);
 			temp_str[0] = g_strconcat("<tt>", temp_str[1], "</tt>", NULL);
@@ -368,17 +353,22 @@ gboolean dialog (GtkWidget *widget, gint style)
 		}
 		case 6:
 		{
-			temp_str[0] = g_strdup_printf(_("Error while writing profile '%s/%s':\n\n%s"),
-						   g_get_user_config_dir(), RCFILE, error->message);
+			if (win_data->use_custom_profile)
+				temp_str[0] = g_strdup_printf(_("Error while writing profile '%s':\n\n%s"),
+								win_data->profile, win_data->temp_str);
+			else
+				temp_str[0] = g_strdup_printf(_("Error while writing profile '%s/%s':\n\n%s"),
+							g_get_user_config_dir(), RCFILE, win_data->temp_str);
 			break;
 		}
 		case 7:
 		{
-			temp_str[1] = get_cmdline(get_tpgid(current_data->pid));
+			// get the command line of running foreground program
+			temp_str[1] = get_cmdline(get_tpgid(page_data->pid));
 			temp_str[0] = g_strdup_printf(_("There is still a running foreground program on #%d tab:"
 						   "\n\n\t%s\n\n"
 						   "Continue anyway?\n"),
-						   current_data->page_no+1, temp_str[1]);
+						   page_data->page_no+1, temp_str[1]);
 			break;
 		}
 		case 8:
@@ -391,47 +381,62 @@ gboolean dialog (GtkWidget *widget, gint style)
 		case 13:
 		case 14:
 		case 15:
-			adjustment = gtk_color_selection_new();
-			gtk_color_selection_set_has_opacity_control(GTK_COLOR_SELECTION(adjustment), FALSE);
-			gtk_color_selection_set_has_palette(GTK_COLOR_SELECTION(adjustment), FALSE);
+			
+			dialog_data->adjustment = gtk_color_selection_new();
+			// save the color data first
+			g_object_set_data(G_OBJECT(dialog_data->adjustment), "Color_Data", color_data);
+			gtk_color_selection_set_has_opacity_control(GTK_COLOR_SELECTION(dialog_data->adjustment),
+								    FALSE);
+			gtk_color_selection_set_has_palette(GTK_COLOR_SELECTION(dialog_data->adjustment), FALSE);
 			switch (style)
 			{
+				// store the current using color in (GdkColor)original_color and
+				// (gchar *)original_page_color for restoring later.
 				case 9:
-					original_color = fg_color;
+					color_data->original_color = win_data->fg_color;
 					break;
 				case 10:
-					original_color = bg_color;
+					color_data->original_color = win_data->bg_color;
 					break;
 				case 11:
-					original_page_color = page_cmdline_color;
-					gdk_color_parse(page_cmdline_color, &original_color);
+					color_data->original_page_color = win_data->page_cmdline_color;
+					gdk_color_parse(win_data->page_cmdline_color, &(color_data->original_color));
 					break;
 				case 12:
-					original_page_color = page_dir_color;
-					gdk_color_parse(page_dir_color, &original_color);
+					color_data->original_page_color = win_data->page_dir_color;
+					gdk_color_parse(win_data->page_dir_color, &(color_data->original_color));
 					break;
 				case 13:
-					original_page_color = page_custom_color;
-					gdk_color_parse(page_custom_color, &original_color);
+					color_data->original_page_color = win_data->page_custom_color;
+					gdk_color_parse(win_data->page_custom_color, &(color_data->original_color));
 					break;
 				case 14:
-					original_page_color = page_root_color;
-					gdk_color_parse(page_root_color, &original_color);
+					color_data->original_page_color = win_data->page_root_color;
+					gdk_color_parse(win_data->page_root_color, &(color_data->original_color));
 					break;
 				case 15:
-					original_page_color = page_normal_color;
-					gdk_color_parse(page_normal_color, &original_color);
+					color_data->original_page_color = win_data->page_normal_color;
+					gdk_color_parse(win_data->page_normal_color, &(color_data->original_color));
 					break;
 			}
-			is_fg = style;
+			color_data->type = style;
+			color_data->recover = FALSE;
 			
-			gtk_color_selection_set_previous_color (GTK_COLOR_SELECTION(adjustment), &original_color);
-			gtk_color_selection_set_current_color (GTK_COLOR_SELECTION(adjustment), &original_color);
+			// set the previous/current color of gtk_color_selection dialog
+			gtk_color_selection_set_previous_color (GTK_COLOR_SELECTION(dialog_data->adjustment),
+								&(color_data->original_color));
+			gtk_color_selection_set_current_color ( GTK_COLOR_SELECTION(dialog_data->adjustment),
+								&(color_data->original_color));
 			
-			gtk_box_pack_start (GTK_BOX(title_hbox), adjustment, TRUE, TRUE, 0);
-			g_signal_connect_after( adjustment, "color-changed",
-						G_CALLBACK(set_vtebox_color), current_vtebox);
+			gtk_box_pack_start (GTK_BOX(title_hbox), dialog_data->adjustment, TRUE, TRUE, 0);
 			break;
+		case 16:
+		{
+			temp_str[0] = g_strdup_printf(_("Error while creating the child process:\n\n%s"),
+						      win_data->temp_str);
+			break;
+		}
+
 	}
 
 	// title
@@ -445,13 +450,16 @@ gboolean dialog (GtkWidget *widget, gint style)
 			title = gtk_label_new (string);
 			break;
 		case 5:
+			// set the label to be markuped
 			title = gtk_label_new (NULL);
 			gtk_label_set_markup (GTK_LABEL (title), temp_str[0]);
 			gtk_label_set_selectable(GTK_LABEL(title), TRUE);
 			break;
 		case 6:
+		case 16:
 			title = gtk_label_new (temp_str[0]);
 		case 7:
+			// the command line may be too long. so we need to set the max_width
 			title = gtk_label_new (temp_str[0]);
 			gtk_label_set_max_width_chars (GTK_LABEL(title), 50);
 			gtk_label_set_ellipsize(GTK_LABEL(title), PANGO_ELLIPSIZE_MIDDLE);
@@ -467,6 +475,7 @@ gboolean dialog (GtkWidget *widget, gint style)
 		case 6:
 		case 7:
 		case 8:
+		case 16:
 
 		gtk_box_pack_start (GTK_BOX(title_hbox), title, FALSE, FALSE, 0);
 	}
@@ -481,6 +490,7 @@ gboolean dialog (GtkWidget *widget, gint style)
 		case 6:
 		case 7:
 		case 8:
+		case 16:
 			state_bottom_hbox = gtk_hbox_new (FALSE, 3);
 			gtk_box_pack_end (GTK_BOX(state_vbox), state_bottom_hbox, FALSE, FALSE, 0);
 			break;
@@ -506,10 +516,10 @@ gboolean dialog (GtkWidget *widget, gint style)
 			gtk_box_pack_start (GTK_BOX(entry_hbox), label, FALSE, FALSE, 0);
 			// entry area
 			entry = gtk_entry_new ();
-			if (current_data->custom_page_name == NULL)
-				gtk_entry_set_text(GTK_ENTRY(entry), current_data->label->name);
+			if (page_data->custom_page_name == NULL)
+				gtk_entry_set_text(GTK_ENTRY(entry), page_data->label->name);
 			else
-				gtk_entry_set_text(GTK_ENTRY(entry), current_data->custom_page_name);
+				gtk_entry_set_text(GTK_ENTRY(entry), page_data->custom_page_name);
 			gtk_box_pack_start (GTK_BOX (entry_hbox), entry, TRUE, TRUE, 0);
 			// set activate = TRUE when [enter] pressed in entry
 			gtk_entry_set_activates_default(GTK_ENTRY(entry), TRUE);
@@ -519,23 +529,23 @@ gboolean dialog (GtkWidget *widget, gint style)
 		{
 			GtkWidget *hbox = gtk_hbox_new (FALSE, 0);
 			gtk_box_pack_start (GTK_BOX(entry_hbox), hbox, FALSE, FALSE, 10);
-			adjustment = gtk_hscale_new_with_range( 0, 1, 0.001);
-			gtk_widget_set_size_request(adjustment, 200, -1);
+			dialog_data->adjustment = gtk_hscale_new_with_range( 0, 1, 0.001);
+			gtk_widget_set_size_request(dialog_data->adjustment, 200, -1);
 			if (style==2)
 			{
-				gtk_range_set_value(GTK_RANGE(adjustment), background_saturation);
-				g_signal_connect_after( adjustment, "change-value",
-							G_CALLBACK(set_background_saturation), current_vtebox);
+				gtk_range_set_value(GTK_RANGE(dialog_data->adjustment), win_data->background_saturation);
+				g_signal_connect_after( dialog_data->adjustment, "change-value",
+							G_CALLBACK(set_background_saturation), vtebox);
 			}
 #ifdef ENABLE_RGBA
 			else
 			{
-				gtk_range_set_value(GTK_RANGE(adjustment), window_opacity);
-				g_signal_connect_after( adjustment, "change-value",
-							G_CALLBACK(set_window_opacity), NULL);
+				gtk_range_set_value(GTK_RANGE(dialog_data->adjustment), win_data->window_opacity);
+				g_signal_connect_after( dialog_data->adjustment, "change-value",
+							G_CALLBACK(set_window_opacity), page_data->window);
 			}
 #endif
-			gtk_box_pack_start (GTK_BOX(entry_hbox), adjustment, TRUE, TRUE, 0);
+			gtk_box_pack_start (GTK_BOX(entry_hbox), dialog_data->adjustment, TRUE, TRUE, 0);
 			hbox = gtk_hbox_new (FALSE, 0);
 			gtk_box_pack_end (GTK_BOX(entry_hbox), hbox, FALSE, FALSE, 5);
 			break;
@@ -555,23 +565,30 @@ gboolean dialog (GtkWidget *widget, gint style)
 	switch (style)
 	{
 		case 2:
+		case 9:
 		case 10:
-			if ((style==2) || ((style==10) && (!use_rgba)))
+			// Set the background color (style=10) will be no affect when using transparent_background
+			// unless rgba is enabled.
+			// So that we should not to use transparent background when changing the background color.
+			if ((style==2) || ((style==10) && (!win_data->use_rgba)))
 			{
-				original_transparent_background = transparent_background;
+				dialog_data->original_transparent_background = win_data->transparent_background;
 				if (style == 2)
-					transparent_background = TRUE;
+					win_data->transparent_background = TRUE;
 				else
-					transparent_background = FALSE;
-				set_background_saturation( NULL, 0, background_saturation, current_vtebox);
+					win_data->transparent_background = FALSE;
+				set_background_saturation(NULL, 0, win_data->background_saturation, vtebox);
 			}
+			if (style==9 || style==10)
+				g_signal_connect_after( dialog_data->adjustment, "color-changed",
+							G_CALLBACK(set_vtebox_color), vtebox);
 			break;
 #ifdef ENABLE_RGBA
 		case 8:
-			original_transparent_window = transparent_window;
-			original_window_opacity = window_opacity;
-			transparent_window = TRUE;
-			set_window_opacity( NULL, 0, window_opacity, NULL);
+			dialog_data->original_transparent_window = win_data->transparent_window;
+			dialog_data->original_window_opacity = win_data->window_opacity;
+			win_data->transparent_window = TRUE;
+			set_window_opacity( NULL, 0, win_data->window_opacity, page_data->window);
 			break;
 #endif
 		case 11:
@@ -579,76 +596,85 @@ gboolean dialog (GtkWidget *widget, gint style)
 		case 13:
 		case 14:
 		case 15:
-			{
+		{
 			gint i;
+			// only bold the 1st page
 			gboolean is_bold = TRUE;
-			gchar *current_color;
-			gchar *display_text;
-			GtkWidget *vtebox;
-
-			vtebox=(GtkWidget *)g_object_get_data(G_OBJECT(gtk_notebook_get_tab_label(
-								GTK_NOTEBOOK(notebook),
+			// the color for using in 1st page
+			gchar *current_color = NULL;
+			// the text for using in 1st page
+			gchar *display_text = NULL;
+			// vtebox = the 1st page of current notebook.
+			// the follow code is just to store the is_bold data of 1st page... orz
+			GtkWidget *vtebox = (GtkWidget *)g_object_get_data(G_OBJECT(gtk_notebook_get_tab_label(
+								GTK_NOTEBOOK(win_data->notebook),
 								   gtk_notebook_get_nth_page(
-								      GTK_NOTEBOOK(notebook),0))),
+								      GTK_NOTEBOOK(win_data->notebook),0))),
 							      "VteBox");
-			struct Page *current_data = (struct Page *)g_object_get_data(
-								G_OBJECT(vtebox), "Data");
-			
-			tab_1_is_bold = current_data->is_bold;
+			struct Page *page_data = (struct Page *)g_object_get_data(
+								G_OBJECT(vtebox), "Page_Data");
+			dialog_data->tab_1_is_bold = page_data->is_bold;
+			g_signal_connect_after( dialog_data->adjustment, "color-changed",
+						G_CALLBACK(set_vtebox_color), vtebox);
+			dialog_data->kill_color_demo_vte = &(win_data->kill_color_demo_vte);
 
-			for (i=total_page;i<6;i++)
-				add_page(FALSE);
-
-			gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), 0);
+			// add new pages to 6.
+			for (i=dialog_data->total_page;i<6;i++)
+				add_page(page_data->window, page_data->notebook, NULL, NULL, FALSE);
+			// we need to set the current page to 1st page after adding page.
+			gtk_notebook_set_current_page(GTK_NOTEBOOK(win_data->notebook), 0);
 
 			for (i=0;i<6;i++)
 			{
+				// ste the page name and color fo demo.
 				vtebox=(GtkWidget *)g_object_get_data(G_OBJECT(gtk_notebook_get_tab_label(
-									GTK_NOTEBOOK(notebook),
+									GTK_NOTEBOOK(win_data->notebook),
 									   gtk_notebook_get_nth_page(
-									      GTK_NOTEBOOK(notebook),i))),
+									      GTK_NOTEBOOK(win_data->notebook),
+											   i))),
 								      "VteBox");
-				struct Page *current_data = (struct Page *)g_object_get_data(
-									G_OBJECT(vtebox), "Data");
+				struct Page *page_data = (struct Page *)g_object_get_data(
+									G_OBJECT(vtebox), "Page_Data");
 				
 				switch (i)
 				{
 					case 0:
 						display_text = _("Bold Demo Text");
-						current_color = original_page_color;
+						current_color = color_data->original_page_color;
 						break;
 					case 1:
 						display_text = _("Running Command");
-						current_color = page_cmdline_color;
+						current_color = win_data->page_cmdline_color;
 						break;
 					case 2:
 						display_text = _("Current Dir");
-						current_color = page_dir_color;
+						current_color = win_data->page_dir_color;
 						break;
 					case 3:
 						display_text = _("Custom Tab Name");
-						current_color = page_custom_color;
+						current_color = win_data->page_custom_color;
 						break;
 					case 4:
 						display_text = _("Root Privileges");
-						current_color = page_root_color;
+						current_color = win_data->page_root_color;
 						break;
 					case 5:
 						display_text = _("Normal Text");
-						current_color = page_normal_color;
+						current_color = win_data->page_normal_color;
 						break;
 				}
-
+				
+				// get the demo_vtebox and demo_text.
+				// the change of color will be shown immediately in 1st page and the page here.
 				if ((i+10)==style)
 				{
-					demo_vtebox=vtebox;
-					demo_text = display_text;
+					color_data->demo_vtebox = vtebox;
+					color_data->demo_text = display_text;
 				}
-
-				update_page_name(vtebox, current_data->label, i+1,
-						 display_text, current_color,
-						 FALSE, is_bold);
-
+				
+				update_page_name(page_data->window, vtebox, page_data->label, i+1, display_text,
+						 current_color, FALSE, is_bold, FALSE, NULL);
+				// only 1st page is bold.
 				is_bold = FALSE;
 			}
 			break;
@@ -665,28 +691,25 @@ gboolean dialog (GtkWidget *widget, gint style)
 			// style 1: change the tab's name
 			case 1:
 				// g_debug("Got label name: %s\n",gtk_entry_get_text(GTK_ENTRY(entry)));
-				g_free(current_data->custom_page_name);
+				g_free(page_data->custom_page_name);
 				if (strlen(gtk_entry_get_text(GTK_ENTRY(entry))))
 				{
-					// store current_data->label->name
-					current_data->custom_page_name = g_strdup(gtk_entry_get_text(GTK_ENTRY(entry)));
-					current_data->tab_color = page_custom_color;
-
-					// Update `page_name' for saving profile
-					g_free(page_name);
-					page_name = g_strdup(current_data->custom_page_name);
+					// store page_data->label->name
+					page_data->custom_page_name = g_strdup(gtk_entry_get_text(GTK_ENTRY(entry)));
+					page_data->tab_color = win_data->page_custom_color;
 				}
 				else
 				{
-					current_data->custom_page_name = NULL;
-					current_data->tab_color = page_normal_color;
+					page_data->custom_page_name = NULL;
+					page_data->tab_color = win_data->page_normal_color;
 				}
 				
 				// g_debug("Get the page name = %s, color = %s",
-				// 	current_data->custom_page_name, current_data->tab_color);
-				update_page_name(current_data->vtebox, current_data->label, current_data->page_no+1,
-						 current_data->custom_page_name, current_data->tab_color,
-						 current_data->is_root, TRUE);
+				// 	page_data->custom_page_name, page_data->tab_color);
+				update_page_name(page_data->window, page_data->vtebox, page_data->label,
+						 page_data->page_no+1, page_data->custom_page_name,
+						 page_data->tab_color, page_data->is_root, TRUE,
+						 page_data->encoding != win_data->default_encoding, page_data->encoding);
 				break;
 			// style  2: change the saturation of background
 			case 2:
@@ -708,87 +731,96 @@ gboolean dialog (GtkWidget *widget, gint style)
 				GtkWidget *vtebox;
 				gint i;
 				
+				// g_debug("Setting the colors. Type = %d", style);
 				switch (style)
 				{
 					case 2:
-						background_saturation = gtk_range_get_value(GTK_RANGE(adjustment)) + 0.0005;
+						win_data->background_saturation = gtk_range_get_value(GTK_RANGE(dialog_data->adjustment)) + 0.0005;
 						break;
 #ifdef ENABLE_GDKCOLOR_TO_STRING
 					case 9:
-						g_free(foreground_color);
-						foreground_color = gdk_color_to_string(&fg_color);
+						g_free(win_data->foreground_color);
+						win_data->foreground_color = gdk_color_to_string(&(color_data->fg_color));
+						win_data->fg_color = color_data->fg_color;
 						break;
 					case 10:
-						g_free(background_color);
-						background_color = gdk_color_to_string(&bg_color);
+						g_free(win_data->background_color);
+						win_data->background_color = gdk_color_to_string(&(color_data->bg_color));
+						win_data->bg_color = color_data->bg_color;
 						// FIXME: GtkColorSelection have no ALPHA-CHANGED signal.
 						//	  so that the following code should be marked for temporary.
 						// background_saturation = gtk_color_selection_get_current_alpha(
 						//		 		GTK_COLOR_SELECTION(adjustment))/65535;
 						break;
 					case 11:
-						g_free(page_cmdline_color);
-						page_cmdline_color = gdk_color_to_string(&original_color);
+						g_free(win_data->page_cmdline_color);
+						win_data->page_cmdline_color = gdk_color_to_string(&(color_data->original_color));
 						break;
 					case 12:
-						g_free(page_dir_color);
-						page_dir_color = gdk_color_to_string(&original_color);
+						g_free(win_data->page_dir_color);
+						win_data->page_dir_color = gdk_color_to_string(&(color_data->original_color));
 						break;
 					case 13:
-						g_free(page_custom_color);
-						page_custom_color = gdk_color_to_string(&original_color);
+						g_free(win_data->page_custom_color);
+						win_data->page_custom_color = gdk_color_to_string(&(color_data->original_color));
 						break;
 					case 14:
-						g_free(page_root_color);
-						page_root_color = gdk_color_to_string(&original_color);
+						g_free(win_data->page_root_color);
+						win_data->page_root_color = gdk_color_to_string(&(color_data->original_color));
 						break;
 					case 15:
-						g_free(page_normal_color);
-						page_normal_color = gdk_color_to_string(&original_color);
+						g_free(win_data->page_normal_color);
+						win_data->page_normal_color = gdk_color_to_string(&(color_data->original_color));
 						break;
 #endif
 				}
 				if (style >10 && style < 16)
-					recover_page_colors();
+					// recover the color of pages
+					recover_page_colors(dialog, page_data->window, page_data->notebook);
 				else
 				{
-					for (i=0;i<gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook));i++)
+					// change the saturation of background and foreground/background color
+					for (i=0;i<gtk_notebook_get_n_pages(GTK_NOTEBOOK(win_data->notebook));i++)
 					{
 						vtebox=(GtkWidget *)g_object_get_data(G_OBJECT(
 									gtk_notebook_get_tab_label(
-									    GTK_NOTEBOOK(notebook),
+									    GTK_NOTEBOOK(win_data->notebook),
 										gtk_notebook_get_nth_page(
-										    GTK_NOTEBOOK(notebook),i))),
+										    GTK_NOTEBOOK(win_data->notebook),i))),
 											"VteBox");
-						if ((style==2) || ((style==10) && (!use_rgba)))
+						if ((style==2) || ((style==10) && (!win_data->use_rgba)))
 							set_background_saturation (NULL, 0, 
-										   background_saturation, 
-										   vtebox);
+										win_data->background_saturation,
+										vtebox);
 	
 						if (style==9 || style==10)
-							set_vtebox_color (NULL, vtebox);
+							set_vtebox_color (GTK_COLOR_SELECTION(dialog_data->adjustment), vtebox);
 					}
 				}
 				break;
 			}
-			// style 3: confirm close multi pages
+			// style 3: confirm to close multi pages
 			case 3:
 			{
-				// destroy the dialog before comfirm a working vtebox.
+				// we need to destroy the dialog before comfirm a working vtebox.
 				gtk_widget_destroy(dialog);
-				gint total_page = gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook));
-
 				gint i;
-				for (i=0;i<total_page;i++)
+
+				for (i=dialog_data->total_page-1;i>-1;i--)
 				{
-					// g_debug("Trying to close %d vtebox !\n", i);
-					if (close_page(current_vtebox, TRUE)==FALSE)
+					vtebox=(GtkWidget *)g_object_get_data(G_OBJECT(gtk_notebook_get_tab_label(
+										GTK_NOTEBOOK(win_data->notebook),
+										   gtk_notebook_get_nth_page(
+										      GTK_NOTEBOOK(
+										    	 win_data->notebook),i))),
+									      "VteBox");
+					if (close_page(vtebox, TRUE)==FALSE)
 						break;
 				}
 				break;
 			}
-
-			// style 4: get funuction key value
+			
+			// style 4: get funuction key value, copy the text to clipboard
 			case 4:
 				gtk_clipboard_set_text (gtk_clipboard_get (GDK_SELECTION_PRIMARY),
 							gtk_label_get_text(GTK_LABEL(key_value_label)), -1);
@@ -796,7 +828,7 @@ gboolean dialog (GtkWidget *widget, gint style)
 #ifdef ENABLE_RGBA
 			// style 8: change the opacity of window
 			case 8:
-				window_opacity = gtk_range_get_value(GTK_RANGE(adjustment))+0.0005;
+				win_data->window_opacity = gtk_range_get_value(GTK_RANGE(dialog_data->adjustment))+0.0005;
 				break;
 #endif
 		}
@@ -805,55 +837,71 @@ gboolean dialog (GtkWidget *widget, gint style)
 	{
 		switch (style)
 		{
+			// style  2: change the saturation of background
 			case 2:
+			// style  9: change the foreground color
 			case 9:
+			// style 10: change the background color
 			case 10:
-				if ((style==2) || ((style==10) && (!use_rgba)))
+				if ((style==2) || ((style==10) && (!win_data->use_rgba)))
 				{
-					transparent_background = original_transparent_background;
+					win_data->transparent_background = dialog_data->original_transparent_background;
 					// g_debug("transparent_background = %d", transparent_background);
-					set_background_saturation( NULL, 0, background_saturation,
-								   current_vtebox);
+					set_background_saturation(NULL, 0, win_data->background_saturation, vtebox);
 				}
 				if (style==9)
-					fg_color = original_color;
+					color_data->fg_color = color_data->original_color;
 				else if (style==10)
-					bg_color = original_color;
+					color_data->bg_color = color_data->original_color;
 
 				if (style!=2)
-					set_vtebox_color(NULL, current_vtebox);
+				{
+					color_data->recover = TRUE;
+					set_vtebox_color(GTK_COLOR_SELECTION(dialog_data->adjustment), vtebox);
+				}
 				break;
+			// style 3: confirm to close multi pages
 			case 3:
 				gtk_widget_destroy(dialog);
 				break;
 #ifdef ENABLE_RGBA
+			// style  8: change the opacity of window
 			case 8:
-				transparent_window = original_transparent_window;
-				window_opacity = original_window_opacity;
-				set_window_opacity( NULL, 0, window_opacity, NULL);
+				win_data->transparent_window = dialog_data->original_transparent_window;
+				win_data->window_opacity = dialog_data->original_window_opacity;
+				set_window_opacity( NULL, 0, win_data->window_opacity, page_data->window);
 				break;
 #endif
+			// style 11: change the text color of cmdline
 			case 11:
+			// style 12: change the text color of current dir
 			case 12:
+			// style 13: change the text color of custom page name
 			case 13:
+			// style 14: change the text color of root privileges cmdline
 			case 14:
+			// style 15: change the text color of normal text
 			case 15:
-				recover_page_colors();
+				recover_page_colors(dialog, page_data->window, page_data->notebook);
 				break;
 		}
 		response = FALSE;
 	}
 
+	// free string datas
 	g_free(temp_str[0]);
 	g_free(temp_str[1]);
+	// destory dialog.
 	if (style !=3)
 		gtk_widget_destroy(dialog);
+	g_free(dialog_data);
+	g_free(color_data);
 	return response;
 }
 
 gboolean dialog_key_press(GtkWidget *widget, GdkEventKey *event, GtkWidget *key_value_label)
 {
-	gchar *key_value = "";
+	gchar *key_value = g_strdup("");
 	if (event->state & GDK_CONTROL_MASK)
 		key_value = dialog_key_press_join_string(key_value, "+", "Ctrl");
 	if (event->state & GDK_SHIFT_MASK)
@@ -871,6 +919,7 @@ gboolean dialog_key_press(GtkWidget *widget, GdkEventKey *event, GtkWidget *key_
 		key_value = dialog_key_press_join_string(key_value, " ", gdk_keyval_name(event->keyval));
 
 	gtk_label_set_text(GTK_LABEL(key_value_label), key_value);
+	g_free(key_value);
 	return TRUE;
 }
 
@@ -888,22 +937,22 @@ gchar *dialog_key_press_join_string(gchar *key_value, gchar *separator, gchar *a
 	return join_string;
 }
 
-void set_vtebox_color (GtkColorSelection *colorselection, GtkWidget *vtebox)
+void set_vtebox_color(GtkColorSelection *colorselection, GtkWidget *vtebox)
 {
-	// colorselection != NULL -> setting the vtebox color
-	// colorselection != NULL -> restoring the vtebox color
+	// g_debug("Changing the color");
+	struct ColorSelect *color_data = (struct ColorSelect*)g_object_get_data(G_OBJECT(colorselection), "Color_Data");
 	
-	switch (is_fg)
+	switch (color_data->type)
 	{
 		case 9:
-			if (colorselection != NULL)
-				gtk_color_selection_get_current_color (colorselection, &fg_color);
-			vte_terminal_set_color_foreground(VTE_TERMINAL(vtebox), &fg_color);
+			if (! color_data->recover)
+				gtk_color_selection_get_current_color (colorselection, &(color_data->fg_color));
+			vte_terminal_set_color_foreground(VTE_TERMINAL(vtebox), &(color_data->fg_color));
 			break;
 		case 10:
-			if (colorselection != NULL)
+			if (! color_data->recover)
 			{
-				gtk_color_selection_get_current_color (colorselection, &bg_color);
+				gtk_color_selection_get_current_color (colorselection, &(color_data->bg_color));
 				// FIXME: GtkColorSelection have no ALPHA CHANGED signal.
 				//	  so that the following code should be marked for temporary
 				//if (use_rgba)
@@ -915,9 +964,9 @@ void set_vtebox_color (GtkColorSelection *colorselection, GtkWidget *vtebox)
 				//}
 			}
 			//else if (use_rgba)
-			//	set_background_saturation( NULL, 0, background_saturation, current_vtebox);
-	
-			vte_terminal_set_color_background(VTE_TERMINAL(vtebox), &bg_color);
+			//	set_background_saturation(NULL, 0, background_saturation, vtebox);
+			
+			vte_terminal_set_color_background(VTE_TERMINAL(vtebox), &(color_data->bg_color));
 			break;
 		case 11:
 		case 12:
@@ -925,48 +974,56 @@ void set_vtebox_color (GtkColorSelection *colorselection, GtkWidget *vtebox)
 		case 14:
 		case 15:
 		{
+			// the change of color will be shown(demo) in 1st page and demo page.
 			gchar *current_color;
-			gtk_color_selection_get_current_color (colorselection, &original_color);
+			gtk_color_selection_get_current_color (colorselection, &(color_data->original_color));
 #ifdef ENABLE_GDKCOLOR_TO_STRING
-			current_color = gdk_color_to_string(&original_color);
+			current_color = gdk_color_to_string(&(color_data->original_color));
 #endif
-			struct Page *current_data = (struct Page *)g_object_get_data(
-								G_OBJECT(current_vtebox), "Data");
+			struct Page *page_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Page_Data");
 
-			update_page_name(current_vtebox, current_data->label, 1,
-					  _("Bold Demo Text"), current_color, FALSE, TRUE);
+			update_page_name(page_data->window, vtebox, page_data->label, 1,
+					  _("Bold Demo Text"), current_color, FALSE, TRUE, FALSE, NULL);
 			
-			current_data = (struct Page *)g_object_get_data(G_OBJECT(demo_vtebox), "Data");
-			update_page_name(demo_vtebox, current_data->label, current_data->page_no+1,
-					 demo_text, current_color, FALSE, FALSE);
+			page_data = (struct Page *)g_object_get_data(G_OBJECT(color_data->demo_vtebox), "Page_Data");
+			update_page_name(page_data->window, color_data->demo_vtebox, page_data->label,
+					 page_data->page_no+1, color_data->demo_text, current_color, FALSE, FALSE,
+					 FALSE, NULL);
 			g_free(current_color);
 			break;
 		}
 	}
 }
 
-void recover_page_colors()
+void recover_page_colors(GtkWidget *dialog, GtkWidget *window, GtkWidget *notebook)
 {
+	struct Dialog *dialog_data = (struct Dialog *)g_object_get_data(G_OBJECT(dialog), "Dialog_Data");
+	// struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(window), "Win_Data");
 	gint i;
 	GtkWidget *vtebox;
 	
-	//g_debug("page_cmdline_color = %s", page_cmdline_color);
-	//g_debug("page_dir_color = %s", page_dir_color);
-	//g_debug("page_custom_color = %s", page_custom_color);
-	//g_debug("page_root_color = %s", page_root_color);
-	//g_debug("page_normal_color = %s", page_normal_color);
+	// g_debug("page_cmdline_color = %s", win_data->page_cmdline_color);
+	// g_debug("page_dir_color = %s", win_data->page_dir_color);
+	// g_debug("page_custom_color = %s", win_data->page_custom_color);
+	// g_debug("page_root_color = %s", win_data->page_root_color);
+	// g_debug("page_normal_color = %s", win_data->page_normal_color);
 
-	for (i=6; i>total_page;i--)
+	// delete the tab that we add when demo
+	*(dialog_data->kill_color_demo_vte) = TRUE;
+	for (i=6; i>dialog_data->total_page;i--)
 	{
 		vtebox=(GtkWidget *)g_object_get_data(G_OBJECT(gtk_notebook_get_tab_label(
 							GTK_NOTEBOOK(notebook),
 							   gtk_notebook_get_nth_page(
 							      GTK_NOTEBOOK(notebook),i-1))),
 						      "VteBox");
+		// g_debug("Closing %d page in recover_page_colors...", i);
 		close_page (vtebox, TRUE);
-		// g_debug("Closing %d page...", i);
 	}
-	for (i=0; i<total_page;i++)
+	*(dialog_data->kill_color_demo_vte) = FALSE;
+
+	// recover the title/color of pages
+	for (i=0; i<dialog_data->total_page;i++)
 	{
 		vtebox=(GtkWidget *)g_object_get_data(G_OBJECT(gtk_notebook_get_tab_label(
 							GTK_NOTEBOOK(notebook),
@@ -974,14 +1031,13 @@ void recover_page_colors()
 							      GTK_NOTEBOOK(notebook), i))),
 						      "VteBox");
 
-		struct Page *current_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Data");
-
+		struct Page *page_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Page_Data");
+		// restore the is_bold of 1st page
 		if (i==0)
-			current_data->is_bold = tab_1_is_bold;
+			page_data->is_bold = dialog_data->tab_1_is_bold;
 
-		update_tab_name(vtebox, current_data->label, current_data->pid, current_data->tpgid,
-				i+1, current_data->custom_page_name, current_data->pwd,
-				current_data->is_root, current_data->is_bold);
+		update_tab_name(page_data);
 	}
-	gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), current_page_no);
+	// reset to the current page
+	gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), dialog_data->current_page_no);
 }

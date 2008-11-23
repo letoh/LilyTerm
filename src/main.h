@@ -27,7 +27,8 @@
 #define MAIN_H
 
 #include <gtk/gtk.h>
-#include <vte/vte.h>
+// for g_get_tmp_dir()
+#include <glib.h>
 // for L10n
 #include <locale.h>
 #include <glib/gi18n.h>
@@ -35,34 +36,26 @@
 #include <stdlib.h>
 // for strcmp()
 #include <string.h>
-// for RCFILE
-#include "data.h"
+// for socket()
+#include <sys/un.h>
+#include <sys/socket.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <errno.h>
 
-#define ALL_ACCELS_MASK (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK | GDK_MOD3_MASK | GDK_MOD4_MASK | GDK_MOD5_MASK)
-#define SHIFT_ONLY_MASK (GDK_CONTROL_MASK | GDK_MOD1_MASK | GDK_MOD3_MASK | GDK_MOD4_MASK | GDK_MOD5_MASK)
+#include "window.h"
 
-void command_option(int *argc, char *argv[]);
-gboolean main_quit ();
+void command_option(int argc, char *argv[]);
 GString *got_help_message();
-gchar *got_profile_sample();
-gboolean window_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
-void deal_key_press(gint type);
+gboolean init_socket_data();
+gboolean set_fd_non_block(gint *fd);
+gboolean query_socket();
+gboolean send_socket(int argc, char *argv[]);
+gboolean init_socket_server();
+gboolean accept_socket(GIOChannel *source, GIOCondition condition, gpointer user_data);
+gboolean read_socket(GIOChannel *channel, GIOCondition condition, gpointer user_data);
+gboolean socket_fault(int i, GError *error, GIOChannel* channel, gboolean unref);
+gboolean clear_channel(GIOChannel* channel, gboolean unref);
+void shutdown_socket_server();
 
-extern void get_user_settings();
-extern void add_page(gboolean run_once);
-extern gboolean close_page (GtkWidget *vtebox, gboolean need_safe_close);
-extern void create_menu();
-extern gboolean dialog (GtkWidget *widget, gint style);
-extern void reorder_page_number(GtkWidget *widget, gpointer user_data);
-extern void set_vtebox_font(GtkWidget *widget, gint type);
-
-void window_style_set (GtkWidget *window, GtkStyle *previous_style, gpointer user_data);
-void window_size_request (GtkWidget *window, GtkRequisition *requisition, gpointer user_data);
-void window_size_allocate (GtkWidget *window, GtkAllocation *allocation, gpointer user_data);
-gboolean window_get_focuse(GtkWidget *window, GdkEventFocus *event, gpointer user_data);
-gboolean window_lost_focuse (GtkWidget *window, GdkEventFocus *event, gpointer user_data);
-
-extern void add_page(gint run_once);
-extern GString *save_user_settings(GtkWidget *widget, GtkWidget *current_vtebox);
-extern void window_resizable(GtkWidget *vtebox, gint run_once, gint minsize);
 #endif

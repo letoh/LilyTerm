@@ -28,16 +28,13 @@
 
 #include <gtk/gtk.h>
 #include <vte/vte.h>
-// struct Page
+
 #include "data.h"
+#include "profile.h"
 
 void set_vtebox_font(GtkWidget *widget, gint type);
-void reset_vtebox_size(gint type);
-void get_resize_font(gint type);
-void apply_font_to_every_vtebox(gint colum, gint row);
-
-extern void window_resizable(GtkWidget *vtebox, gint run_once, gint minsize);
-// extern void vtebox_style_set (GtkWidget *vtebox, GtkStyle *previous_style, gpointer user_data);
-extern void vtebox_size_request (GtkWidget *vtebox, GtkRequisition *requisition, gpointer user_data);
+void reset_vtebox_size(GtkWidget *vtebox, gchar *new_font_name, gint type);
+gchar *get_resize_font(GtkWidget *vtebox, gint type);
+void apply_font_to_every_vtebox(GtkWidget *window, gchar *new_font_name, gint colum, gint row);
 
 #endif

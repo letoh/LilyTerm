@@ -10,4 +10,5 @@ lilyterm_SOURCES = page.h \
 		   pagename.h pagename.c \
 		   notebook.h notebook.c \
 		   vtefont.h vtefont.c \
+		   window.h window.c \
 		   main.h main.c

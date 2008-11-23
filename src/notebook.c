@@ -25,115 +25,106 @@
 
 #include "notebook.h"
 
-// For command line options.
-extern gchar *command_line;
-extern gchar **parameter;
-// For showing the Menu if right click on a vtebox.
-extern GtkWidget *menu;
-// For Transparent Window in menu
-extern gboolean show_transparent_menu;
-#ifdef ENABLE_RGBA
-extern GtkWidget *menuitem_trans_win;
-extern gboolean transparent_window;
-#endif
-// For Transparent Background in menu
-extern GtkWidget *menuitem_trans_bg;
-extern gboolean transparent_background;
-extern gboolean use_rgba;
-// For Set the radio_list to System Defalut
-extern GtkWidget *default_encoding;
-extern gchar **supported_locales;
-// For scrollback_lines history
-extern gint scrollback_lines;
-extern GtkWidget *menuitem_scrollback_lines;
-// Using pwd/cmdline on page name
-extern gchar *page_name;
-extern gboolean bold_current_page_name;
-extern gboolean page_shows_current_cmdline;
-extern gboolean page_shows_current_dir;
-extern gboolean window_shows_current_page;
-extern gchar *page_normal_color;
-extern gint page_width;
-extern gboolean fixed_page_width;
-// For init a new page
-extern gchar *default_font_name;
-extern gint default_column;
-extern gint default_row;
+// For single process
+extern gint total_window;
+extern gboolean single_process;
 
-extern GtkWidget *window;
-extern GtkWidget *notebook;
+extern GtkWidget *active_window;
 GtkWidget *current_vtebox=NULL;
 
-// 0: Do nothing
-// 1: Update the hints with base size = font char size
-// 2: Update the hints with base size = 1
-extern gint update_hints;
-extern gint keep_vtebox_size;
-
-void add_page(gboolean run_once)
+GtkWidget *add_page(GtkWidget *window, GtkWidget *notebook, GtkWidget *menuitem_encoding, gchar *locale, gboolean run_once)
 {
+	struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(window), "Win_Data");
+	// g_debug("Get win_data = %d when adding page!", win_data);
+
 	guint column, row;
+	gchar **environment=NULL;
 
 	// the component of a single page
-	struct Page *current_data = g_new0(struct Page, 1);
-	const gchar *directory = g_getenv("PWD");
+	struct Page *page_data = g_new0(struct Page, 1);
+	page_data->window = window;
+	page_data->notebook = notebook;
 	
 	// create label
-	current_data->label = gtk_label_new(page_name);
-	if (fixed_page_width)
-		gtk_label_set_width_chars(GTK_LABEL(current_data->label), page_width);
+	page_data->label = gtk_label_new(win_data->page_name);
+	if (win_data->fixed_page_width)
+		gtk_label_set_width_chars(GTK_LABEL(page_data->label), win_data->page_width);
 	else
-		gtk_label_set_max_width_chars(GTK_LABEL(current_data->label), page_width);
-	gtk_label_set_ellipsize(GTK_LABEL(current_data->label), PANGO_ELLIPSIZE_MIDDLE);
+		gtk_label_set_max_width_chars(GTK_LABEL(page_data->label), win_data->page_width);
+	gtk_label_set_ellipsize(GTK_LABEL(page_data->label), PANGO_ELLIPSIZE_MIDDLE);
 
 	// create vtebox
-	current_data->vtebox = vte_terminal_new();
+	page_data->vtebox = vte_terminal_new();
 
 	// save the data first
-	g_object_set_data(G_OBJECT(current_data->vtebox), "Data", current_data);
-	g_object_set_data(G_OBJECT(current_data->label), "VteBox", current_data->vtebox);
+	g_object_set_data(G_OBJECT(page_data->vtebox), "Page_Data", page_data);
+	g_object_set_data(G_OBJECT(page_data->label), "VteBox", page_data->vtebox);
 
 	// create a hbox
-	current_data->hbox = gtk_hbox_new(FALSE, 0);
+	page_data->hbox = gtk_hbox_new(FALSE, 0);
 
 	// Get current vtebox size, font name and directory. for init a new tab.
 	if ( gtk_notebook_get_current_page(GTK_NOTEBOOK(notebook)) != -1 && current_vtebox != NULL)
 	{
 		// Got the current page's directory
-		struct Page *prev_page = (struct Page *)g_object_get_data(G_OBJECT(current_vtebox), "Data");
-		directory = g_file_read_link(g_strdup_printf("/proc/%d/cwd", prev_page->pid), NULL);
+		struct Page *prev_page = (struct Page *)g_object_get_data(G_OBJECT(current_vtebox), "Page_Data");
+		gchar *priv_pwd = g_strdup_printf("/proc/%d/cwd", prev_page->pid);
+		page_data->pwd = g_file_read_link(priv_pwd, NULL);
+		g_free(priv_pwd);
 		// g_debug("use the directory %s (/proc/%d/cwd)\n", directory, prev_page->pid);
 		
 		// Got the font name ,column and row for prev page
-		current_data->font_name = g_strdup(prev_page->font_name);
+		page_data->font_name = g_strdup(prev_page->font_name);
 		column = vte_terminal_get_column_count(VTE_TERMINAL(current_vtebox));
 		row = vte_terminal_get_row_count(VTE_TERMINAL(current_vtebox));
+		if (win_data->supported_locales!=NULL)
+		{
+			// the encoding of 1st page will be NULL. so...
+			if (prev_page->encoding == NULL)
+				prev_page->encoding = win_data->default_encoding;
+			if (menuitem_encoding==NULL)
+				page_data->encoding = prev_page->encoding;
+			else
+				page_data->encoding = menuitem_encoding;
+			// g_debug("call set_encoding() by %d", page_data->vtebox);
+			set_encoding(page_data->encoding, page_data->vtebox);
+		}
+		if (locale==NULL)
+			page_data->locale = g_strdup(prev_page->locale);
+		else
+			page_data->locale = g_strdup_printf("LC_ALL=%s", locale);
 	}
 	else
 	{
-		 current_data->font_name = g_strdup(default_font_name);
-		 column = default_column;
-		 row = default_row;
+		page_data->font_name = g_strdup(win_data->default_font_name);
+		column = win_data->default_column;
+		row = win_data->default_row;
+		page_data->locale = g_strdup("");
+//		page_data->encoding = NULL;
+		page_data->pwd = g_strdup(g_getenv("PWD"));
 	}
+	// g_debug("Set locale to %s", page_data->locale);
+	environment = g_strsplit_set(page_data->locale, " ", 0);
 	// g_debug("Init New vtebox with %d x %d!", column, row);
-	// g_debug("Using the font : %s\n", current_data->font_name);
+	// g_debug("Using the font : %s\n", page_data->font_name);
 
 	// Init new page. run_once: some settings only need run once.
 	// run_once only = TRUE when init LilyTerm in main().
-	init_new_page(current_data->vtebox, current_data->font_name, column, row, run_once);
-	gtk_box_pack_start(GTK_BOX(current_data->hbox), current_data->vtebox, TRUE, TRUE, 0);
+	init_new_page(window, win_data, page_data->vtebox, page_data->font_name, column, row, run_once);
+
+	gtk_box_pack_start(GTK_BOX(page_data->hbox), page_data->vtebox, TRUE, TRUE, 0);
 	// the close page event
-	g_signal_connect(G_OBJECT(current_data->vtebox), "child_exited", G_CALLBACK(close_page), FALSE);
-	// when get focus, update `current_vtebox', hints, and windows title
-	g_signal_connect(G_OBJECT(current_data->vtebox), "grab-focus", G_CALLBACK(vtebox_grab_focuse), NULL);
+	g_signal_connect(G_OBJECT(page_data->vtebox), "child_exited", G_CALLBACK(close_page), FALSE);
+	// when get focus, update `current_vtebox', hints, and window title
+	g_signal_connect(G_OBJECT(page_data->vtebox), "grab-focus", G_CALLBACK(vtebox_grab_focuse), window);
 	
 	// show the menu
-	g_signal_connect(G_OBJECT(current_data->vtebox), "button-press-event",
-			 G_CALLBACK(vtebox_button_press), NULL);
+	g_signal_connect(G_OBJECT(page_data->vtebox), "button-press-event",
+			 G_CALLBACK(vtebox_button_press), window);
 
 	// scrollbar
-	current_data->scrollbar = gtk_vscrollbar_new(vte_terminal_get_adjustment(VTE_TERMINAL(current_data->vtebox)));
-	gtk_box_pack_start(GTK_BOX(current_data->hbox), current_data->scrollbar, FALSE, FALSE, 0);
+	page_data->scrollbar = gtk_vscrollbar_new(vte_terminal_get_adjustment(VTE_TERMINAL(page_data->vtebox)));
+	gtk_box_pack_start(GTK_BOX(page_data->hbox), page_data->scrollbar, FALSE, FALSE, 0);
 
 //	GdkColor root_color;
 //	gdk_color_parse("#FFFAFE", &root_color);
@@ -142,220 +133,371 @@ void add_page(gboolean run_once)
 	// Note that due to historical reasons,
 	// GtkNotebook refuses to switch to a page unless the child widget is visible.
 	// Therefore, it is recommended to show child widgets before adding them to a notebook.
-	gtk_widget_show_all(current_data->hbox);
-	current_data->page_no = gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
-								 current_data->hbox, current_data->label);
-	// g_debug("The new page no is %d", current_data->page_no);
+	gtk_widget_show_all(page_data->hbox);
+	page_data->page_no = gtk_notebook_append_page(GTK_NOTEBOOK(notebook),
+						      page_data->hbox, page_data->label);
+	// g_debug("The new page no is %d", page_data->page_no);
 
 #ifdef ENABLE_TAB_REORDER
-	gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(notebook), current_data->hbox, TRUE);
-	gtk_notebook_set_tab_detachable(GTK_NOTEBOOK(notebook), current_data->hbox, FALSE);
+	gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(notebook), page_data->hbox, TRUE);
+	gtk_notebook_set_tab_detachable(GTK_NOTEBOOK(notebook), page_data->hbox, FALSE);
 #endif
-	g_object_set(gtk_widget_get_parent(current_data->label), "can-focus", FALSE, NULL);
-	
-	// Execute programs in the vtebox
-	//if (parameter != NULL)
-	//	g_debug ("Run Command: %s %s\n", command_line, *parameter);
-	current_data->pid = vte_terminal_fork_command(VTE_TERMINAL(current_data->vtebox),
-						      command_line, parameter, NULL,
-						      directory, TRUE, TRUE, TRUE);
-	current_data->pwd = g_strdup(directory);
-	// treat '-e option' as `custom_page_name'
-	if (parameter != NULL && page_shows_current_cmdline)
-		current_data->custom_page_name = get_cmdline(current_data->pid);
-	else
-		current_data->custom_page_name = NULL;
-	
-	// We MUST clear command_line and parameter after runed -e option.
-	command_line = NULL;
-	parameter = NULL;
+	g_object_set(gtk_widget_get_parent(page_data->label), "can-focus", FALSE, NULL);
 
-	// for debug only
-	// gchar *pid = g_strdup_printf("%d", current_data->pid);
-	// gtk_label_set_text(GTK_LABEL(current_data->label), pid);
-	// g_free(pid);
+	//if (command_line==NULL)
+	//	command_line = g_getenv("SHELL");
+
+	// Execute programs in the vtebox
+	// g_debug("cmmand line = %s", win_data->command_line);
+	// g_debug("parameters = %s", *(win_data->parameters));
+	// g_debug("environment = %s", *environment);
+	page_data->pid = vte_terminal_fork_command(VTE_TERMINAL(page_data->vtebox),
+						      win_data->command_line, win_data->parameters, environment,
+						      page_data->pwd, TRUE, TRUE, TRUE);
+	// treat '-e option' as `custom_page_name'
+	if (win_data->parameters != NULL && win_data->page_shows_current_cmdline)
+		page_data->custom_page_name = get_cmdline(page_data->pid);
+//	else
+//		page_data->custom_page_name = NULL;
 	
 	// set the tab name.
-	current_data->tpgid = current_data->pid;
-	current_data->tab_color = page_normal_color;
-	current_data->is_root = check_is_root(current_data->pid);
-	current_data->is_bold = bold_current_page_name;
+	page_data->tpgid = page_data->pid;
+	page_data->tab_color = win_data->page_normal_color;
+	page_data->is_root = check_is_root(page_data->pid);
+	page_data->is_bold = win_data->bold_current_page_name;
 	// we need to g_free it in update_tab_name(). so we need to set it to NULL first.
-	current_data->label->name = NULL;
+	page_data->label->name = NULL;
 	
-	if (scrollback_lines)
-		current_data->use_scrollback_lines = TRUE;
+	if (win_data->scrollback_lines)
+		page_data->use_scrollback_lines = TRUE;
 
+	// some data came from window. for the performance of monitor_cmdline
+	page_data->lost_focuse = &(win_data->lost_focuse);
+	page_data->keep_vtebox_size = &(win_data->keep_vtebox_size);
+	page_data->check_root_privileges = &(win_data->check_root_privileges);
+	page_data->page_shows_current_dir = &(win_data->page_shows_current_dir);
+	page_data->page_shows_current_cmdline = &(win_data->page_shows_current_cmdline);
+	page_data->bold_action_page_name = &(win_data->bold_action_page_name);
+	
 	// Monitor cmdline
-	if (page_shows_current_cmdline || page_shows_current_dir)
-		// monitor_cmdline(current_data->monitor, current_data->pid);
-		// monitor_cmdline(current_data->channel, current_data->pid);
+	if (win_data->page_shows_current_cmdline || win_data->page_shows_current_dir)
+		// monitor_cmdline(page_data->monitor, page_data->pid);
+		// monitor_cmdline(page_data->channel, page_data->pid);
 #ifdef USE_TIMEOUT_SECONDS
-		current_data->timeout_id = g_timeout_add_seconds (1, (GSourceFunc)monitor_cmdline, current_data->vtebox);
+		page_data->timeout_id = g_timeout_add_seconds (1, (GSourceFunc)monitor_cmdline, page_data);
 #else
-		current_data->timeout_id = g_timeout_add (1000, (GSourceFunc)monitor_cmdline, current_data->vtebox);
+		page_data->timeout_id = g_timeout_add (1000, (GSourceFunc)monitor_cmdline, page_data);
 #endif
-	// g_debug("Timeout Added: %d (%d)", current_data->timeout_id, current_data->vtebox);
-	update_tab_name(current_data->vtebox, current_data->label, current_data->pid,
-			current_data->tpgid, current_data->page_no + 1,
-			current_data->custom_page_name, directory, current_data->is_root, current_data->is_bold);
-	// g_debug("Got label name from update_tab_name(): %s\n", current_data->label->name);
-
-	current_data->encoding = default_encoding;
+	// g_debug("Timeout Added: %d (%d)", page_data->timeout_id, page_data->vtebox);
+	update_tab_name(page_data);
+	// g_debug("Got label name from update_tab_name(): %s\n", page_data->label->name);
 
 	// show the page bar if necessary
-	if (current_data->page_no == 1)
+	if (page_data->page_no == 1)
 	{
 		// It will done in update_page_name()
 		// keep_vtebox_size |= 2;
 		gtk_notebook_set_show_tabs(GTK_NOTEBOOK(notebook), TRUE);
+		gtk_notebook_set_show_border(GTK_NOTEBOOK(notebook), TRUE);
 	}
 
 	// finish!
-	gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), current_data->page_no);
-	gtk_window_set_focus(GTK_WINDOW(window), current_data->vtebox);
+	gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), page_data->page_no);
+	gtk_window_set_focus(GTK_WINDOW(window), page_data->vtebox);
+
+	// page_data->pid < 0: Error occurrd when creating sub process.
+	if (page_data->pid < 0)
+	{
+		// g_debug("Error occurrd when creating sub process");
+		gint i;
+		GString *arg_str = g_string_new("");
+		
+		for (i=0; i<win_data->parameter; i++)
+			g_string_append_printf(arg_str, "%s ", win_data->parameters[i]);
+
+		win_data->temp_str = arg_str->str;
+		dialog (NULL, 16);
+		close_page (page_data->vtebox, FALSE);
+		g_string_free(arg_str, TRUE);
+	}
+
+	g_strfreev(environment);
+	
+	// g_debug("current_vtebox = %d and page_data->vtebox = %d", current_vtebox, page_data->vtebox);
+	if ((current_vtebox == NULL) || (current_vtebox != page_data->vtebox))
+	{
+		// current_vtebox = NULL means pid < 0 and the whole window is destroyed.
+		// g_debug("whole window is destroyed!");
+		return NULL;
+	}
+	else
+	{
+		// We MUST clear command_line and parameters after runed -e option.
+		win_data->command_line = NULL;
+		win_data->parameters = NULL;
+		return page_data->vtebox;
+	}
 }
 
 gboolean close_page (GtkWidget *vtebox, gboolean need_safe_close)
 {
-	gint total_page = gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook));
+	struct Page *page_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Page_Data");
+	// g_debug("Get page_data = %d when closing page!", page_data);
+	struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(page_data->window), "Win_Data");
+	// g_debug("Get win_data = %d when closing page!", win_data);
+
+	// g_debug("Deleting Page ID: %d\n", page_data->pid);
+
+	gint total_page = gtk_notebook_get_n_pages(GTK_NOTEBOOK(page_data->notebook));
 	// g_debug("Total Page (Notebook):%d\n", total_page);
-	struct Page *current_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Data");
-	// g_debug("Deleting Page ID: %d\n", current_data->pid);
+
+	if (page_data->pid<1)
+		need_safe_close = FALSE;
 
 	// only "child_exited" don't need need_safe_close to kill SHELL
 	if (need_safe_close)
-		if (current_data->pid != get_tpgid(current_data->pid))
+		if (page_data->pid != get_tpgid(page_data->pid))
 			if (dialog(NULL, 7)==FALSE)
-			{
-				// g_debug("LilyTerm will countinue running.");
 				return FALSE;
-			}
 
 	// remove timeout event for page_shows_current_cmdline
-	if (page_shows_current_cmdline)
-	//	monitor_cmdline_cancel(current_data->monitor);
-		g_source_remove (current_data->timeout_id);
+	if (win_data->page_shows_current_cmdline||win_data->page_shows_current_dir)
+	//	monitor_cmdline_cancel(page_data->monitor);
+		g_source_remove (page_data->timeout_id);
 
 	// kill running shell
 	if (need_safe_close)
 	{
 		// if the tab is not close by <Ctrl><D>, we need to launch kill()
-		// g_debug("Trying to kill %d!\n", current_data->pid);
-		kill(current_data->pid, SIGKILL);
+		// g_debug("Trying to kill %d!\n", page_data->pid);
+		kill(page_data->pid, SIGKILL);
 	}
 
 	// if it is the last page, exit application!
 	if (total_page == 1)
 	{
-		// g_debug("It is the last page!\n");
-		gtk_main_quit();
+		total_window--;
+		if (total_window)
+		{
+			// close window only
+			int i;
+			for (i=0; i<KEYS; i++)
+				g_free(win_data->user_keys[i].value);
+
+			if (win_data->menu!=NULL)
+				gtk_widget_destroy(win_data->menu);
+
+			// command_line and parameters can NOT be freed.
+			// win_data->command_line = NULL;
+			// win_data->parameters = NULL;
+			g_free(win_data->profile);
+
+			g_free(win_data->page_name);
+			g_free(win_data->page_names);
+			g_strfreev(win_data->splited_page_names);
+			g_free(win_data->foreground_color);
+			g_free(win_data->background_color);
+			g_free(win_data->page_cmdline_color);
+			g_free(win_data->page_dir_color);
+			g_free(win_data->page_custom_color);
+			g_free(win_data->page_root_color);
+			g_free(win_data->page_normal_color);
+			g_free(win_data->default_font_name);
+			g_free(win_data->system_font_name);
+			g_free(win_data->word_chars);
+			// supported_locales will be free when destory win_data->menu
+			// g_strfreev(win_data->supported_locales);
+			g_free(win_data->locales_list);
+			// default_locale will be free when destory win_data->menu
+			// g_free(win_data->default_locale);
+			g_free(win_data->restore_font_name);
+			// g_debug("Clean win_data : %d", win_data);
+			g_free(win_data);
+			
+			// g_debug("Clean active_window : %d", page_data->window);
+			if (active_window==page_data->window)
+				active_window = NULL;
+			// g_debug("Destroy window: %d", page_data->window);
+			gtk_widget_destroy(page_data->window);
+
+			// g_debug("Set current_vtebox to NULL!");
+			if (active_window != NULL)
+			{
+				// g_debug("Set current_vtebox = win_data->current_vtebox (%d)", win_data->current_vtebox);
+				struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(
+										active_window), "Win_Data");
+				current_vtebox = win_data->current_vtebox;
+			}
+			else
+				current_vtebox = NULL;
+		}
+		else
+		{
+			// g_debug("It is the last page!\n");
+			if (GTK_WIDGET_MAPPED(page_data->window))
+			{
+				if (single_process)
+					shutdown_socket_server();
+				gtk_main_quit();
+			}
+			else
+				exit (1);
+		}
 	}
 	else
 	{
 		// set the current page
-		// g_debug ("Setting current page to %d!\n", current_data->page_no);
-		if ( current_data->page_no==total_page)
-			gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), current_data->page_no-1);
+		// g_debug ("Setting current page to %d!\n", page_data->page_no);
+		if ( page_data->page_no==total_page-1)
+			gtk_notebook_set_current_page(GTK_NOTEBOOK(page_data->notebook), page_data->page_no-1);
 		else
-			gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), current_data->page_no+1);
-		
-		// Note that due to historical reasons,
-		// GtkNotebook refuses to switch to a page unless the child widget is visible.
-		// Therefore, it is recommended to show child widgets before adding them to a notebook.
-		gtk_widget_hide_all(current_data->hbox);
-		// remove current page
-		// use current_data->page_no. DANGEROUS!
-		// g_debug ("The %d page is going to be removed!\n", current_data->page_no);
-		gtk_notebook_remove_page(GTK_NOTEBOOK(notebook), current_data->page_no);
-		
+			gtk_notebook_set_current_page(GTK_NOTEBOOK(page_data->notebook), page_data->page_no+1);
+
 		// hide the tab bar if necessary
 		if (total_page == 2)
 		{
 			// hide the page bar
-			keep_vtebox_size |= 6;
+			win_data->keep_vtebox_size |= 6;
 			// we need to set the hints, or the window size may be incerrent.
 			// g_debug("window_resizable in remove_page!");
-			window_resizable(current_vtebox, 2, 1);
-			gtk_notebook_set_show_tabs(GTK_NOTEBOOK(notebook), FALSE);
-			update_hints = 1;
+			window_resizable(page_data->window, win_data->current_vtebox, 2, 1);
+			gtk_notebook_set_show_tabs(GTK_NOTEBOOK(page_data->notebook), FALSE);
+			gtk_notebook_set_show_border(GTK_NOTEBOOK(page_data->notebook), FALSE);
+			win_data->update_hints = 1;
 		}
-	}
+		else
+			// bind the hints infomation!
+			// g_debug("Update the hints to %d", current_vtebox);
+			window_resizable(page_data->window, win_data->current_vtebox, win_data->update_hints, 1);
+
+		// Note that due to historical reasons,
+		// GtkNotebook refuses to switch to a page unless the child widget is visible.
+		// Therefore, it is recommended to show child widgets before adding them to a notebook.
+		gtk_widget_hide_all(page_data->hbox);
+		// remove current page
+		// use page_data->page_no. DANGEROUS!
+		// g_debug ("The %d page is going to be removed!\n", page_data->page_no);
+		gtk_notebook_remove_page(GTK_NOTEBOOK(page_data->notebook), page_data->page_no);
 	
-	// g_debug("Reordering the page!");
-	if (current_data->page_no < total_page-1)
-		reorder_page_number(NULL, NULL);
+		// g_debug("Reordering the page and update page name!");
+		if (page_data->page_no < total_page-1)
+			reorder_page_number(GTK_NOTEBOOK(page_data->notebook), NULL, 0, page_data->window);
+	}
 
 	// free the memory used by this page
-	// g_debug("freeing current_data!\n");
-	g_free(current_data);
+	// g_debug("freeing page_data!\n");
+	g_free(page_data->custom_page_name);
+	g_free(page_data->pwd);
+	g_free(page_data->font_name);
+	g_free(page_data->locale);
+	g_free(page_data);
 
 	return TRUE;
 }
 
-void vtebox_grab_focuse(GtkWidget *vtebox, gpointer user_data)
+void vtebox_grab_focuse(GtkWidget *vtebox, GtkWidget *window)
 {
+	// g_debug("vtebox grub focuse !");
+	struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(window), "Win_Data");
+	// g_debug("Get win_data = %d when vtebox grab focuse!", win_data);
+
+	// Don't update page name when win_data->kill_color_demo_vte.
+	// Or LilyTerm will got warning: "Failed to set text from markup due to error parsing markup"
 	if (current_vtebox != vtebox || (current_vtebox == NULL))
 	{
-		if (bold_current_page_name)
+		// first, un_bold prev page.
+		if ((win_data->bold_current_page_name || win_data->bold_action_page_name) &&
+		     (! win_data->kill_color_demo_vte))
 		{
 			if (current_vtebox != NULL)
 			{
-				struct Page *prev_data = (struct Page *)g_object_get_data(G_OBJECT(current_vtebox), "Data");
+				struct Page *prev_data = (struct Page *)g_object_get_data(G_OBJECT(current_vtebox), "Page_Data");
 				if (prev_data!=NULL)
 				{
 					prev_data->is_bold = FALSE;
-					update_page_name (current_vtebox, prev_data->label, prev_data->page_no+1,
-							  prev_data->custom_page_name, prev_data->tab_color,
-							  prev_data->is_root, FALSE);
+					update_page_name (window, win_data->current_vtebox, prev_data->label,
+							  prev_data->page_no+1, prev_data->custom_page_name,
+							  prev_data->tab_color, prev_data->is_root, FALSE,
+							  prev_data->encoding != win_data->default_encoding,
+							  prev_data->encoding);
 				}
 			}
 		}
 		// g_debug ("Update current_vtebox! (%d), and update_hints = %d", vtebox, update_hints);
 		current_vtebox = vtebox;
-		struct Page *current_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Data");
-		
-		if (keep_vtebox_size==0)
-		{
-			// g_debug("window_resizable in vtebox_grab_focuse!");
-			// we should bind the hints information on current vtebox.
-			// Or the geometry of vtebox may be changed when deleting the vtebox hold hints info.
-			// It can help to hold the currect vtebox size.
-			window_resizable(vtebox, update_hints, 1);
-		}
-		
-		if (window_shows_current_page)
-			if (current_data!=NULL)
-				update_window_title(current_data->label->name);
+		win_data->current_vtebox = vtebox;
 
-		if (bold_current_page_name)
+		if (win_data->kill_color_demo_vte) return;
+
+		struct Page *page_data = NULL;
+		if (win_data->window_shows_current_page ||
+		    win_data->bold_current_page_name ||
+		    win_data->bold_action_page_name)
+			page_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Page_Data");
+		
+		//if (keep_vtebox_size==0)
+		//{
+		//	// g_debug("window_resizable in vtebox_grab_focuse!");
+		//	// we should bind the hints information on current vtebox.
+		//	// Or the geometry of vtebox may be changed when deleting the vtebox hold hints info.
+		//	// It can help to hold the currect vtebox size.
+		//	g_debug("Update hints!")
+		//	window_resizable(vtebox, update_hints, 1);
+		//}
+		
+		// update the window title
+		if (win_data->window_shows_current_page)
+			if (page_data!=NULL)
+				update_window_title(window, page_data->label->name);
+
+		// bold/un_bold current page
+		if (win_data->bold_current_page_name || win_data->bold_action_page_name)
 		{
-			current_data->is_bold = TRUE;
-			update_page_name (current_vtebox, current_data->label, current_data->page_no+1,
-					  current_data->custom_page_name, current_data->tab_color,
-					  current_data->is_root, TRUE);
+			page_data->is_bold = win_data->bold_current_page_name;
+			update_page_name (window, vtebox, page_data->label, page_data->page_no+1,
+					  page_data->custom_page_name, page_data->tab_color,
+					  page_data->is_root, page_data->is_bold,
+					  page_data->encoding != win_data->default_encoding, page_data->encoding);
 		}
 	}
 }
 
-gboolean vtebox_button_press(GtkWidget *vtebox, GdkEventButton *event, gpointer user_data)
+gboolean vtebox_button_press(GtkWidget *vtebox, GdkEventButton *event, GtkWidget *window)
 {
 	if (event->button == 3)
 	{
-		struct Page *current_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Data");
-		if (*supported_locales!=NULL)
-			gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM(current_data->encoding), TRUE);
-		if (show_transparent_menu)
+		if (current_vtebox == NULL) return FALSE;
+		struct Page *page_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Page_Data");
+		struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(window), "Win_Data");
+		// g_debug ("Get win_data = %d in show_menu", win_data);
+		if (win_data->supported_locales!=NULL)
+		{
+			// We will not update coding here.
+			win_data->query_coding = TRUE;
+			//if (page_data->encoding!=NULL)
+			//	g_debug ("Update the encoding of page %d in menu to %s",
+			//		 page_data->page_no, page_data->encoding->name);
+			// g_debug("Set the menuitem %d t active", page_data->encoding);
+
+			// menu is inited after page. so that the encoding of 1st page is 0.
+			if (page_data->encoding==0)
+				page_data->encoding = win_data->default_encoding;
+			gtk_check_menu_item_set_active (GTK_CHECK_MENU_ITEM(page_data->encoding), TRUE);
+			// query done
+			win_data->query_coding = FALSE;
+		}
+
+		if (win_data->show_transparent_menu)
 		{
 #ifdef ENABLE_RGBA
-			if (use_rgba)
-				GTK_CHECK_MENU_ITEM(menuitem_trans_win)->active = transparent_window;
+			if (win_data->use_rgba)
+				GTK_CHECK_MENU_ITEM(win_data->menuitem_trans_win)->active = win_data->transparent_window;
 #endif
-			GTK_CHECK_MENU_ITEM(menuitem_trans_bg)->active = transparent_background;
+			GTK_CHECK_MENU_ITEM(win_data->menuitem_trans_bg)->active = win_data->transparent_background;
 		}
-		if (scrollback_lines)
-			GTK_CHECK_MENU_ITEM(menuitem_scrollback_lines)->active = current_data->use_scrollback_lines;
-		gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, event->button, event->time);
+		if (win_data->scrollback_lines)
+			GTK_CHECK_MENU_ITEM(win_data->menuitem_scrollback_lines)->active = page_data->use_scrollback_lines;
+		gtk_menu_popup(GTK_MENU(win_data->menu), NULL, NULL, NULL, NULL, event->button, event->time);
 		return TRUE;
 	}
 	return FALSE;
