@@ -36,6 +36,7 @@
 
 #define RCFILE PACKAGE ".rc"
 #define KEYS 30
+#define COMMAND 4
 
 // KeyValue: only need to init once when LilyTerm starts.
 // so that we don't need to free them.
@@ -52,6 +53,20 @@ struct User_KeyValue
 	gchar *value;
 	guint key;
 	guint mods;
+};
+
+struct Command
+{
+	gchar *name;
+	gchar *match;
+	gchar *comment;
+	gchar *method_name;
+};
+
+struct User_Command
+{
+	gchar *command;
+	gint method;
 };
 
 struct Window
@@ -82,6 +97,7 @@ struct Window
 	gchar *profile;
 
 	// default settings
+	gboolean font_anti_alias;
 	gchar *page_name;
 	gchar *page_names;
 	gchar **splited_page_names;
@@ -103,6 +119,8 @@ struct Window
 	gboolean window_shows_current_page;
 	gint page_width;
 	gboolean fixed_page_width;
+	gboolean fill_tab_bar;
+	gboolean tabbar_position;
 
 	gchar *foreground_color;
 	gchar *background_color;
@@ -125,20 +143,30 @@ struct Window
 #endif
 	gint transparent_background;
 	gdouble background_saturation;
+
 	gchar *word_chars;
 	gint scrollback_lines;
+	// 0: don't use scrollbar
+	// 1: right
+	// 2: left
+	gint scrollbar_position;
 
 	gboolean show_color_selection_menu;
 	gboolean show_resize_menu;
+	gdouble font_resize_ratio;
+	gdouble window_resize_ratio;
 	gboolean show_transparent_menu;
 	gboolean show_input_method_menu;
 	gboolean show_get_function_key_menu;
+	gboolean show_change_page_name_menu;
 	// the default_locale is got from environment
 	gchar *default_locale;
 	gchar *locales_list;
 	gchar **supported_locales;
-	
+
 	struct User_KeyValue user_keys[KEYS];
+	gboolean enable_hyperlink;
+	struct User_Command user_command[COMMAND];
 
 	// 0: Do nothing
 	// 1: Update the hints with base size = font char size
@@ -153,13 +181,13 @@ struct Window
 	// 5, Resotre to system/default font.
 	// 6, Theme has been changed.
 	// 7, Using Dir/Cmdline on pagename.
-	gboolean lost_focuse;
+	gboolean lost_focus;
 	//  1    : Updating Page Name.
 	//  2,  4: Showing/Hiding tab bar, Only run window_size_request() once. 
 	//  8    : Changing Themes.
 	// 16, 32: Resing Window, Only run window_size_request() once.
 	gint keep_vtebox_size;
-	gboolean query_coding;
+	gboolean query_encoding;
 	gboolean kill_color_demo_vte;
 	// for the error messege shown in dialog. Do NOT to free it!
 	gchar *temp_str;
@@ -208,9 +236,10 @@ struct Page
 
 	// current page no on notebook. *for performance*
 	gint page_no;
+	gint tag[COMMAND];
 
 	// some data came from window. for the performance of monitor_cmdline
-	gboolean *lost_focuse;
+	gboolean *lost_focus;
 	gint *keep_vtebox_size;
 	gboolean *check_root_privileges;
 	gboolean *page_shows_current_dir;

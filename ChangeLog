@@ -1,3 +1,29 @@
+2008-7-8 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
+  vsersion 0.9.5
+
+    FIX:
+	* Better compatibility with -e command line option.
+
+    New Feature:
+	* Applied updated German translation.
+	  VERY THANKS to Mario Blättermann.
+    	* Hyperlink support. You may specify the command used for the hyperlink
+	  via edit the profile.
+	  You may use <Ctrl><`> to disable it for temporarily.
+	  You may disable it by setting `enable_hyperlink = 0' in profile.
+	* Disable font anti-alias via setting `font_anti_alias = 2' in profile.
+	* Make the tab to fill the tab bar via setting `fill_tab_bar = 1'
+	  in profile.
+	* Use `tabbar_position = 1' to move the tab bar to the bottom of
+	  window.
+	* Use `scrollbar_position = 2' to place the scroll bar on the right
+	  of vte terminal.
+	  Using `scrollbar_position = 0' to don't use scroll bar.
+	* You may specify the font/window resize ratio by editing the
+	  `font_resize_ratio' and `window_resize_ratio' in profile.
+	* Support audible_bell by default.
+
 2008-7-1 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
 
   version 0.9.4
@@ -20,7 +46,7 @@
     The disadvantage of 'Single Process' mode is, if the LilyTerm crashed, All
     the LilyTerm will be dead at the same time.
 
-    You may use -s/--saparate command line options to run LilyTerm in 'Saparate
+    You may use -s/--separate command line options to run LilyTerm in 'Separate
     Process Mode'.
 
     New Feature:
@@ -181,8 +207,8 @@
 	* Better compatibility when the font rendering / theme changed.
 	* Use <Ctrl><`> (NOT <Ctrl><~>) to disable function keys.
 	  Thanks to BV1AL for report this bug.
-	* `screen_width' is rename to `column' in rcfile.
-	* `screen_height' is rename to `row' in rcfile.
+	* `screen_width' is rename to `column' in profile.
+	* `screen_height' is rename to `row' in profile.
 
     New Feature:
 	* If you're using a composited window manager, rgba will be enabled by
@@ -226,7 +252,7 @@
   version 0.8.5
 
     FIX:
-	* The serial no of the the tab will shown when reorder the tab if
+	* The serial no of the tab will shown when reorder the tab if
 	  page_names_no=0.
 	* Use <Ctrl><O> to select all the text in vte box.
 	  <Ctrl><S> is used in rtorrent to start a torrent download.
@@ -247,7 +273,7 @@
   version 0.8.4:
 
     FIX:
-	* `screen_with' is rename to `screen_width' in rcfile.
+	* `screen_with' is rename to `screen_width' in profile.
 
     New Feature:
 	* <Ctrl><F1~F12> switch to 1st ~ 12th tab.
@@ -385,7 +411,7 @@
   version 0.7.4:
 
     FIX:
-	* Will goto next tab when close current tab. a stupid bug...
+	* Will go to next tab when close current tab. a stupid bug...
 	* Improve (again) the performance when solving function key.
 
     New Feature:
@@ -404,7 +430,7 @@
   version 0.7.2:
     
     New Feature:
-	* Now we can configure the finction key via config file.
+	* Now we can configure the function key via config file.
 	* Default Default Keys:
 	    New Tab: Ctrl T
 	    Close Tab: Ctrl W
@@ -440,12 +466,12 @@
 	* <Shift><Insert> to pase clipboard. It was done in libvte.
 
     Makefile:
-	Remove useless '--libs' when complie *.o.
+	Remove useless '--libs' when compile *.o.
 	Thanks to letoh.bbs@bbs.sayya.org again!
 
     INSTALL:
 	Update some typo.
-	`make' will complile *with* the dirty im-patch.
+	`make' will compile *with* the dirty im-patch.
 	`make no-im-patch' will complile without the dirty im-patch.
 
     AUTHORS:

@@ -27,12 +27,16 @@
 
 // if total_window = 0, call gtk_window_quit()
 gint total_window = 0;
-// for update current_vtebox when window is on_focuse
+// for update current_vtebox when window is on_focus
 extern GtkWidget *current_vtebox;
 GtkWidget *active_window;
 
 void new_window(int argc, char *argv[])
 {
+#ifdef DEBUG
+	g_debug("! Launch new_window()!");
+#endif
+
 	total_window++;
 
 	struct Window *win_data = g_new0(struct Window, 1);
@@ -59,10 +63,10 @@ void new_window(int argc, char *argv[])
 	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(window_quit), win_data);
 	// if function key pressed
 	g_signal_connect(G_OBJECT(window), "key-press-event", G_CALLBACK(window_key_press), win_data);
-	// if get focuse, the size of vtebox is NOT resizeable.
-	g_signal_connect_after(G_OBJECT(window), "focus-in-event", G_CALLBACK(window_get_focuse), win_data);
-	// if lost focuse, the size of vtebox is resizeable.
-	g_signal_connect(G_OBJECT(window), "focus-out-event", G_CALLBACK(window_lost_focuse), win_data);
+	// if get focus, the size of vtebox is NOT resizeable.
+	g_signal_connect_after(G_OBJECT(window), "focus-in-event", G_CALLBACK(window_get_focus), win_data);
+	// if lost focus, the size of vtebox is resizeable.
+	g_signal_connect(G_OBJECT(window), "focus-out-event", G_CALLBACK(window_lost_focus), win_data);
 	// if the theme/fonts changed
 	g_signal_connect_after(G_OBJECT(window), "style-set", G_CALLBACK(window_style_set), win_data);
 	g_signal_connect(G_OBJECT(window), "size_request", G_CALLBACK(window_size_request), win_data);
@@ -73,6 +77,8 @@ void new_window(int argc, char *argv[])
 	gtk_notebook_set_scrollable(GTK_NOTEBOOK(win_data->notebook), TRUE);
 	gtk_notebook_set_show_tabs(GTK_NOTEBOOK(win_data->notebook), FALSE);
 	gtk_notebook_set_show_border(GTK_NOTEBOOK(win_data->notebook), FALSE);
+	if (win_data->tabbar_position)
+		gtk_notebook_set_tab_pos(GTK_NOTEBOOK(win_data->notebook), GTK_POS_BOTTOM);
 	gtk_container_add(GTK_CONTAINER(window), win_data->notebook);
 #ifdef ENABLE_TAB_REORDER
 	g_signal_connect(G_OBJECT(win_data->notebook), "page-reordered", G_CALLBACK(reorder_page_number), window);
@@ -107,7 +113,9 @@ void new_window(int argc, char *argv[])
 
 gboolean window_quit(GtkWidget *window, GdkEvent *event, struct Window *win_data)
 {
-	// g_debug("Get win_data = %d when window quit!", win_data);
+#ifdef DEBUG
+	g_debug("! Launch window_quit() with window = %p, win_data = %p", window, win_data);
+#endif
 
 	gint total_page = gtk_notebook_get_n_pages(GTK_NOTEBOOK(win_data->notebook));
 	if (total_page>1)
@@ -123,6 +131,10 @@ gboolean window_quit(GtkWidget *window, GdkEvent *event, struct Window *win_data
 
 void window_option(struct Window *win_data, int argc, char *argv[])
 {
+#ifdef DEBUG
+	g_debug("! Launch window_option() with win_data = %p", win_data);
+#endif
+
 	// g_debug("Get win_data = %d in window option!", win_data);
 
 	gint i;
@@ -201,6 +213,11 @@ void window_option(struct Window *win_data, int argc, char *argv[])
 
 gboolean window_key_press(GtkWidget *window, GdkEventKey *event, struct Window *win_data)
 {
+#ifdef DEBUG
+	g_debug("! Launch window_key_press() with key = %s, win_data = %p",
+		 gdk_keyval_name(event->keyval), win_data);
+#endif
+
 	// g_debug ("Get win_data = %d in key_press", win_data);
 	if (win_data->keep_vtebox_size) return TRUE;
 	
@@ -266,6 +283,10 @@ gboolean window_key_press(GtkWidget *window, GdkEventKey *event, struct Window *
 //	<Shift><Insert>		Pase clipboard.
 void deal_key_press(GtkWidget *window, gint type, struct Window *win_data)
 {
+#ifdef DEBUG
+	g_debug("! Launch deal_key_press() with window = %p, type = %d, win_data = %p", window, type, win_data);
+#endif
+
 	gint total_page = gtk_notebook_get_n_pages(GTK_NOTEBOOK(win_data->notebook));
 	struct Page *page_data = (struct Page *)g_object_get_data(G_OBJECT(win_data->current_vtebox), "Page_Data");
 
@@ -273,6 +294,24 @@ void deal_key_press(GtkWidget *window, gint type, struct Window *win_data)
 	{
 		case 0:
 			win_data->enable_function_key = ! win_data->enable_function_key;
+			if (win_data->enable_hyperlink)
+			{
+				GtkWidget *vtebox = NULL;
+				gint i;
+				for (i=0;i<total_page;i++)
+				{
+					vtebox=(GtkWidget *)g_object_get_data(G_OBJECT(gtk_notebook_get_tab_label(
+								GTK_NOTEBOOK(win_data->notebook),
+									gtk_notebook_get_nth_page(
+										GTK_NOTEBOOK(win_data->notebook), 
+											     i))),
+								"VteBox");
+					if (win_data->enable_function_key)
+						set_hyprelink(vtebox);
+					else
+						vte_terminal_match_clear_all(VTE_TERMINAL(vtebox));
+				}
+			}
 			break;
 		case 1:
 			// add a new page
@@ -369,10 +408,14 @@ void deal_key_press(GtkWidget *window, gint type, struct Window *win_data)
 	}
 }
 
-gboolean window_get_focuse(GtkWidget *window, GdkEventFocus *event, struct Window *win_data)
+gboolean window_get_focus(GtkWidget *window, GdkEventFocus *event, struct Window *win_data)
 {
-	// g_debug("Get window =%d, win_data = %d and update current_vtebox when window_get_focuse!", window, win_data);
-	win_data->lost_focuse = FALSE;
+#ifdef DEBUG
+	g_debug("! Launch window_get_focus() with window =%p, win_data = %p", window, win_data);
+#endif
+
+	// update current_vtebox when window_get_focus!
+	win_data->lost_focus = FALSE;
 
 	// And, update the current_vtebox info
 	current_vtebox = win_data->current_vtebox;
@@ -380,18 +423,22 @@ gboolean window_get_focuse(GtkWidget *window, GdkEventFocus *event, struct Windo
 	return FALSE;
 }
 
-gboolean window_lost_focuse (GtkWidget *window, GdkEventFocus *event, struct Window *win_data)
+gboolean window_lost_focus(GtkWidget *window, GdkEventFocus *event, struct Window *win_data)
 {
-	// g_debug("Get win_data = %d when vteboxvte_lost_focuse!", win_data);
+#ifdef DEBUG
+	g_debug("! Launch window_lost_focus() with window =%p, win_data = %p", window, win_data);
+#endif
 
-	win_data->lost_focuse = TRUE;
+	win_data->lost_focus = TRUE;
 	active_window = NULL;
 	return FALSE;
 }
 
-void window_style_set (GtkWidget *window, GtkStyle *previous_style, struct Window *win_data)
+void window_style_set(GtkWidget *window, GtkStyle *previous_style, struct Window *win_data)
 {
-	// g_debug("Get win_data = %d when window_style_set!", win_data);
+#ifdef DEBUG
+	g_debug("! Launch window_style_set() with window =%p, win_data = %p", window, win_data);
+#endif
 
 	win_data->keep_vtebox_size |= 8;
 	// g_debug("window_resizable in window_style_set! keep_vtebox_size = %d", keep_vtebox_size);
@@ -400,7 +447,11 @@ void window_style_set (GtkWidget *window, GtkStyle *previous_style, struct Windo
 
 void window_size_request (GtkWidget *window, GtkRequisition *requisition, struct Window *win_data)
 {
-	// g_debug("window_size-request! and keep_vtebox_size = %d, win_data = %d", win_data->keep_vtebox_size, win_data);
+#ifdef DEBUG
+	g_debug("! Launch window_size_request() with window =%p, win_data = %p, keep_vtebox_size = %x",
+		 window, win_data, win_data->keep_vtebox_size);
+#endif
+
 	if (win_data->keep_vtebox_size&0x1b)
 	{
 		// g_debug("Got keep_vtebox_size (before) = %d", keep_vtebox_size);
@@ -417,8 +468,13 @@ void window_size_request (GtkWidget *window, GtkRequisition *requisition, struct
 	}
 }
 
-void window_size_allocate (GtkWidget *window, GtkAllocation *allocation, struct Window *win_data)
+void window_size_allocate(GtkWidget *window, GtkAllocation *allocation, struct Window *win_data)
 {
+#ifdef DEBUG
+	g_debug("! Launch window_size_allocate() with window =%p, win_data = %p, keep_vtebox_size = %x",
+		 window, win_data, win_data->keep_vtebox_size);
+#endif
+
 	// g_debug("window_size-allocate!, and win_data->keep_vtebox_size = %d, win_data = %d", win_data->keep_vtebox_size, win_data);
 
 	if (win_data->keep_vtebox_size)

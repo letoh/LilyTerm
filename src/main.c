@@ -46,7 +46,7 @@ int main( int   argc,
 	// init the gtk+2 engine
 	gtk_init(&argc, &argv);
 
-	// FIXME: we sholud get the single_process from profile. Current is command-line option only.
+	// FIXME: we should get the single_process from profile. Current is command-line option only.
 	if (single_process)
 	{
 		// init socket data
@@ -78,6 +78,10 @@ int main( int   argc,
 void command_option(int   argc,
 		    char *argv[])
 {
+#ifdef DEBUG
+	g_debug("! Launch command_option()!");
+#endif
+
 	gint i;
 	for (i=0;i<argc;i++)
 	{
@@ -104,18 +108,22 @@ void command_option(int   argc,
 
 GString *got_help_message()
 {
+#ifdef DEBUG
+	g_debug("! Launch got_help_message()!");
+#endif
+
 	GString *help_message;
 	gint j;
 	const char * const *system_dirs = g_get_system_config_dirs();
 
 	help_message = g_string_new("");
 	g_string_append_printf( help_message,
-					_("%s is a libvte based X Terminal Emulater.\n\n"), PACKAGE_NAME);
-	g_string_append( help_message,  _("Use -e/-x/--execute {Command} to run a command when startup."
+					_("%s is a libvte based X Terminal Emulator.\n\n"), PACKAGE_NAME);
+	g_string_append( help_message,  _("Use -e/-x/--execute {Command} to run a command when start up."
 					  " (Must be the final option).\n"));
-	g_string_append( help_message,  _("Use -t/--tab {number} to open multi tabs when startup.\n"));
+	g_string_append( help_message,  _("Use -t/--tab {number} to open multi tabs when start up.\n"));
 	g_string_append( help_message,  _("Use -s/--separate to run in separate process.\n"));
-	g_string_append( help_message,  _("Use -v/--version to show the version infomation.\n"));
+	g_string_append( help_message,  _("Use -v/--version to show the version information.\n"));
 	g_string_append( help_message,  _("Use -p/--profile to got a profile sample.\n"));
 	g_string_append_printf( help_message,
 					_("Use -u/--user_profile {%s} to use a specified profile.\n\n"), RCFILE);
@@ -126,7 +134,7 @@ GString *got_help_message()
 					_("And your %s profile is: %s/%s\n\n"),
 								PACKAGE_NAME, g_get_user_config_dir(), RCFILE);
 	g_string_append( help_message,  _("Default shortcut key: (It may custom by editing user's profile)\n\n"));
-	g_string_append( help_message,  _("  * <Ctrl><`>\t\tDisable/Enable function keys\n"));
+	g_string_append( help_message,  _("  * <Ctrl><`>\t\tDisable/Enable function keys and hyperlinks\n"));
 	g_string_append( help_message,  _("  * <Ctrl><T/Q>\t\tAdd a New tab/Close current tab\n"));
 	g_string_append( help_message,  _("  * <Ctrl><E>\t\tRename current tab\n"));
 	g_string_append( help_message,  _("  * <Ctrl><PgUp/PgDn>\tSwitch to Prev/Next tab\n"));
@@ -150,7 +158,9 @@ GString *got_help_message()
 // it will return TRUE if init socket data successfully
 gboolean init_socket_data()
 {
-	// g_debug("trying to init LilyTerm socket");
+#ifdef DEBUG
+	g_debug("! Launch init_socket_data() to init LilyTerm socket!");
+#endif
 
 	// clean data first
 	bzero(&address, sizeof(address));
@@ -176,26 +186,38 @@ gboolean init_socket_data()
 	return set_fd_non_block(&socket_fd);
 }
 
+// it will return TRUE if successed
 gboolean set_fd_non_block(gint *fd)
 {
+#ifdef DEBUG
+	g_debug("! Launch set_fd_non_block()!");
+#endif
+
 	gint flags = fcntl(*fd, F_GETFL, 0);
 	if (fcntl(*fd, F_SETFL, O_NONBLOCK|flags) < 0)
 		return socket_fault(8, NULL, NULL, FALSE);
 	return TRUE;
 }
 
+// it will return TRUE if successed
 gboolean query_socket()
 {
-	// g_debug("trying to connect to exiting LilyTerm");
+#ifdef DEBUG
+	g_debug("! Launch query_socket() to connect to a exiting LilyTerm !");
+#endif
+
 	if(connect(socket_fd, (struct sockaddr *)&address, address_len) < 0)
 		return socket_fault(2, NULL, NULL, FALSE);
 	return TRUE;
 }
 
+// it will return TRUE if successed
 gboolean send_socket( int   argc,
 		      char *argv[])
 {
-	// g_debug("trying to send data to exiting LilyTerm");
+#ifdef DEBUG
+	g_debug("! Launch send_socket() to send data to the exiting LilyTerm !");
+#endif
 
 	GError *error = NULL;
 	gsize len;
@@ -229,10 +251,14 @@ gboolean send_socket( int   argc,
 	return TRUE;
 }
 
+// it will return TRUE if successed
 gboolean init_socket_server()
 {
+#ifdef DEBUG
+	g_debug("! Launch init_socket_server() to init a LilyTerm socket server !");
+#endif
+
 	GError *error = NULL;
-	// g_debug("trying to init a LilyTerm socket server");
 
 	// clear the prev file
 	unlink(address.sun_path);
@@ -258,9 +284,12 @@ gboolean init_socket_server()
 	return TRUE;
 }
 
+// it will return TRUE if successed
 gboolean accept_socket(GIOChannel *source, GIOCondition condition, gpointer user_data)
 {
-	// g_debug("Accept the request from client");
+#ifdef DEBUG
+	g_debug("! Launch accept_socket() to accept the request from client !");
+#endif
 
 	GError *error = NULL;
 
@@ -284,20 +313,25 @@ gboolean accept_socket(GIOChannel *source, GIOCondition condition, gpointer user
 	return TRUE;
 }
 
-
+// it will return TRUE if successed
 gboolean read_socket(GIOChannel *channel, GIOCondition condition, gpointer user_data)
 {
+#ifdef DEBUG
+	g_debug("! Launch read_socket() to read data !");
+#endif
+
 	GError *error = NULL;
 	gchar *data, **datas;
 	gsize len;
 	gsize term;
 
-	// g_debug("Starting to read data...");
 	if (g_io_channel_read_line (channel, &data, &len, &term, &error) == G_IO_STATUS_ERROR)
 		return socket_fault(7, error, channel, TRUE);
-	// g_debug("Read %u bytes from Lilyterm socket: %s", len, data);
+	// g_debug("Read %u bytes from Lilyterm socket: '%s'", len, data);
 	if (len > 0)
 	{
+		// clear '\n' at the end of data[]
+		data[len-1] = 0;
 		datas = g_strsplit(data, " ", -1);
 		new_window(atoi(datas[0]), &(datas[1]));
 		g_free(data);
@@ -308,8 +342,13 @@ gboolean read_socket(GIOChannel *channel, GIOCondition condition, gpointer user_
 	return FALSE;
 }
 
+// it will always return FALSE
 gboolean socket_fault(int i, GError *error, GIOChannel* channel, gboolean unref)
 {
+#ifdef DEBUG
+	g_debug("! Launch socket_fault() to show the error message !");
+#endif
+
 	switch (i)
 	{
 		case 1:
@@ -317,7 +356,7 @@ gboolean socket_fault(int i, GError *error, GIOChannel* channel, gboolean unref)
 				  PACKAGE_NAME, address.sun_path, g_strerror (errno));
 			break;
 		case 2:
-			g_warning("Can NOT connect to a exsting %s socket!", PACKAGE_NAME);
+			g_warning("Can NOT connect to a existing %s socket!", PACKAGE_NAME);
 			break;
 		case 3:
 			g_warning("Can NOT bind on the socket!");
@@ -358,8 +397,13 @@ gboolean socket_fault(int i, GError *error, GIOChannel* channel, gboolean unref)
 	return FALSE;
 }
 
+// it will return TRUE if successed
 gboolean clear_channel(GIOChannel* channel, gboolean unref)
 {
+#ifdef DEBUG
+	g_debug("! Launch clear_channel() to clear channel data !");
+#endif
+
 	GError *error = NULL;
 
 	if (unref)
@@ -371,6 +415,10 @@ gboolean clear_channel(GIOChannel* channel, gboolean unref)
 
 void shutdown_socket_server()
 {
+#ifdef DEBUG
+	g_debug("! Launch shutdown_socket_server() to shutdown the LilyTerm socket server!");
+#endif
+
 	clear_channel(main_channel, TRUE);
 	unlink(address.sun_path);
 }

@@ -57,7 +57,7 @@ void deal_key_press(GtkWidget *window, gint type, struct Window *win_data);
 void window_style_set (GtkWidget *window, GtkStyle *previous_style, struct Window *win_data);
 void window_size_request (GtkWidget *window, GtkRequisition *requisition, struct Window *win_data);
 void window_size_allocate (GtkWidget *window, GtkAllocation *allocation, struct Window *win_data);
-gboolean window_get_focuse(GtkWidget *window, GdkEventFocus *event, struct Window *win_data);
-gboolean window_lost_focuse (GtkWidget *window, GdkEventFocus *event, struct Window *win_data);
+gboolean window_get_focus(GtkWidget *window, GdkEventFocus *event, struct Window *win_data);
+gboolean window_lost_focus (GtkWidget *window, GdkEventFocus *event, struct Window *win_data);
 
 #endif

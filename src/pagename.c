@@ -25,13 +25,16 @@
 
 #include "pagename.h"
 
-// The defalut Page Name
+// The default Page Name
 extern GtkWidget *current_vtebox;
 
 void reorder_page_number(GtkNotebook *notebook, GtkWidget *child, guint page_num, GtkWidget *window)
 {
+#ifdef DEBUG
+	g_debug("! Launch reorder_page_number() for window %p", window);
+#endif
+
 	struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(window), "Win_Data");
-	// g_debug("Get window = %d and win_data = %d when reorder page number!", window, win_data);
 	gint total_page = gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook));
 	GtkWidget *vtebox;
 	struct Page *page_data;
@@ -59,9 +62,12 @@ void reorder_page_number(GtkNotebook *notebook, GtkWidget *child, guint page_num
 
 gboolean monitor_cmdline(struct Page *page_data)
 {
-	// g_debug("Updating the page name for %d.", vtebox);
-	// The pagename won't be updated if LilyTerm is not on focuse.
-	if (*(page_data->lost_focuse) || (*(page_data->keep_vtebox_size)&0x1e))
+#ifdef DEBUG
+	// g_debug("! Launch monitor_cmdline() for vte %p", page_data->vtebox);
+#endif
+
+	// The pagename won't be updated if LilyTerm is not on focus.
+	if (*(page_data->lost_focus) || (*(page_data->keep_vtebox_size)&0x1e))
 		return TRUE;
 
 	gboolean update_pwd = FALSE;
@@ -70,6 +76,7 @@ gboolean monitor_cmdline(struct Page *page_data)
 	if (page_data->pid<1)
 	{
 		page_data->tpgid = 0;
+		// return FALSE will stop monitor_cmdline()
 		return FALSE;
 	}
 	else
@@ -105,7 +112,7 @@ gboolean monitor_cmdline(struct Page *page_data)
 		}
 	}
 
-	// only updte the page name when tpgid is updated.
+	// only update the page name when tpgid is updated.
 	if (update_pwd ||
 	   ((*(page_data->page_shows_current_cmdline) && (old_tpgid != page_data->tpgid)) ||
 	    (*(page_data->page_shows_current_dir) && update_pwd && (page_data->tpgid == page_data->pid))))
@@ -120,6 +127,10 @@ gboolean monitor_cmdline(struct Page *page_data)
 // it will update the text in label ,label->name, and the title of window
 void update_tab_name(struct Page *page_data)
 {
+#ifdef DEBUG
+	g_debug("! Launch update_tab_name() for vte %p", page_data->vtebox);
+#endif
+
 	struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(page_data->window), "Win_Data");
 	// g_debug("Get win_data = %d when update tab name!", win_data);
 
@@ -175,7 +186,7 @@ void update_tab_name(struct Page *page_data)
 		page_data->tab_color = page_color;
 
 	g_free(page_data->label->name);
-	// page_data->label->name will be freed whe page_data->label is destroyed.
+	// page_data->label->name will be freed when page_data->label is destroyed.
 	page_data->label->name = page_name;
 
 	update_page_name(page_data->window, page_data->vtebox, page_data->label, page_data->page_no+1,
@@ -185,70 +196,85 @@ void update_tab_name(struct Page *page_data)
 
 void update_page_name(GtkWidget *window, GtkWidget *vtebox, GtkWidget *label, gint page_no, gchar *custom_page_name, const gchar *tab_color, gboolean is_root, gboolean is_bold, gboolean show_encoding, GtkWidget *encoding)
 {
+#ifdef DEBUG
+	if (encoding)
+
+		g_debug("! Launch update_page_name() with vtebox = %p, label = %s, page_no = %d, "
+			"custom_page_name = %s, tab_color = %s, is_root = %d, is_bold = %d, "
+			"show_encoding = %d, encoding = %s",
+			vtebox, label->name, page_no, custom_page_name, tab_color, is_root, is_bold,
+			show_encoding, encoding->name);
+	else
+		g_debug("! Launch update_page_name() with vtebox = %p, label = %s, page_no = %d, "
+			"custom_page_name = %s, tab_color = %s, is_root = %d, is_bold = %d, "
+			"show_encoding = %d, encoding = %p",
+			vtebox, label->name, page_no, custom_page_name, tab_color, is_root, is_bold,
+			show_encoding, encoding);
+#endif
 	struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(window), "Win_Data");
-	// g_debug("Get win_data = %d when update page name!", win_data);
 
-	if (win_data->keep_vtebox_size&0x1e) return;
-	
-	// FIXME: why 
-	if (label->name==NULL) return;
-	
-	// g_debug("Updating %d page name to %s...", page_no, label->name);
-	gchar *page_name = NULL;
-
-	if (custom_page_name==NULL)
-		page_name = label->name;
-	else
-		page_name = custom_page_name;
-	
-	// g_debug("Updating %d page name to %s...", page_no, page_name);
-	// page_name will be freed later.
-	if (win_data->page_shows_number)
-		page_name = g_strdup_printf("(%d) %s", page_no, page_name);
-	
-	if (win_data->page_shows_encoding && show_encoding && encoding)
+	// g_debug("keep_vtebox_size = %x", win_data->keep_vtebox_size);
+	// We don't update page_name when the size of window is changing.
+	if (!(win_data->keep_vtebox_size&0x1e))
 	{
-		gchar *temp_str;
-		gchar **locales = g_strsplit_set(encoding->name, ".", 0);
+		// g_debug("Updating %d page name to %s...", page_no, label->name);
+		gchar *page_name = NULL;
+	
+		if (custom_page_name==NULL)
+			page_name = label->name;
+		else
+			page_name = custom_page_name;
 		
-		if (locales[1])
-			temp_str = g_strdup_printf("%s (%s)", page_name, locales[1]);
-		else
-			temp_str = g_strdup_printf("%s (%s)", page_name, locales[0]);
-		g_strfreev(locales);
-		if (win_data->page_shows_number) g_free(page_name);
-		page_name = temp_str;
-	}
-
-	win_data->keep_vtebox_size |= 1;
-	// g_debug("window_resizable in update_page_name! and keep_vtebox_size =%d", keep_vtebox_size);
-	window_resizable(window, vtebox, 2, 1);
-	if (win_data->use_color_page)
-	{
-		gchar *temp_str[2];
-		temp_str[0] = g_markup_escape_text(page_name, -1);
-		if (is_bold)
-			temp_str[1] = g_strconcat("<b><span foreground=\"", tab_color,"\">", temp_str[0], "</span></b>",
-						  NULL);
-		else
-			temp_str[1] = g_strconcat("<span foreground=\"", tab_color,"\">", temp_str[0], "</span>", NULL);
-		gtk_label_set_markup (GTK_LABEL(label), temp_str[1]);
-		g_free(temp_str[0]);
-		g_free(temp_str[1]);
-	}
-	else
-		gtk_label_set_text(GTK_LABEL(label), page_name);
+		// g_debug("Updating %d page name to %s...", page_no, page_name);
+		// page_name will be freed later.
+		if (win_data->page_shows_number)
+			page_name = g_strdup_printf("(%d) %s", page_no, page_name);
+		
+		if (win_data->page_shows_encoding && show_encoding && encoding)
+		{
+			gchar *temp_str;
+			gchar **locales = g_strsplit_set(encoding->name, ".", 0);
+			
+			if (locales[1])
+				temp_str = g_strdup_printf("%s (%s)", page_name, locales[1]);
+			else
+				temp_str = g_strdup_printf("%s (%s)", page_name, locales[0]);
+			g_strfreev(locales);
+			if (win_data->page_shows_number) g_free(page_name);
+			page_name = temp_str;
+		}
 	
-	if ((win_data->page_shows_number) ||
-	    (win_data->page_shows_encoding && show_encoding && encoding))
-		g_free(page_name);
-	
+		win_data->keep_vtebox_size |= 1;
+		// g_debug("window_resizable in update_page_name! and keep_vtebox_size =%d", keep_vtebox_size);
+		window_resizable(window, vtebox, 2, 1);
+		if (win_data->use_color_page)
+		{
+			gchar *temp_str[2];
+			temp_str[0] = g_markup_escape_text(page_name, -1);
+			if (is_bold)
+				temp_str[1] = g_strconcat("<b><span foreground=\"", tab_color,"\">",
+							  temp_str[0], "</span></b>", NULL);
+			else
+				temp_str[1] = g_strconcat("<span foreground=\"", tab_color,"\">",
+							  temp_str[0], "</span>", NULL);
+			gtk_label_set_markup (GTK_LABEL(label), temp_str[1]);
+			g_free(temp_str[0]);
+			g_free(temp_str[1]);
+		}
+		else
+			gtk_label_set_text(GTK_LABEL(label), page_name);
+		
+		if ((win_data->page_shows_number) ||
+		    (win_data->page_shows_encoding && show_encoding && encoding))
+			g_free(page_name);
+	}
 	// we should update window title if page name changed.
 	if (win_data->window_shows_current_page)
 	{
 		gint current_page_no = gtk_notebook_get_current_page(GTK_NOTEBOOK(win_data->notebook));
 
 		// we only update the window title for current page
+		// g_debug("current_page_no = %d, page_no = %d", current_page_no, page_no);
 		if (current_page_no == (page_no-1))
 		{
 			if (custom_page_name==NULL)
@@ -261,6 +287,10 @@ void update_page_name(GtkWidget *window, GtkWidget *vtebox, GtkWidget *label, gi
 
 void update_window_title(GtkWidget *window, gchar *name)
 {
+#ifdef DEBUG
+	g_debug("! Launch update_window_title with window = %p, and name = %s", window, name);
+#endif
+
 	gchar *window_title;
 	window_title = g_strdup_printf("%s - %s", name, PACKAGE_NAME);
 	gtk_window_set_title(GTK_WINDOW(window), window_title);
@@ -270,6 +300,10 @@ void update_window_title(GtkWidget *window, gchar *name)
 // The returned string should be freed when no longer needed.
 gchar *get_tab_name_with_page_names(struct Window *win_data)
 {
+#ifdef DEBUG
+	g_debug("! Launch get_tab_name_with_page_names() with win_data = %p", win_data);
+#endif
+
 	// g_debug("Get win_data = %d when get tab name with page names!", win_data);
 	if (win_data->reuse_page_names)
 		if (win_data->splited_page_names[win_data->page_names_no]==NULL)
@@ -288,6 +322,10 @@ gchar *get_tab_name_with_page_names(struct Window *win_data)
 // The returned string should be freed when no longer needed.
 gchar *get_tab_name_with_cmdline(pid_t tpgid)
 {
+#ifdef DEBUG
+	g_debug("! Launch get_tab_name_with_cmdline() for tpgid %d", tpgid);
+#endif
+
 	if (tpgid>0)
 		return get_cmdline(tpgid);
 	else
@@ -298,6 +336,10 @@ gchar *get_tab_name_with_cmdline(pid_t tpgid)
 // The returned string should be freed when no longer needed.
 gchar *get_tab_name_with_current_dir(pid_t pid)
 {
+#ifdef DEBUG
+	g_debug("! Launch get_tab_name_with_current_dir() for pid %d", pid);
+#endif
+
 	if (pid>0)
 		return g_strdup(g_file_read_link(g_strdup_printf("/proc/%d/cwd", pid), NULL));
 	else
@@ -307,6 +349,10 @@ gchar *get_tab_name_with_current_dir(pid_t pid)
 
 gint get_tpgid(pid_t pid)
 {
+#ifdef DEBUG
+	g_debug("! Launch get_tpgid() for pid %d", pid);
+#endif
+
 	if (pid<1) return 0;
 
 	pid_t tmp_tpgid = 0;
@@ -334,6 +380,10 @@ gint get_tpgid(pid_t pid)
 // The returned string should be freed when no longer needed.
 gchar *get_cmdline(pid_t tpgid)
 {
+#ifdef DEBUG
+	g_debug("! Launch get_cmdline() for tpgid %d", tpgid);
+#endif
+
 	if (tpgid<1) return NULL;
 
 	gchar *cmdline=NULL, *cmdline_path;
@@ -360,7 +410,7 @@ gchar *get_cmdline(pid_t tpgid)
 		}
 		// we only try for 10 times
 		if (timeout>=10)
-			// FIXME: should we free it here?
+			// We don't need to free cmdline here
 			break;
 	}
 	g_free(cmdline_path);
@@ -370,6 +420,10 @@ gchar *get_cmdline(pid_t tpgid)
 
 gboolean check_is_root(pid_t tpgid)
 {
+#ifdef DEBUG
+	g_debug("! Launch check_is_root() for tpgid %d", tpgid);
+#endif
+
 	if (tpgid < 1) return FALSE;
 
 	gchar *status=NULL, *status_path;
@@ -430,6 +484,10 @@ gboolean check_is_root(pid_t tpgid)
 
 gboolean check_status_data(gchar **status_data)
 {
+#ifdef DEBUG
+	g_debug("! Launch check_status_data() !");
+#endif
+
 	gint i;
 	for (i=1;i<5;i++)
 	{

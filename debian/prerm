@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -e
+
+# remove alternatives links
+
+if [ "$1" = "remove" ] || [ "$1" = "deconfigure" ]; then
+	update-alternatives --remove x-terminal-emulator /usr/bin/lilyterm
+fi
+
+#DEBHELPER#
+
+exit 0
+

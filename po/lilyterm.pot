@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-07-02 18:50+0800\n"
+"POT-Creation-Date: 2008-07-09 21:31+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,83 +16,87 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: dialog.c:101 menu.c:257
+#: dialog.c:118 menu.c:264
 msgid "Rename this tab"
 msgstr ""
 
-#: dialog.c:104
+#: dialog.c:121
 msgid "Change the saturation of background"
 msgstr ""
 
-#: dialog.c:107
+#: dialog.c:124
 msgid "Confirm to close multi tabs"
 msgstr ""
 
-#: dialog.c:110
+#: dialog.c:127
 msgid "Get the key value for using in profile"
 msgstr ""
 
-#: dialog.c:113 menu.c:310
+#: dialog.c:130 menu.c:318
 msgid "Usage"
 msgstr ""
 
-#: dialog.c:116
+#: dialog.c:133
 msgid "Error when writing profile"
 msgstr ""
 
-#: dialog.c:119
+#: dialog.c:136
 msgid "Confirm to close running foreground program"
 msgstr ""
 
-#: dialog.c:122
+#: dialog.c:139
 msgid "Change the opacity of window"
 msgstr ""
 
-#: dialog.c:125
+#: dialog.c:142
 msgid "Change the foreground color in terminal"
 msgstr ""
 
-#: dialog.c:128
+#: dialog.c:145
 msgid "Change the background color in terminal"
 msgstr ""
 
-#: dialog.c:131
+#: dialog.c:148
 msgid "Change the command line color on tab"
 msgstr ""
 
-#: dialog.c:134
+#: dialog.c:151
 msgid "Change the current directory color on tab"
 msgstr ""
 
-#: dialog.c:137
+#: dialog.c:154
 msgid "Change the custom tab text color"
 msgstr ""
 
-#: dialog.c:140
+#: dialog.c:157
 msgid "Change the root privileges color on tab"
 msgstr ""
 
-#: dialog.c:143
+#: dialog.c:160
 msgid "Change the normal tab text color"
 msgstr ""
 
-#: dialog.c:146
+#: dialog.c:163
 msgid "Error when creating child process"
 msgstr ""
 
-#: dialog.c:332
+#: dialog.c:166
+msgid "The following error is occurred:"
+msgstr ""
+
+#: dialog.c:364
 msgid "Please input the Label Name of this tab:"
 msgstr ""
 
-#: dialog.c:335
+#: dialog.c:367
 msgid "Change the Saturation of background:"
 msgstr ""
 
-#: dialog.c:338
+#: dialog.c:370
 msgid "You are about to close multi tabs. Continue anyway?"
 msgstr ""
 
-#: dialog.c:341
+#: dialog.c:373
 msgid ""
 "You may press any key here to get the key value for using in profile.\n"
 "\n"
@@ -100,7 +104,7 @@ msgid ""
 "And press [Close] to exit."
 msgstr ""
 
-#: dialog.c:357
+#: dialog.c:389
 #, c-format
 msgid ""
 "Error while writing profile '%s':\n"
@@ -108,7 +112,7 @@ msgid ""
 "%s"
 msgstr ""
 
-#: dialog.c:360
+#: dialog.c:392
 #, c-format
 msgid ""
 "Error while writing profile '%s/%s':\n"
@@ -116,7 +120,7 @@ msgid ""
 "%s"
 msgstr ""
 
-#: dialog.c:368
+#: dialog.c:400
 #, c-format
 msgid ""
 "There is still a running foreground program on #%d tab:\n"
@@ -126,11 +130,11 @@ msgid ""
 "Continue anyway?\n"
 msgstr ""
 
-#: dialog.c:375
+#: dialog.c:407
 msgid "Change the Opacity of window:"
 msgstr ""
 
-#: dialog.c:435
+#: dialog.c:467
 #, c-format
 msgid ""
 "Error while creating the child process:\n"
@@ -138,263 +142,263 @@ msgid ""
 "%s"
 msgstr ""
 
-#: dialog.c:515
+#: dialog.c:549
 msgid "Label Name:"
 msgstr ""
 
-#: dialog.c:554
+#: dialog.c:588
 msgid "Key Value:"
 msgstr ""
 
-#: dialog.c:642 dialog.c:986
+#: dialog.c:676 dialog.c:1033
 msgid "Bold Demo Text"
 msgstr ""
 
-#: dialog.c:646
+#: dialog.c:680
 msgid "Running Command"
 msgstr ""
 
-#: dialog.c:650
+#: dialog.c:684
 msgid "Current Dir"
 msgstr ""
 
-#: dialog.c:654
+#: dialog.c:688
 msgid "Custom Tab Name"
 msgstr ""
 
-#: dialog.c:658
+#: dialog.c:692
 msgid "Root Privileges"
 msgstr ""
 
-#: dialog.c:662
+#: dialog.c:696
 msgid "Normal Text"
 msgstr ""
 
-#: main.c:113
+#: main.c:121
 #, c-format
 msgid ""
-"%s is a libvte based X Terminal Emulater.\n"
+"%s is a libvte based X Terminal Emulator.\n"
 "\n"
 msgstr ""
 
-#: main.c:114
+#: main.c:122
 msgid ""
-"Use -e/-x/--execute {Command} to run a command when startup. (Must be the "
+"Use -e/-x/--execute {Command} to run a command when start up. (Must be the "
 "final option).\n"
 msgstr ""
 
-#: main.c:116
-msgid "Use -t/--tab {number} to open multi tabs when startup.\n"
+#: main.c:124
+msgid "Use -t/--tab {number} to open multi tabs when start up.\n"
 msgstr ""
 
-#: main.c:117
+#: main.c:125
 msgid "Use -s/--separate to run in separate process.\n"
 msgstr ""
 
-#: main.c:118
-msgid "Use -v/--version to show the version infomation.\n"
+#: main.c:126
+msgid "Use -v/--version to show the version information.\n"
 msgstr ""
 
-#: main.c:119
+#: main.c:127
 msgid "Use -p/--profile to got a profile sample.\n"
 msgstr ""
 
-#: main.c:121
+#: main.c:129
 #, c-format
 msgid ""
 "Use -u/--user_profile {%s} to use a specified profile.\n"
 "\n"
 msgstr ""
 
-#: main.c:124
+#: main.c:132
 #, c-format
 msgid "The %s system config is: %s/%s\n"
 msgstr ""
 
-#: main.c:126
+#: main.c:134
 #, c-format
 msgid ""
 "And your %s profile is: %s/%s\n"
 "\n"
 msgstr ""
 
-#: main.c:128
+#: main.c:136
 msgid ""
 "Default shortcut key: (It may custom by editing user's profile)\n"
 "\n"
 msgstr ""
 
-#: main.c:129
-msgid "  * <Ctrl><`>\t\tDisable/Enable function keys\n"
-msgstr ""
-
-#: main.c:130
-msgid "  * <Ctrl><T/Q>\t\tAdd a New tab/Close current tab\n"
-msgstr ""
-
-#: main.c:131
-msgid "  * <Ctrl><E>\t\tRename current tab\n"
-msgstr ""
-
-#: main.c:132
-msgid "  * <Ctrl><PgUp/PgDn>\tSwitch to Prev/Next tab\n"
-msgstr ""
-
-#: main.c:133
-msgid "  * <Ctrl><Home/End>\tSwitch to First/Last tab\n"
-msgstr ""
-
-#: main.c:134
-msgid "  * <Ctrl><Left/Right>\tMove current page Forward/Backward\n"
-msgstr ""
-
-#: main.c:135
-msgid "  * <Ctrl><Up/Down>\tMove current page to First/Last\n"
-msgstr ""
-
-#: main.c:136
-msgid "  * <Ctrl><F1~F12>\tSwitch to 1st ~ 12th tab\n"
-msgstr ""
-
 #: main.c:137
-msgid "  * <Ctrl><O>\t\tSelect all the text in the Vte Terminal box\n"
+msgid "  * <Ctrl><`>\t\tDisable/Enable function keys and hyperlinks\n"
 msgstr ""
 
 #: main.c:138
-msgid "  * <Ctrl><X>\t\tCopy the text to clipboard\n"
+msgid "  * <Ctrl><T/Q>\t\tAdd a New tab/Close current tab\n"
 msgstr ""
 
 #: main.c:139
-msgid "  * <Ctrl><V>\t\tPast the text in clipboard\n"
+msgid "  * <Ctrl><E>\t\tRename current tab\n"
 msgstr ""
 
 #: main.c:140
-msgid "  * <Ctrl><+/->\t\tIncrease/Decrease the font size of current tab\n"
+msgid "  * <Ctrl><PgUp/PgDn>\tSwitch to Prev/Next tab\n"
 msgstr ""
 
 #: main.c:141
-msgid "  * <Ctrl><Enter>\tReset the font size of current tab\n"
+msgid "  * <Ctrl><Home/End>\tSwitch to First/Last tab\n"
 msgstr ""
 
 #: main.c:142
-msgid "  * <Shift><Insert>\tPast the text in primary clipboard\n"
+msgid "  * <Ctrl><Left/Right>\tMove current page Forward/Backward\n"
 msgstr ""
 
 #: main.c:143
+msgid "  * <Ctrl><Up/Down>\tMove current page to First/Last\n"
+msgstr ""
+
+#: main.c:144
+msgid "  * <Ctrl><F1~F12>\tSwitch to 1st ~ 12th tab\n"
+msgstr ""
+
+#: main.c:145
+msgid "  * <Ctrl><O>\t\tSelect all the text in the Vte Terminal box\n"
+msgstr ""
+
+#: main.c:146
+msgid "  * <Ctrl><X>\t\tCopy the text to clipboard\n"
+msgstr ""
+
+#: main.c:147
+msgid "  * <Ctrl><V>\t\tPast the text in clipboard\n"
+msgstr ""
+
+#: main.c:148
+msgid "  * <Ctrl><+/->\t\tIncrease/Decrease the font size of current tab\n"
+msgstr ""
+
+#: main.c:149
+msgid "  * <Ctrl><Enter>\tReset the font size of current tab\n"
+msgstr ""
+
+#: main.c:150
+msgid "  * <Shift><Insert>\tPast the text in primary clipboard\n"
+msgstr ""
+
+#: main.c:151
 msgid ""
 "\t\t\t(i.e. Emulate a middle button mouse click to past the text)\n"
 "\n"
 msgstr ""
 
-#: main.c:145
+#: main.c:153
 #, c-format
 msgid "Please report bug to %s. Thank you for using %s!\n"
 msgstr ""
 
-#: menu.c:49
-msgid "Change text coding"
+#: menu.c:54
+msgid "Change text encoding"
 msgstr ""
 
-#: menu.c:56
+#: menu.c:61
 msgid "New tab with specified locale"
 msgstr ""
 
-#: menu.c:118
+#: menu.c:123
 msgid "Change colors"
 msgstr ""
 
-#: menu.c:126
+#: menu.c:131
 msgid "Change the foreground color"
 msgstr ""
 
-#: menu.c:133
+#: menu.c:138
 msgid "Change the background color"
 msgstr ""
 
-#: menu.c:142
+#: menu.c:147
 msgid "Change the cmdline color on tab"
 msgstr ""
 
-#: menu.c:149
+#: menu.c:154
 msgid "Change the dir color on tab"
 msgstr ""
 
-#: menu.c:156
+#: menu.c:161
 msgid "Change the custom color on tab"
 msgstr ""
 
-#: menu.c:163
+#: menu.c:168
 msgid "Change the root color on tab"
 msgstr ""
 
-#: menu.c:170
+#: menu.c:175
 msgid "Change the normal color on tab"
 msgstr ""
 
-#: menu.c:188
+#: menu.c:193
 msgid "Transparent Window"
 msgstr ""
 
-#: menu.c:192
+#: menu.c:197
 msgid "Window Opacity"
 msgstr ""
 
-#: menu.c:204
+#: menu.c:209
 msgid "Transparent Background"
 msgstr ""
 
-#: menu.c:208
+#: menu.c:213
 msgid "Background Saturation"
 msgstr ""
 
-#: menu.c:221
+#: menu.c:226
 msgid "Scrollback lines"
 msgstr ""
 
-#: menu.c:226
+#: menu.c:231
 msgid "Clean scrollback lines of this tab"
 msgstr ""
 
-#: menu.c:240
+#: menu.c:245
 msgid "Switch input methods"
 msgstr ""
 
-#: menu.c:250
+#: menu.c:255
 msgid "Change the font"
 msgstr ""
 
-#: menu.c:270
+#: menu.c:278
 msgid "Increase window size"
 msgstr ""
 
-#: menu.c:275
+#: menu.c:283
 msgid "Decrease window size"
 msgstr ""
 
-#: menu.c:285
+#: menu.c:293
 msgid "Reset to default font/size"
 msgstr ""
 
-#: menu.c:291
+#: menu.c:299
 msgid "Reset to system font/size"
 msgstr ""
 
-#: menu.c:299
+#: menu.c:307
 msgid "Reset the content of this tab"
 msgstr ""
 
-#: menu.c:317
+#: menu.c:325
 msgid "Get function key value"
 msgstr ""
 
-#: menu.c:325
+#: menu.c:333
 msgid "Save settings"
 msgstr ""
 
-#: menu.c:448
+#: menu.c:482
 msgid "Font Selection"
 msgstr ""
 
-#: profile.c:510
+#: profile.c:632
 msgid "System Default"
 msgstr ""

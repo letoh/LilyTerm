@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT(LilyTerm, 0.9.3, tetralet@gmail.com)
+AC_INIT(LilyTerm, 0.9.5, tetralet@gmail.com)
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADERS([config.h])
@@ -23,8 +23,6 @@ PKG_CHECK_EXISTS(gtk+-2.0 >= 2.10,
 		 AC_DEFINE(ENABLE_GDKCOLOR_TO_STRING,, [Define only if gtk+-2.0 >= 2.10.0.]))
 PKG_CHECK_EXISTS(vte >= 0.13, AC_DEFINE(ENABLE_SELECT_ALL,, [Define only if vte >= 0.13.]))
 PKG_CHECK_EXISTS(glib-2.0 >= 2.14, AC_DEFINE(USE_TIMEOUT_SECONDS,, [Define only if glib-2.0 >= 2.14.]))
-PKG_CHECK_EXISTS(libgtop-2.0, [PKG_CHECK_MODULES(libgtop, [libgtop-2.0 >= 2.14.4],
-		 				 AC_DEFINE(USE_LIBGTOP,, [Define only if libgtop-2.0 >= 2.14.4.]))])
 
 AC_PROG_INTLTOOL
 ALL_LINGUAS="zh_TW de"

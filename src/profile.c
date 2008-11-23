@@ -28,10 +28,66 @@
 extern gint total_window;
 struct ModKey modkeys[MOD] = {{0}};
 struct KeyValue system_keys[KEYS] = {{0}};
+struct Command command[COMMAND] = {{0}};
+
+void init_command()
+{
+#ifdef DEBUG
+	g_debug("! Launch init_command()!");
+#endif
+
+	#define USER "[-A-Za-z0-9]+"
+	#define PASS "(:[^ \t\r\n]+)?"
+	#define LOGIN "(" USER PASS "@)?"
+	#define HOST "[A-Za-z0-9][-A-Za-z0-9.]+\\.[A-Za-z0-9][-A-Za-z0-9.]+[-A-Za-z0-9]"
+	#define END "[^< \t\r\n,;\\\"]*"
+
+	// WWW
+	command[0].name = "web_browser";
+	command[0].match = "[Hh][Tt][Tt][Pp][Ss]?://" LOGIN HOST "(/" END ")?";
+	command[0].comment = "# The web browser using for http(s)://";
+	command[0].method_name = "web_method";
+
+	// FTP
+	command[1].name = "ftp_client";
+	command[1].match = "[Ff][Tt][Pp][Ss]?://" LOGIN HOST "(/" END ")?";
+	command[1].comment = "# The ftp client using for ftp(s)://";
+	command[1].method_name = "ftp_method";
+
+	// FILE
+	command[2].name = "file_manager";
+	command[2].match = "[Ff][Ii][Ll][Ee]:///" END;
+	command[2].comment = "# The file manager using for file://";
+	command[2].method_name = "file_method";
+
+	// MAIL
+	command[3].name = "email_client";
+	command[3].match = "([Mm][Aa][Ii][Ll][Tt][Oo]:)?" USER "@" HOST;
+	command[3].comment = "# The email client using for user@host";
+	command[3].method_name = "email_method";
+}
+
+void init_user_command(struct Window *win_data)
+{
+#ifdef DEBUG
+	g_debug("! Launch init_user_command() for win_data %p", win_data);
+#endif
+
+	win_data->user_command[0].command = g_strdup("firefox");
+	win_data->user_command[1].command = g_strdup("firefox");
+	win_data->user_command[2].command = g_strdup("firefox");
+	win_data->user_command[3].command = g_strdup("thunderbird");
+
+	gint i;
+	for (i=0;i<COMMAND;i++)
+		win_data->user_command[i].method = 1;
+}
 
 void init_window_option(struct Window *win_data)
 {
-	// g_debug("Get win_data = %d when init window option!", win_data);
+#ifdef DEBUG
+	g_debug("! Launch init_window_option() with win_data = %p", win_data);
+#endif
 
 	// init_window_parameter(win_data);
 	// The first command in -e option
@@ -48,8 +104,10 @@ void init_window_option(struct Window *win_data)
 
 void init_window_parameter(struct Window *win_data)
 {
-	// g_debug("Get win_data = %d when init window parameter!", win_data);
-	
+#ifdef DEBUG
+	g_debug("! Launch init_window_parameter() with win_data = %p", win_data);
+#endif
+
 	// the component of a single window
 //	win_data->menu = NULL;
 #ifdef ENABLE_RGBA
@@ -83,14 +141,19 @@ void init_window_parameter(struct Window *win_data)
 	win_data->window_shows_current_page = TRUE;
 	win_data->page_width = 16;
 	win_data->fixed_page_width = TRUE;
+//	win_data->tabbar_position = FALSE;
+//	win_data->fill_tab_bar = FALSE;
 	win_data->show_color_selection_menu = TRUE;
 	win_data->foreground_color = g_strdup("white");
 	win_data->background_color = g_strdup("black");
 	//win_data->fg_color = {0};
 	//win_data->bg_color = {0};
 	win_data->show_resize_menu = TRUE;
+	win_data->font_resize_ratio = 0;
+	win_data->window_resize_ratio = 1.12;
 	win_data->default_font_name = g_strdup("Monospace 12");
 	win_data->system_font_name = g_strdup("Monospace 12");
+	win_data->font_anti_alias = VTE_ANTI_ALIAS_USE_DEFAULT;
 	win_data->default_column = 80;
 	win_data->default_row = 24;
 	win_data->system_column = 80;
@@ -109,8 +172,17 @@ void init_window_parameter(struct Window *win_data)
 	win_data->background_saturation = 0.15;
 	win_data->word_chars = g_strdup("-A-Za-z0-9_$.+!*(),;:@&=?/~#%[]<>");
 	win_data->scrollback_lines = 1024;
-	win_data->show_input_method_menu = FALSE;
+	
+	// 0: don't use scrollbar
+	// 1: right
+	// 2: left
+	win_data->scrollbar_position = 1;
+
+	win_data->enable_hyperlink = 1;
+
+//	win_data->show_input_method_menu = FALSE;
 	win_data->show_get_function_key_menu = TRUE;
+//	win_data->show_change_page_name_menu = FALSE;
 //	win_data->default_locale = NULL;
 	win_data->locales_list = g_strdup("ja_JP.EUC-JP zh_CN.GB2312 zh_TW.Big5");
 	// supported_locales CAN NOT be free!
@@ -125,15 +197,15 @@ void init_window_parameter(struct Window *win_data)
 	// 2, When the page bar was shown.
 	// 3, When the font was changed by right click menu.
 	// 4, Increase/decrease window size.
-	// 5, Resotre to system/default font.
+	// 5, Restore to system/default font.
 	// 6, Theme has been changed.
-	// 7, Using Dir/Cmdline on pagename.
-	win_data->lost_focuse = FALSE;
+	// 7, Using Dir/Cmdline on page name.
+	win_data->lost_focus = FALSE;
 
 	//  1    : Updating Page Name.
 	//  2,  4: Showing/Hiding tab bar, Only run window_size_request() once. 
 	//  8    : Changing Themes.
-	// 16, 32: Resing Window, Only run window_size_request() once.
+	// 16, 32: Resizing Window, Only run window_size_request() once.
 //	win_data->keep_vtebox_size = 0;
 //	win_data->query_coding = 0;
 
@@ -143,7 +215,9 @@ void init_window_parameter(struct Window *win_data)
 
 void init_user_keys(struct Window *win_data)
 {
-	// g_debug("Get win_data = %d when init user keys!", win_data);
+#ifdef DEBUG
+	g_debug("! Launch init_user_keys() with win_data = %p", win_data);
+#endif
 
 	// for disable/enable the function keys
 	win_data->user_keys[0].value = g_strdup("Ctrl grave");
@@ -198,10 +272,13 @@ void init_user_keys(struct Window *win_data)
 
 void init_function_keys()
 {
+#ifdef DEBUG
+	g_debug("! Launch init_function_keys()!");
+#endif
 
 	// for disable/enable the function keys
 	system_keys[0].name = "disable_function_key";
-	system_keys[0].comment = "# Disable/Enable function keys for temporary.";
+	system_keys[0].comment = "# Disable/Enable function keys and hyperlinks for temporary.";
 	// New Page
 	system_keys[1].name = "new_tab_key";
 	system_keys[1].comment = "# Add a new tab.";
@@ -282,6 +359,10 @@ void init_function_keys()
 
 void init_mod_keys()
 {
+#ifdef DEBUG
+	g_debug("! Launch init_mod_keys()!");
+#endif
+
 	modkeys[0].name = "Ctrl";
 	modkeys[0].mod = GDK_CONTROL_MASK;
 	modkeys[1].name = "Shift";
@@ -302,14 +383,20 @@ void init_mod_keys()
 // get user settings from profile.
 void get_user_settings(GtkWidget *window, struct Window *win_data)
 {
+#ifdef DEBUG
+	g_debug("! Launch get_user_settings() with window = %p, and win_data = %p", window, win_data);
+#endif
+
 	// g_debug("Get win_data = %d when get user settings!", win_data);
 
 	init_window_parameter(win_data);
 	init_user_keys(win_data);
+	init_user_command(win_data);
 	if (total_window==1)
 	{
 		init_function_keys(win_data);
 		init_mod_keys();
+		init_command();
 	}
 
 	gint i;
@@ -375,9 +462,16 @@ void get_user_settings(GtkWidget *window, struct Window *win_data)
 									  win_data->page_shows_number);
 
 			win_data->page_width = check_integer_value( keyfile, "main", "page_width",
-								    win_data->page_width, FALSE, FALSE);
+								    win_data->page_width, FALSE, FALSE, TRUE, 1, FALSE, 0);
+
 			win_data->fixed_page_width = check_boolean_value(keyfile, "main", "fixed_page_width",
 									 win_data->fixed_page_width);
+
+			win_data->tabbar_position = check_boolean_value(keyfile, "main", "tabbar_position", 
+								     win_data->tabbar_position);
+
+			win_data->fill_tab_bar = check_boolean_value(keyfile, "main", "fill_tab_bar",
+								     win_data->fill_tab_bar);
 
 			win_data->show_color_selection_menu = check_boolean_value(keyfile, "main",
 						"show_color_selection_menu", win_data->show_color_selection_menu);
@@ -399,46 +493,65 @@ void get_user_settings(GtkWidget *window, struct Window *win_data)
 				win_data->default_font_name = g_strdup(win_data->system_font_name);
 			}
 
+			win_data->font_anti_alias = check_integer_value( keyfile, "main", "font_anti_alias",
+					 win_data->font_anti_alias, FALSE, TRUE, TRUE, 0, TRUE, 2);
+
 			win_data->show_resize_menu = check_boolean_value(keyfile, "main", "show_resize_menu",
 									 win_data->show_resize_menu);
 
-			win_data->default_column = check_integer_value(keyfile, "main", "column",
-									win_data->default_column, FALSE, FALSE);
+			win_data->font_resize_ratio = check_double_value(keyfile, "main", "font_resize_ratio",
+									 win_data->font_resize_ratio);
+
+			win_data->window_resize_ratio = check_double_value(keyfile, "main", "window_resize_ratio",
+									   win_data->window_resize_ratio);
+
+			win_data->default_column = check_integer_value( keyfile, "main", "column", win_data->default_column,
+									FALSE, FALSE, TRUE, 1, FALSE, 0);
 
 			win_data->default_row = check_integer_value(keyfile, "main", "row", win_data->default_row,
-								    FALSE, FALSE);
+								    FALSE, FALSE, TRUE, 1, FALSE, 0);
 
 			win_data->show_transparent_menu = check_boolean_value(keyfile, "main", "show_transparent_menu", 
 								    win_data->show_transparent_menu);
 
 #ifdef ENABLE_RGBA
 			win_data->use_rgba = check_integer_value(keyfile, "main", "use_rgba", win_data->use_rgba,
-								 FALSE, TRUE);
+								 FALSE, TRUE, TRUE, 0, TRUE, 2);
 			win_data->original_use_rgba = win_data->use_rgba;
 
 			win_data->transparent_window = check_integer_value(keyfile, "main", "transparent_window",
-								 win_data->transparent_window, FALSE, TRUE);
-
-			win_data->window_opacity = g_key_file_get_double(keyfile, "main", "window_opacity", NULL);
+							 win_data->transparent_window, FALSE, TRUE, TRUE, 0, TRUE, 2);
+			win_data->window_opacity = check_double_value ( keyfile, "main", "window_opacity",
+									win_data->window_opacity);
 #endif
 
 			win_data->transparent_background = check_integer_value(keyfile, "main", "transparent_background", 
-								     win_data->transparent_background, FALSE, TRUE);
+							win_data->transparent_background, FALSE, TRUE, TRUE, 0, TRUE, 2);
 
-			win_data->background_saturation = g_key_file_get_double(keyfile, "main", "background_saturation",
-										NULL);
+			win_data->background_saturation = check_double_value(keyfile, "main", "background_saturation",
+									     win_data->background_saturation);
 
 			win_data->word_chars = check_string_value(keyfile, "main", "word_chars", win_data->word_chars,
 								  TRUE);
 			
 			win_data->scrollback_lines = check_integer_value( keyfile, "main", "scrollback_lines",
-									  win_data->scrollback_lines, FALSE, TRUE);
+								win_data->scrollback_lines, FALSE, TRUE, TRUE, 0, FALSE, 0);
+
+			win_data->scrollbar_position = check_integer_value( keyfile, "main", "scrollbar_position",
+								win_data->scrollbar_position, FALSE, TRUE, TRUE, 0, TRUE, 2);
 
 			win_data->show_input_method_menu = check_boolean_value(keyfile, "main", "show_input_method_menu", 
 								     win_data->show_input_method_menu);
 
 			win_data->show_get_function_key_menu = check_boolean_value(keyfile, "main",
-							"show_get_function_key_menu", win_data->show_get_function_key_menu);
+					"show_get_function_key_menu", win_data->show_get_function_key_menu);
+
+			win_data->show_change_page_name_menu = check_boolean_value(keyfile, "main",
+					"show_change_page_name_menu", win_data->show_change_page_name_menu);
+
+			win_data->enable_hyperlink = check_boolean_value(keyfile, "main",
+							"enable_hyperlink", win_data->enable_hyperlink);
+
 
 			win_data->locales_list = check_string_value( keyfile, "main", "locales_list",
 								     win_data->locales_list, TRUE);
@@ -473,6 +586,16 @@ void get_user_settings(GtkWidget *window, struct Window *win_data)
 				// else
 				//	g_debug("We can not find %s key in profile...", pagekeys[i].name);
 			}
+			for (i=0; i<COMMAND; i++)
+			{
+				win_data->user_command[i].command = check_string_value(keyfile,	"command",
+						command[i].name, win_data->user_command[i].command, FALSE);
+				win_data->user_command[i].method = check_integer_value(
+						keyfile, "command", command[i].method_name,
+						win_data->user_command[i].method, FALSE, TRUE, TRUE, 0, TRUE, 2);
+				//g_debug("command[i].name = %s (%d)",
+				//	win_data->user_command[i].command, win_data->user_command[i].method);
+			}
 		}
 		else
 		{
@@ -496,7 +619,6 @@ void get_user_settings(GtkWidget *window, struct Window *win_data)
 		}
 		// g_debug("* We'll use the key for %s: %x(%s), mods = %x.\n", pagekeys[i].name,
 		//		pagekeys[i].key, gdk_keyval_name(pagekeys[i].key), pagekeys[i].mods);
-
  	}
 	// some defaults
 	// g_debug("Got locales_list = '%s' ( %d bytes)",locales_list, strlen(locales_list));
@@ -557,8 +679,30 @@ gboolean check_boolean_value(GKeyFile *keyfile, const gchar *group_name, const g
 	return setting;
 }
 
-gint check_integer_value(GKeyFile *keyfile, const gchar *group_name,
-			 const gchar *key, const gint default_value, gboolean enable_empty, gboolean enable_zero)
+gdouble check_double_value(GKeyFile *keyfile, const gchar *group_name, const gchar *key, const gdouble default_value)
+{
+	gchar *value = g_key_file_get_value(keyfile, group_name, key, NULL);
+	gdouble setting;
+
+	if (value)
+	{
+		if (strlen(value))
+			setting = g_key_file_get_double(keyfile, group_name, key, NULL);
+		else
+			setting = default_value;
+		g_free(value);
+	}
+	else
+		setting = default_value;
+
+	// g_debug("Got key value \"%s = %d\"", key, setting);
+	return setting;
+}
+
+// enable_empty -> True: 0, False: default
+gint check_integer_value(GKeyFile *keyfile, const gchar *group_name, const gchar *key,
+			 const gint default_value, gboolean enable_empty, gboolean enable_zero,
+			 gboolean check_min, gint min, gboolean check_max, gint max)
 {
 	gchar *value = g_key_file_get_value(keyfile, group_name, key, NULL);
 	gint setting;
@@ -579,8 +723,16 @@ gint check_integer_value(GKeyFile *keyfile, const gchar *group_name,
 	else
 		setting = default_value;
 	
-	if ( setting==0 && (! enable_zero))
+	if (setting==0 && (! enable_zero))
 		setting = default_value;
+
+	if (check_min)
+		if (setting < min)
+			setting = default_value;
+	
+	if (check_max)
+		if (setting > max)
+			setting = default_value;
 
 	// g_debug("Got key value \"%s = %d\"", key, setting);
 	return setting;
@@ -629,12 +781,19 @@ gchar *get_default_locale()
 }
 
 // to init a new page
-void init_new_page(GtkWidget *window, struct Window *win_data, GtkWidget *vtebox, char* font_name, gint column, gint row, gint run_once)
+void init_new_page(GtkWidget *window, struct Window *win_data, GtkWidget *vtebox, gchar* font_name, gint column, gint row, gint run_once, gboolean enable_hyperlink)
 {
+#ifdef DEBUG
+	g_debug("! Launch init_new_page() with window = %p, win_data = %p, vtebox = %p, font_name = %s,"
+		" column = %d, row = %d, run_once = %d, enable_hyperlink = %d",
+		window, win_data, vtebox, font_name, column, row, run_once, enable_hyperlink);
+#endif
+
 	// g_debug("Get win_data = %d when init new page!", win_data);
 
 	// set font
-	vte_terminal_set_font_from_string(VTE_TERMINAL(vtebox), font_name);
+	// g_debug("Set Font AA = %d", win_data->font_anti_alias);
+	vte_terminal_set_font_from_string_full (VTE_TERMINAL(vtebox), font_name, win_data->font_anti_alias);
 	//g_debug("Got font size from %s: %d\n", font_name, pango_font_description_get_size (
 	//	  pango_font_description_from_string(font_name))/PANGO_SCALE);
 
@@ -655,10 +814,14 @@ void init_new_page(GtkWidget *window, struct Window *win_data, GtkWidget *vtebox
 	vte_terminal_set_scrollback_lines(VTE_TERMINAL(vtebox), win_data->scrollback_lines);
 
 	// some fixed parameter
+	vte_terminal_set_audible_bell(VTE_TERMINAL(vtebox), TRUE);
 	vte_terminal_set_scroll_on_output(VTE_TERMINAL(vtebox), FALSE);
 	vte_terminal_set_scroll_on_keystroke(VTE_TERMINAL(vtebox), TRUE);
 	vte_terminal_set_backspace_binding (VTE_TERMINAL(vtebox), VTE_ERASE_ASCII_DELETE);
 	// vte_terminal_set_delete_binding (VTE_TERMINAL(vtebox), VTE_ERASE_ASCII_DELETE);
+
+	if (enable_hyperlink)
+		set_hyprelink(vtebox);
 
 	if (run_once)
 	{
@@ -668,8 +831,23 @@ void init_new_page(GtkWidget *window, struct Window *win_data, GtkWidget *vtebox
 	}
 }
 
+void set_hyprelink(GtkWidget *vtebox)
+{
+	gint i;
+	struct Page *page_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Page_Data");
+	for (i=0; i<COMMAND; i++)
+	{
+		page_data->tag[i] = vte_terminal_match_add (VTE_TERMINAL(vtebox), command[i].match);
+		vte_terminal_match_set_cursor_type(VTE_TERMINAL(vtebox), page_data->tag[i], GDK_HAND2);
+	}
+}
+
 gboolean set_background_saturation(GtkRange *range, GtkScrollType scroll, gdouble value, GtkWidget *vtebox)
 {
+#ifdef DEBUG
+	g_debug("! Launch set_background_saturation() with value = %f, vtebox = %p", value, vtebox);
+#endif
+
 	struct Page *page_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Page_Data");
 	struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(page_data->window), "Win_Data");
 	// g_debug("Get win_data = %d when set background saturation!", win_data);
@@ -700,8 +878,12 @@ gboolean set_background_saturation(GtkRange *range, GtkScrollType scroll, gdoubl
 }
 
 #ifdef ENABLE_RGBA
-gboolean set_window_opacity (GtkRange *range, GtkScrollType scroll, gdouble value, GtkWidget *window)
+gboolean set_window_opacity(GtkRange *range, GtkScrollType scroll, gdouble value, GtkWidget *window)
 {
+#ifdef DEBUG
+	g_debug("! Launch set_window_opacity() with value = %f, window = %p", value, window);
+#endif
+
 	struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(window), "Win_Data");
 	// g_debug("Get win_data = %d when set window opacity!", win_data);
 
@@ -725,6 +907,10 @@ gboolean set_window_opacity (GtkRange *range, GtkScrollType scroll, gdouble valu
 // init rgba to enable true transparent.
 void init_rgba(GtkWidget *window, struct Window *win_data)
 {
+#ifdef DEBUG
+	g_debug("! Launch init_rgba() with window = %p, win_data = %p", window, win_data);
+#endif
+
 	// g_debug("Get win_data = %d when init rgba!", win_data);
 
 	GdkScreen *screen;
@@ -755,8 +941,10 @@ void init_rgba(GtkWidget *window, struct Window *win_data)
 // set the window hints information
 void window_resizable(GtkWidget *window, GtkWidget *vtebox, gint run_once, gint minsize)
 {
-	if (vtebox==NULL) return;
-
+#ifdef DEBUG
+	g_debug("! Launch window_resizable() with window = %p, vtebox = %p, run_once = %d, min_size = %d",
+		window, vtebox, run_once, minsize);
+#endif
 	GdkGeometry hints = {0};
 	// g_debug("Trying to get padding...\n");
 	vte_terminal_get_padding (VTE_TERMINAL(vtebox), &hints.base_width, &hints.base_height);
@@ -893,6 +1081,10 @@ gboolean accelerator_parse (const gchar *key_name, const gchar *key_value, guint
 
 GString *save_user_settings(GtkWidget *widget, GtkWidget *vtebox)
 {
+#ifdef DEBUG
+	g_debug("! Launch save_user_settings with vtebox = %p", vtebox);
+#endif
+
 	struct Page *page_data = NULL;
 	struct Window *win_data = NULL;
 	GError *error = NULL;
@@ -914,6 +1106,8 @@ GString *save_user_settings(GtkWidget *widget, GtkWidget *vtebox)
 		init_window_parameter(win_data);
 		init_user_keys(win_data);
 		init_function_keys(win_data);
+		init_command();
+		init_user_command(win_data);
 	}
 
 
@@ -978,6 +1172,11 @@ GString *save_user_settings(GtkWidget *widget, GtkWidget *vtebox)
 					"page_width = %d\n\n", win_data->page_width);
 	g_string_append_printf(contents,"# The page width will always use the max character width.\n"
 					"fixed_page_width = %d\n\n", win_data->fixed_page_width);
+	g_string_append_printf(contents,"# The position of tab bar.\n"
+					"# 0: Top, 1: bottom.\n"
+					"tabbar_position = %d\n\n", win_data->tabbar_position);
+	g_string_append_printf(contents,"# The label of tabs will fill the tab bar.\n"
+					"fill_tab_bar = %d\n\n", win_data->fill_tab_bar);
 	g_string_append_printf(contents,"# The page name used for a new page.\n"
 					"page_name = %s\n\n", win_data->page_name);
 	g_string_append_printf(contents,"# The page names list used for new pages, separate with space.\n"
@@ -1030,14 +1229,30 @@ GString *save_user_settings(GtkWidget *widget, GtkWidget *vtebox)
 					"# [Reset to default font/size] and [Reset to system font/size]\n"
 					"# on right click menu.\n"
 					"show_resize_menu = %d\n\n", win_data->show_resize_menu);
+	g_string_append_printf(contents,"# Using AntiAlias when showing fonts.\n"
+					"# 0: default. 1: force enable. 2: force disable.\n"
+					"font_anti_alias = %d\n\n", win_data->font_anti_alias);
+	g_string_append_printf(contents,"# The ratio when resizing font via function key <Ctrl><+> and <Ctrl><->.\n"
+					"# 0: the font size is +/- 1 when resizing.\n"
+					"font_resize_ratio = %1.3f\n\n", win_data->font_resize_ratio);
+	g_string_append_printf(contents,"# The ratio when resizing window via right clieck menu.\n"
+					"# 0: the font size is +/- 1 when resizing window.\n"
+					"window_resize_ratio = %1.3f\n\n", win_data->window_resize_ratio);
 	g_string_append_printf(contents,"# When user double clicks on a text, which character will be selected.\n"
 					"word_chars = %s\n\n", win_data->word_chars);
 	g_string_append_printf(contents,"# The lines of scrollback history.\n"
 					"scrollback_lines = %d\n\n", win_data->scrollback_lines);
+	g_string_append_printf(contents,"# The position of scrollbar.\n"
+					"# 0: don't use scrollbar; 1: scrollbar is on right; 2: scrollbar is on left.\n"
+					"scrollbar_position = %d\n\n", win_data->scrollbar_position);
 	g_string_append_printf(contents,"# Shows input method menu on right cilck menu.\n"
 					"show_input_method_menu = %d\n\n", win_data->show_input_method_menu);
 	g_string_append_printf(contents,"# Shows get function key menu on right cilck menu.\n"
 					"show_get_function_key_menu = %d\n\n", win_data->show_get_function_key_menu);
+	g_string_append_printf(contents,"# Shows change page name menu on right cilck menu.\n"
+					"show_change_page_name_menu = %d\n\n", win_data->show_change_page_name_menu);
+	g_string_append_printf(contents,"# Enable hyperlink in vte terminal.\n"
+					"enable_hyperlink = %d\n\n", win_data->enable_hyperlink);
 	g_string_append_printf(contents,"# The locales list on right click menu.\n"
 					"# You may use zh_TW or zh_TW.Big5 here.\n"
 					"# Left it blank will disable locale select menu items.\n"
@@ -1048,6 +1263,22 @@ GString *save_user_settings(GtkWidget *widget, GtkWidget *vtebox)
 	for (i=0; i<KEYS; i++)
 		g_string_append_printf( contents,"%s\n%s = %s\n\n",
 					system_keys[i].comment, system_keys[i].name, win_data->user_keys[i].value);
+	g_string_append_printf(contents,"\n");
+	g_string_append_printf(contents,"[command]\n\n");
+	g_string_append_printf(contents,"# method={1,2,3}\n"
+					"# 0: Open the hyperlink in new tab.\n"
+					"#    Use it if the command were using CLI, like w3m.\n");
+	g_string_append_printf(contents,"# 1: Open the hyperlink with exec().\n"
+					"#    Use it if the command were using GUI, like firefox.\n");
+	g_string_append_printf(contents,"# 2: Open the hyperlink in new window,\n"
+					"#    Use it if you not sure.\n\n");
+	for (i=0; i<COMMAND; i++)
+	{
+		g_string_append_printf( contents,"%s\n%s = %s\n",
+					command[i].comment, command[i].name, win_data->user_command[i].command);
+		g_string_append_printf( contents,"%s = %d\n\n",
+					command[i].method_name, win_data->user_command[i].method);
+	}
 
 	if (!vtebox)
 		return contents;

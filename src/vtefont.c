@@ -29,7 +29,9 @@ extern GtkWidget *current_vtebox;
 
 void set_vtebox_font(GtkWidget *widget, gint type)
 {
-	if (current_vtebox == NULL) return;
+#ifdef DEBUG
+	g_debug("! Launch set_vtebox_font with type = %d", type);
+#endif
 	GtkWidget *vtebox = current_vtebox;
 	gchar *new_font_name = NULL;
 	// type 0: reset current page's font size
@@ -90,6 +92,10 @@ void set_vtebox_font(GtkWidget *widget, gint type)
 // it will update the new_font_name and page_data->font_name
 gchar *get_resize_font(GtkWidget *vtebox, gint type)
 {
+#ifdef DEBUG
+	g_debug("! Launch get_resize_font for vte %p with type %d", vtebox, type);
+#endif
+
 	// we must insure that vtebox!=NULL
 	struct Page *page_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Page_Data");
 	struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(page_data->window), "Win_Data");
@@ -99,10 +105,10 @@ gchar *get_resize_font(GtkWidget *vtebox, gint type)
 	// type 1: restore font to system_font_name
 	// type 2: restore font to restore_font_name
 	// type 3: do nothing but only update new_font_name
-	// type 4: increase by *1.1
-	// type 5: decrease by /1.1
-	// type 6: increase by +1
-	// type 7: decrease by -1
+	// type 4: increase window by *1.1 or +1
+	// type 5: decrease window by /1.1 or -1
+	// type 6: increase font by *1.1 or +1
+	// type 7: decrease font by /1.1 or -1
 
 	if (win_data->restore_font_name == NULL)
 	{
@@ -152,17 +158,30 @@ gchar *get_resize_font(GtkWidget *vtebox, gint type)
 			
 			switch (type)
 			{
+				// g_debug("window_resize_ratio = %f",  win_data->window_resize_ratio);
 				case 4:
-					page_data->font_size = page_data->font_size*1.12 + 0.5;
+					if (win_data->window_resize_ratio)
+						page_data->font_size = page_data->font_size * win_data->window_resize_ratio + 0.5;
+					else
+						page_data->font_size = page_data->font_size + PANGO_SCALE;
 					break;
 				case 5:
-					page_data->font_size = page_data->font_size/1.12 + 0.5;
+					if (win_data->window_resize_ratio)
+						page_data->font_size = page_data->font_size / win_data->window_resize_ratio + 0.5;
+					else
+						page_data->font_size = page_data->font_size - PANGO_SCALE;
 					break;
 				case 6:
-					page_data->font_size = page_data->font_size + PANGO_SCALE;
+					if (win_data->font_resize_ratio)
+						page_data->font_size = page_data->font_size * win_data->font_resize_ratio + 0.5;
+					else
+						page_data->font_size = page_data->font_size + PANGO_SCALE;
 					break;
 				case 7:
-					page_data->font_size = page_data->font_size - PANGO_SCALE;
+					if (win_data->font_resize_ratio)
+						page_data->font_size = page_data->font_size / win_data->font_resize_ratio + 0.5;
+					else
+						page_data->font_size = page_data->font_size - PANGO_SCALE;
 					break;
 			}
 			// g_debug("font_size = %d", page_data->font_size);
@@ -202,6 +221,11 @@ gchar *get_resize_font(GtkWidget *vtebox, gint type)
 
 void reset_vtebox_size(GtkWidget *vtebox, gchar *new_font_name, gint type)
 {
+#ifdef DEBUG
+	g_debug("! Launch reset_vtebox_size() with vtebox = %p, new_font_name = %s, type = %d",
+		vtebox, new_font_name, type);
+#endif
+
 	// type 0: change current page's font
 	// type 1: apply current column & row to every vtebox
 	// type 2: apply default column & row to every vtebox
@@ -217,7 +241,7 @@ void reset_vtebox_size(GtkWidget *vtebox, gchar *new_font_name, gint type)
 			// We need to apply a new font to a single vtebox.
 			// so that we should insure that this won't chage the size of window.
 			// g_debug("Trying to apply font %s to vtebox\n", current_font_name);
-			vte_terminal_set_font_from_string(VTE_TERMINAL(vtebox), new_font_name);
+			vte_terminal_set_font_from_string_full(VTE_TERMINAL(vtebox), new_font_name, win_data->font_anti_alias);
 			
 			win_data->update_hints = 2;
 			// g_debug("window_resizable in change current font!");
@@ -249,6 +273,11 @@ void reset_vtebox_size(GtkWidget *vtebox, gchar *new_font_name, gint type)
 
 void apply_font_to_every_vtebox(GtkWidget *window, gchar *new_font_name, gint column, gint row)
 {
+#ifdef DEBUG
+	g_debug("! Launch apply_font_to_every_vtebox() with window = %p, new_font_name = %s,"
+		" column = %d, row = %d", window, new_font_name, column, row);
+#endif
+
 	struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(window), "Win_Data");
 	// g_debug("Get win_data = %d when apply font to every vtebox!", win_data);
 
@@ -267,7 +296,7 @@ void apply_font_to_every_vtebox(GtkWidget *window, gchar *new_font_name, gint co
 								"VteBox");
 		page_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Page_Data");
 		// g_debug("The default font for %d page is: %s (%s)\n", i, page_data->font_name, new_font_name);
-		vte_terminal_set_font_from_string(VTE_TERMINAL(vtebox), new_font_name);
+		vte_terminal_set_font_from_string_full(VTE_TERMINAL(vtebox), new_font_name, win_data->font_anti_alias);
 		vte_terminal_set_size(VTE_TERMINAL(vtebox), column, row);
 		g_free(page_data->font_name);
 		page_data->font_name = g_strdup(new_font_name);

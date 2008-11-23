@@ -27,9 +27,14 @@
 
 // We may use current_vtebox here safely. 
 extern GtkWidget *current_vtebox;
+extern gchar *err_str;
 
 void create_menu(GtkWidget *window)
 {
+#ifdef DEBUG
+	g_debug("! Launch create_menu() for window %p", window);
+#endif
+
 	struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(window), "Win_Data");
 	// g_debug("Get win_data = %d when creating menu!", win_data);
 
@@ -46,7 +51,7 @@ void create_menu(GtkWidget *window)
 		// locales can NOT be free!
 		gchar **locales;
 
-		menu_item = gtk_image_menu_item_new_with_label(_("Change text coding"));
+		menu_item = gtk_image_menu_item_new_with_label(_("Change text encoding"));
 		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
 					      gtk_image_new_from_stock(GTK_STOCK_DND, GTK_ICON_SIZE_MENU));
 		sub_menu = gtk_menu_new ();
@@ -254,11 +259,14 @@ void create_menu(GtkWidget *window)
 	g_signal_connect(menu_item, "activate", G_CALLBACK(select_font), window);
 
 	// Edit tab name
-	menu_item = gtk_image_menu_item_new_with_label(_("Rename this tab"));
-	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
-				      gtk_image_new_from_stock(GTK_STOCK_EDIT, GTK_ICON_SIZE_MENU));
-	gtk_menu_shell_append(GTK_MENU_SHELL(win_data->menu), menu_item);
-	g_signal_connect(menu_item, "activate", G_CALLBACK(dialog), (gint *)1);
+	if (win_data->show_change_page_name_menu)
+	{
+		menu_item = gtk_image_menu_item_new_with_label(_("Rename this tab"));
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
+					      gtk_image_new_from_stock(GTK_STOCK_EDIT, GTK_ICON_SIZE_MENU));
+		gtk_menu_shell_append(GTK_MENU_SHELL(win_data->menu), menu_item);
+		g_signal_connect(menu_item, "activate", G_CALLBACK(dialog), (gint *)1);
+	}
 
 	if (win_data->show_resize_menu)
 	{
@@ -334,8 +342,9 @@ void create_menu(GtkWidget *window)
 
 void clean_scrollback_lines(GtkWidget *widget, gboolean type)
 {
-	if (current_vtebox == NULL) return;
-
+#ifdef DEBUG
+	g_debug("! Launch clean_scrollback_lines()!");
+#endif
 	// type = TRUE: clean scrollback lines
 	// type = FALSE: use/nouse scrollback lines
 	struct Page *page_data = (struct Page *)g_object_get_data(G_OBJECT(current_vtebox), "Page_Data");
@@ -355,12 +364,18 @@ void clean_scrollback_lines(GtkWidget *widget, gboolean type)
 
 void reset_vtebox(GtkWidget *widget, gpointer user_data)
 {
-	if (current_vtebox == NULL) return;
+#ifdef DEBUG
+	g_debug("! Launch reset_vtebox()!");
+#endif
 	vte_terminal_reset(VTE_TERMINAL(current_vtebox), TRUE, FALSE);
 }
 
 void set_trans_bg(GtkWidget *widget, GtkWidget *window)
 {
+#ifdef DEBUG
+	g_debug("! Launch set_trans_bg() for window %p", window);
+#endif
+
 	struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(window), "Win_Data");
 	// g_debug("Get win_data = %d when set_trans_bg!", win_data);
 
@@ -382,6 +397,10 @@ void set_trans_bg(GtkWidget *widget, GtkWidget *window)
 #ifdef ENABLE_RGBA
 void set_trans_win(GtkWidget *widget, GtkWidget *window)
 {
+#ifdef DEBUG
+	g_debug("! Launch set_trans_win() for window %p!", window);
+#endif
+
 	struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(window), "Win_Data");
 	// g_debug("Get win_data = %d when set_trans_win!", win_data);
 
@@ -393,25 +412,34 @@ void set_trans_win(GtkWidget *widget, GtkWidget *window)
 // it is OK to use either zh_TW.Big5 or Big5
 void set_encoding(GtkWidget *menuitem, GtkWidget *vtebox)
 {
+#ifdef DEBUG
+	g_debug("! Launch set_encoding() for vte %p", vtebox);
+#endif
 	// g_debug("Got the encoding item: %d", menuitem);
-	if (menuitem==NULL) return;
+	if (menuitem==NULL)
+	{
+		err_str = g_strdup_printf("set_encoding(): menuitem = NULL\n\n"
+					  "Please report bug to %s, Thanks!",
+					  PACKAGE_BUGREPORT);
+		dialog(NULL, 17);
+		g_free(err_str);
+		return;
+	}
+
+	// vtebox==NULL: called by the "activate" signal of menuitem.
 	if (vtebox==NULL)
 	{
-		// if vtebox==NULL: called by the "activate" signal of menuitem.
+		// GTK_CHECK_MENU_ITEM(menuitem)->active = false: We only set the encoding with actived menuitem. 
 		if (!GTK_CHECK_MENU_ITEM(menuitem)->active) return;
-
-		if (current_vtebox == NULL)
-			return;
-		else
-			vtebox = current_vtebox;
+		vtebox = current_vtebox;
 	}
 
 	struct Page *page_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Page_Data");
 	struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(page_data->window), "Win_Data");
-	// g_debug("Get win_data = %d when set_encoding!", win_data);
-	if (win_data->query_coding) return;
+	// No action when just right click the mouse
+	if (win_data->query_encoding) return;
 
-	// g_debug("Trying to set %d page (%d) to encoding %s...", page_data->page_no, vtebox, menuitem->name);
+	// g_debug("Trying to set %d page (%p) to encoding %s...", page_data->page_no, vtebox, menuitem->name);
 	
 	gchar **locales;
 	locales = g_strsplit_set(menuitem->name, ".", 0);
@@ -422,7 +450,9 @@ void set_encoding(GtkWidget *menuitem, GtkWidget *vtebox)
 
 	page_data->encoding=menuitem;
 
-	if (win_data->page_shows_encoding)
+	// page_data->label->name==NULL: add_page() will call set_encoding() before page_data->label is created.
+	// And it will cause the following error: "Document ended unexpectedly while inside an attribute value"
+	if (win_data->page_shows_encoding && page_data->label->name!=NULL)
 		update_page_name (page_data->window, vtebox, page_data->label, page_data->page_no+1,
 				  page_data->custom_page_name, page_data->tab_color,
 				  page_data->is_root, page_data->is_bold,
@@ -433,7 +463,9 @@ void set_encoding(GtkWidget *menuitem, GtkWidget *vtebox)
 
 void new_tab_with_locale(GtkWidget *local_menuitem, GtkWidget *menuitem)
 {
-	if (current_vtebox == NULL) return;
+#ifdef DEBUG
+	g_debug("! Launch new_tab_with_locale() with locale = %s", menuitem->name);
+#endif
 	struct Page *page_data = (struct Page *)g_object_get_data(G_OBJECT(current_vtebox), "Page_Data");
 
 	// g_debug("Add page by %d to locale %s", current_vtebox, menuitem->name);
@@ -442,7 +474,9 @@ void new_tab_with_locale(GtkWidget *local_menuitem, GtkWidget *menuitem)
 
 void select_font(GtkWidget *widget, GtkWidget *window)
 {
-	if (current_vtebox == NULL) return;
+#ifdef DEBUG
+	g_debug("! Launch select_font() for window %p", window);
+#endif
 	struct Page *page_data = (struct Page *)g_object_get_data(G_OBJECT(current_vtebox), "Page_Data");
 	
 	GtkWidget *dialog = gtk_font_selection_dialog_new(_("Font Selection"));

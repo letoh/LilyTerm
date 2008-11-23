@@ -24,14 +24,24 @@
 
 
 #include "dialog.h"
-
 extern GtkWidget *current_vtebox;
+gchar *err_str;
 
 gboolean dialog(GtkWidget *widget, gint style)
 {
-	if (current_vtebox==NULL) return FALSE;
-
+#ifdef DEBUG
+	g_debug("! Launch dialog() with style = %d", style);
+#endif
 	GtkWidget *vtebox = current_vtebox;
+	if (vtebox==NULL && style != 17)
+	{
+		err_str = g_strdup_printf("dialog(%d): current_vtebox = NULL\n\n"
+					  "Please report bug to %s, Thanks!",
+					  style, PACKAGE_BUGREPORT);
+		dialog(NULL, 17);
+		g_free(err_str);
+		return FALSE;
+	}
 	struct Dialog *dialog_data = g_new0(struct Dialog, 1);
 	struct ColorSelect *color_data = g_new0(struct ColorSelect, 1);
 	color_data->original_page_color = NULL;
@@ -41,9 +51,9 @@ gboolean dialog(GtkWidget *widget, gint style)
 	// style  1: change the tab's name
 	// style  2: change the saturation of background
 	// style  3: confirm close multi pages
-	// style  4: get funuction key value
+	// style  4: get function key value
 	// style  5: usage message
-	// style  6: failt when saving settings
+	// style  6: fail when saving settings
 	// style  7: confirm close running application
 	// style  8: change the opacity of window
 	// style  9: change the foreground color
@@ -54,6 +64,7 @@ gboolean dialog(GtkWidget *widget, gint style)
 	// style 14: change the text color of root privileges cmdline
 	// style 15: change the text color of normal text
 	// style 16: fault when creating the child process
+	// style 17: error messages
 	
 	// string: can NOT be free()
 	// temp_str: SHOULD be free()
@@ -63,12 +74,18 @@ gboolean dialog(GtkWidget *widget, gint style)
 		  *entry_hbox = NULL, *key_value_label = NULL, *state_bottom_hbox;
 	gboolean response = TRUE;
 
-	struct Page *page_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Page_Data");
-	struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(page_data->window), "Win_Data");
-	// g_debug("Get win_data = %d when creating dialog!", win_data);
-	// For change the text color of tab
-	dialog_data->total_page = gtk_notebook_get_n_pages(GTK_NOTEBOOK(page_data->notebook));
-	dialog_data->current_page_no = gtk_notebook_get_current_page(GTK_NOTEBOOK(page_data->notebook));
+	struct Page *page_data = NULL;
+	struct Window *win_data = NULL;
+	if (vtebox!=NULL)
+	{
+		page_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Page_Data");
+		win_data = (struct Window *)g_object_get_data(G_OBJECT(page_data->window), "Win_Data");
+
+		// g_debug("Get win_data = %d when creating dialog!", win_data);
+		// For change the text color of tab
+		dialog_data->total_page = gtk_notebook_get_n_pages(GTK_NOTEBOOK(page_data->notebook));
+		dialog_data->current_page_no = gtk_notebook_get_current_page(GTK_NOTEBOOK(page_data->notebook));
+	}
 
 	// g_object_get (gtk_settings_get_default(), "gtk-alternative-button-order", &BOTTON_ORDER, NULL);
 	gboolean BOTTON_ORDER = gtk_alternative_dialog_button_order(NULL);
@@ -145,6 +162,9 @@ gboolean dialog(GtkWidget *widget, gint style)
 		case 16:
 			string=_("Error when creating child process");
 			break;
+		case 17:
+			string=_("The following error is occurred:");
+			break;
 	}
 
 	// Create the dialog window
@@ -216,13 +236,21 @@ gboolean dialog(GtkWidget *widget, gint style)
 							      GTK_RESPONSE_OK,
 							      NULL);
 			break;
+		case 17:
+			dialog = gtk_dialog_new_with_buttons (string,
+							      NULL,
+							      GTK_DIALOG_NO_SEPARATOR |
+								GTK_DIALOG_DESTROY_WITH_PARENT,
+							      GTK_STOCK_OK,
+							      GTK_RESPONSE_OK,
+							      NULL);
 	}
 	
 	// save the dialog data first
 	g_object_set_data(G_OBJECT(dialog), "Dialog_Data", dialog_data);
 
 	// It is for "Error when creating child process" dialog only.
-	if (!GTK_WIDGET_MAPPED(page_data->window))
+	if ((vtebox==NULL) || ((vtebox!=NULL) && (!GTK_WIDGET_MAPPED(page_data->window))))
 		gtk_window_set_position (GTK_WINDOW (dialog), GTK_WIN_POS_CENTER);
 
 	// resizable
@@ -242,6 +270,7 @@ gboolean dialog(GtkWidget *widget, gint style)
 		case 14:
 		case 15:
 		case 16:
+		case 17:
 			gtk_window_set_resizable (GTK_WINDOW (dialog), FALSE);
 			break;
 		case 2:
@@ -261,6 +290,7 @@ gboolean dialog(GtkWidget *widget, gint style)
 		case 7:
 		case 8:
 		case 16:
+		case 17:
 			gtk_container_set_border_width (GTK_CONTAINER (dialog), 10);
 			break;
 		case 5:
@@ -294,6 +324,7 @@ gboolean dialog(GtkWidget *widget, gint style)
 		case 7:
 		case 8:
 		case 16:
+		case 17:
 			icon_vbox = gtk_vbox_new (FALSE, 30);
 			gtk_box_pack_start (GTK_BOX(main_hbox), icon_vbox, FALSE, FALSE, 0);
 			switch (style)
@@ -312,6 +343,7 @@ gboolean dialog(GtkWidget *widget, gint style)
 					break;
 				case 6:
 				case 16:
+				case 17:
 					icon = gtk_image_new_from_stock (GTK_STOCK_DIALOG_ERROR,
 									 GTK_ICON_SIZE_DIALOG);
 			}
@@ -433,10 +465,9 @@ gboolean dialog(GtkWidget *widget, gint style)
 		case 16:
 		{
 			temp_str[0] = g_strdup_printf(_("Error while creating the child process:\n\n%s"),
-						      win_data->temp_str);
+							win_data->temp_str);
 			break;
 		}
-
 	}
 
 	// title
@@ -464,6 +495,8 @@ gboolean dialog(GtkWidget *widget, gint style)
 			gtk_label_set_max_width_chars (GTK_LABEL(title), 50);
 			gtk_label_set_ellipsize(GTK_LABEL(title), PANGO_ELLIPSIZE_MIDDLE);
 			break;
+		case 17:
+			title = gtk_label_new (err_str);
 	}
 	switch (style)
 	{
@@ -476,8 +509,8 @@ gboolean dialog(GtkWidget *widget, gint style)
 		case 7:
 		case 8:
 		case 16:
-
-		gtk_box_pack_start (GTK_BOX(title_hbox), title, FALSE, FALSE, 0);
+		case 17:
+			gtk_box_pack_start (GTK_BOX(title_hbox), title, FALSE, FALSE, 0);
 	}
 
 	// state_bottom_hbox
@@ -491,6 +524,7 @@ gboolean dialog(GtkWidget *widget, gint style)
 		case 7:
 		case 8:
 		case 16:
+		case 17:
 			state_bottom_hbox = gtk_hbox_new (FALSE, 3);
 			gtk_box_pack_end (GTK_BOX(state_vbox), state_bottom_hbox, FALSE, FALSE, 0);
 			break;
@@ -626,7 +660,7 @@ gboolean dialog(GtkWidget *widget, gint style)
 
 			for (i=0;i<6;i++)
 			{
-				// ste the page name and color fo demo.
+				// ste the page name and color for demo.
 				vtebox=(GtkWidget *)g_object_get_data(G_OBJECT(gtk_notebook_get_tab_label(
 									GTK_NOTEBOOK(win_data->notebook),
 									   gtk_notebook_get_nth_page(
@@ -802,9 +836,10 @@ gboolean dialog(GtkWidget *widget, gint style)
 			// style 3: confirm to close multi pages
 			case 3:
 			{
-				// we need to destroy the dialog before comfirm a working vtebox.
+				// we need to destroy the dialog before confirm a working vtebox.
 				gtk_widget_destroy(dialog);
 				gint i;
+				GtkWidget *vtebox;
 
 				for (i=dialog_data->total_page-1;i>-1;i--)
 				{
@@ -820,7 +855,7 @@ gboolean dialog(GtkWidget *widget, gint style)
 				break;
 			}
 			
-			// style 4: get funuction key value, copy the text to clipboard
+			// style 4: get function key value, copy the text to clipboard
 			case 4:
 				gtk_clipboard_set_text (gtk_clipboard_get (GDK_SELECTION_PRIMARY),
 							gtk_label_get_text(GTK_LABEL(key_value_label)), -1);
@@ -891,7 +926,7 @@ gboolean dialog(GtkWidget *widget, gint style)
 	// free string datas
 	g_free(temp_str[0]);
 	g_free(temp_str[1]);
-	// destory dialog.
+	// destroy dialog.
 	if (style !=3)
 		gtk_widget_destroy(dialog);
 	g_free(dialog_data);
@@ -901,6 +936,10 @@ gboolean dialog(GtkWidget *widget, gint style)
 
 gboolean dialog_key_press(GtkWidget *widget, GdkEventKey *event, GtkWidget *key_value_label)
 {
+#ifdef DEBUG
+	g_debug("! Launch dialog_key_press() with key value = %s", gdk_keyval_name(event->keyval));
+#endif
+
 	gchar *key_value = g_strdup("");
 	if (event->state & GDK_CONTROL_MASK)
 		key_value = dialog_key_press_join_string(key_value, "+", "Ctrl");
@@ -925,6 +964,10 @@ gboolean dialog_key_press(GtkWidget *widget, GdkEventKey *event, GtkWidget *key_
 
 gchar *dialog_key_press_join_string(gchar *key_value, gchar *separator, gchar *append)
 {
+#ifdef DEBUG
+	g_debug("! Launch dialog_key_press_join_string() with key_value = %s, separator = %s, append = %s", key_value, separator, append);
+#endif
+
 	gchar *join_string = NULL;
 	// We will not check NULL value!
 	if (strlen(key_value)==0)
@@ -939,6 +982,10 @@ gchar *dialog_key_press_join_string(gchar *key_value, gchar *separator, gchar *a
 
 void set_vtebox_color(GtkColorSelection *colorselection, GtkWidget *vtebox)
 {
+#ifdef DEBUG
+	g_debug("! Launch set_vtebox_color() in vte %p", vtebox);
+#endif
+
 	// g_debug("Changing the color");
 	struct ColorSelect *color_data = (struct ColorSelect*)g_object_get_data(G_OBJECT(colorselection), "Color_Data");
 	
@@ -997,6 +1044,10 @@ void set_vtebox_color(GtkColorSelection *colorselection, GtkWidget *vtebox)
 
 void recover_page_colors(GtkWidget *dialog, GtkWidget *window, GtkWidget *notebook)
 {
+#ifdef DEBUG
+	g_debug("! Launch recover_page_colors() in window %p", window);
+#endif
+
 	struct Dialog *dialog_data = (struct Dialog *)g_object_get_data(G_OBJECT(dialog), "Dialog_Data");
 	// struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(window), "Win_Data");
 	gint i;
@@ -1023,6 +1074,7 @@ void recover_page_colors(GtkWidget *dialog, GtkWidget *window, GtkWidget *notebo
 	*(dialog_data->kill_color_demo_vte) = FALSE;
 
 	// recover the title/color of pages
+	// g_debug("dialog_data->total_page = %d", dialog_data->total_page);
 	for (i=0; i<dialog_data->total_page;i++)
 	{
 		vtebox=(GtkWidget *)g_object_get_data(G_OBJECT(gtk_notebook_get_tab_label(
@@ -1032,7 +1084,9 @@ void recover_page_colors(GtkWidget *dialog, GtkWidget *window, GtkWidget *notebo
 						      "VteBox");
 
 		struct Page *page_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Page_Data");
+
 		// restore the is_bold of 1st page
+		// g_debug("i = %d", i);
 		if (i==0)
 			page_data->is_bold = dialog_data->tab_1_is_bold;
 

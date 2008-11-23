@@ -1,2 +1,3 @@
 Sometimes the texts of vte terminal won't be show correctly.
 seperate process on window title
+the window title will not recover when there is only one page and change the page color

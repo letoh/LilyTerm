@@ -47,7 +47,7 @@
 GtkWidget *add_page(GtkWidget *window, GtkWidget *notebook, GtkWidget *menuitem, gchar *locale, gboolean run_once);
 gboolean close_page (GtkWidget *vtebox, gboolean need_safe_close);
 gboolean vtebox_button_press(GtkWidget *widget, GdkEventButton *event, GtkWidget *window);
-void vtebox_grab_focuse(GtkWidget *vtebox,GtkWidget *window);
+void vtebox_grab_focus(GtkWidget *vtebox,GtkWidget *window);
 void vtebox_style_set (GtkWidget *vtebox, GtkStyle *previous_style, gpointer user_data);
 void vtebox_size_request (GtkWidget *vtebox, GtkRequisition *requisition, gpointer user_data);
 void vtebox_size_allocate (GtkWidget *vtebox, GtkAllocation *allocation, gpointer user_data);

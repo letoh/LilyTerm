@@ -47,7 +47,8 @@ struct ModKey
 };
 
 gchar *get_default_locale();
-void init_new_page(GtkWidget *window, struct Window *win_data, GtkWidget *vtebox, char* font_name, gint column, gint row, gint run_once);
+void init_new_page(GtkWidget *window, struct Window *win_data, GtkWidget *vtebox, char* font_name, gint column, gint row, gint run_once, gboolean enable_hyperlink);
+void set_hyprelink(GtkWidget *vtebox);
 void init_window_option(struct Window *win_data);
 void init_window_parameter(struct Window *win_data);
 void init_function_keys();
@@ -56,9 +57,10 @@ void get_user_settings(GtkWidget *window, struct Window *win_data);
 gboolean check_boolean_value(GKeyFile *keyfile, const gchar *group_name, const gchar *key, const gboolean default_vaule);
 gchar *check_string_value(GKeyFile *keyfile, const gchar *group_name,
 			const gchar *key, gchar *default_value, gboolean enable_empty);
-gint check_integer_value(GKeyFile *keyfile, const gchar *group_name,
-			 const gchar *key, const gint default_value, gboolean enable_empty, gboolean enable_zero);
-
+gint check_integer_value(GKeyFile *keyfile, const gchar *group_name, const gchar *key,
+			 const gint default_value, gboolean enable_empty, gboolean enable_zero,
+			 gboolean check_min, gint min, gboolean check_max, gint max);
+gdouble check_double_value(GKeyFile *keyfile, const gchar *group_name, const gchar *key, const gdouble default_value);
 gboolean accelerator_parse (const gchar *key_name, const gchar *key_value, guint *key, guint *mods);
 void init_rgba(GtkWidget *window, struct Window *win_data);
 gboolean set_background_saturation(GtkRange *range, GtkScrollType scroll, gdouble value, GtkWidget *vtebox);
