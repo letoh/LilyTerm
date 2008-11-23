@@ -44,11 +44,24 @@ struct ModKey
 
 void get_default_locale();
 void init_new_page(GtkWidget *vtebox, char* font_name, gint column, gint row, gint run_once);
+
+gboolean check_boolean_value(GKeyFile *keyfile, const gchar *group_name, const gchar *key, const gboolean default_vaule);
+gchar *check_string_value(GKeyFile *keyfile, const gchar *group_name,
+			  const gchar *key, const gchar *default_vaule, gboolean enable_empty);
+gint check_integer_value(GKeyFile *keyfile, const gchar *group_name,
+			 const gchar *key, const gint default_value, gboolean enable_empty, gboolean enable_zero);
+void strdup_settings();
+
 gboolean accelerator_parse (const gchar *key_name, const gchar *key_value, guint *key, guint *mods);
 void window_resizable(GtkWidget *vtebox, gboolean run_once, gint minsize);
 void get_user_settings();
 void init_rgba();
 gboolean set_background_saturation (GtkRange *range, GtkScrollType scroll, gdouble value, GtkWidget *vtebox);
 gboolean set_window_opacity (GtkRange *range, GtkScrollType scroll, gdouble value, gpointer user_data);
+GString *save_user_settings(GtkWidget *widget, GtkWidget *current_vtebox);
+void free_user_settings_data(GError *error, gchar *profile, GString *contents, GKeyFile *keyfile);
+void init_pagekeys();
+
+extern gboolean dialog(GtkWidget *widget, gint style);
 
 #endif

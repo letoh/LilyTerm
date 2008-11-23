@@ -117,18 +117,18 @@ void command_option(int  *argc,
 		}
 		else if ((!strcmp(argv[i], "-h")) || (!strcmp(argv[i], "--help")))
 		{
-			g_print(got_help_message());
+			g_print("\n%s\n", got_help_message()->str);
 			exit (0);
 		}
 		else if ((!strcmp(argv[i], "-p")) || (!strcmp(argv[i], "--profile")))
 		{
-			g_print(got_profile_sample());
+			g_print(save_user_settings(NULL, NULL)->str);
 			exit (0);
 		}
 		else if ((!strcmp(argv[i], "-e")) || (!strcmp(argv[i], "--execute")))
 		{
 			if (++i==*argc)
-				g_debug("Missing command after -e/--execute option!\n");
+				g_critical("missing command after -e/--execute option!\n");
 			else
 			{
 				command_line = argv[i];
@@ -139,7 +139,7 @@ void command_option(int  *argc,
 		else if ((!strcmp(argv[i], "-u")) || (!strcmp(argv[i], "--user_profile")))
 		{
 			if (++i==*argc)
-				g_debug("Missing file name after -u/--user_profile!\n");
+				g_critical("missing file name after -u/--user_profile!\n");
 			else
 			{
 				//gint j;
@@ -182,7 +182,7 @@ void command_option(int  *argc,
 	}
 }
 
-gchar *got_help_message()
+GString *got_help_message()
 {
 	GString *help_message;
 	gint j;
@@ -222,66 +222,7 @@ gchar *got_help_message()
 	g_string_append_printf( help_message,	
 					_("Please report bug to %s. Thank you for using %s!\n"),
 								PACKAGE_BUGREPORT, PACKAGE);
-	return help_message->str;
-}
-
-gchar *got_profile_sample()
-{
-	return g_strdup("[main]\n"
-			"page_name = Terminal\n"
-			"page_names = Terminal\n"
-			"reuse_page_names = 1\n"
-			"page_number = 1\n"
-			"page_shows_current_cmdline = 1\n"
-			"window_shows_current_page = 1\n"
-			"foreground_color = white\n"
-			"background_color = black\n"
-			"font_name = Monospace 12\n"
-			"column = 80\n"
-			"row = 24\n"
-			"use_rgba =\n"
-			"transparent_window = 0\n"
-			"window_opacity = 0.05\n"
-			"transparent_background = 0\n"
-			"background_saturation = 0.15\n"
-			"word_chars = -A-Za-z0-9_$.+!*(),;:@&=?/~#%[]\n"
-			"scrollback_lines = 1024\n"
-			"show_input_method_menu = 0\n"
-			"show_resize_menu = 1\n"
-			"show_transparent_menu = 1\n"
-			"locales_list = EUC-JP GB2312 Big5\n"
-			"\n"
-			"[key]\n"
-			"disable_function_key = Ctrl grave\n"
-			"new_tab_key = Ctrl T\n"
-			"close_tab_key = Ctrl W\n"
-			"edit_label_key = Ctrl E\n"
-			"prev_tab_key = Ctrl Page_Up\n"
-			"next_tab_key = Ctrl Page_Down\n"
-			"first_tab_key = Ctrl Home\n"
-			"last_tab_key = Ctrl End\n"
-			"move_tab_forward = Ctrl Left\n"
-			"move_tab_backward = Ctrl Right\n"
-			"move_tab_first = Ctrl Up\n"
-			"move_tab_last = Ctrl Down\n"
-			"swith_to_tab_1 = Ctrl F1\n"
-			"swith_to_tab_2 = Ctrl F2\n"
-			"swith_to_tab_3 = Ctrl F3\n"
-			"swith_to_tab_4 = Ctrl F4\n"
-			"swith_to_tab_5 = Ctrl F5\n"
-			"swith_to_tab_6 = Ctrl F6\n"
-			"swith_to_tab_7 = Ctrl F7\n"
-			"swith_to_tab_8 = Ctrl F8\n"
-			"swith_to_tab_9 = Ctrl F9\n"
-			"swith_to_tab_10 = Ctrl F10\n"
-			"swith_to_tab_11 = Ctrl F11\n"
-			"swith_to_tab_12 = Ctrl F12\n"
-			"select_all = Ctrl O\n"
-			"copy_clipboard = Ctrl X\n"
-			"past_clipboard = Ctrl V\n"
-			"increase_font_size = Ctrl equal\n"
-			"decrease_font_size = Ctrl minus\n"
-			"reset_font_size = Ctrl Return\n");
+	return help_message;
 }
 
 gboolean window_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)

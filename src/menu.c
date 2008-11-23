@@ -40,6 +40,9 @@ extern gint transparent_window;
 extern gdouble window_opacity;
 GtkWidget *menuitem_trans_win;
 #endif
+extern gboolean show_color_selection_menu;
+extern GdkColor fg_color;
+extern GdkColor bg_color;
 
 extern gchar *default_font_name;
 extern gboolean show_resize_menu;
@@ -50,6 +53,9 @@ extern gboolean transparent_background;
 extern gdouble background_saturation;
 GtkWidget *menuitem_trans_bg;
 GtkWidget *default_encoding;
+
+GtkWidget *menuitem_scrollback_lines;
+extern gint scrollback_lines;
 
 void create_menu()
 {
@@ -83,6 +89,28 @@ void create_menu()
 		menu_item = gtk_separator_menu_item_new ();
 		gtk_menu_shell_append (GTK_MENU_SHELL (menu), menu_item);
 	}
+#ifdef ENABLE_GDKCOLOR_TO_STRING
+	if (show_color_selection_menu)
+	{
+		// Change the foreground color for every tab
+		menu_item = gtk_image_menu_item_new_with_label(_("Change the foreground color"));
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
+					      gtk_image_new_from_stock(GTK_STOCK_SELECT_COLOR, GTK_ICON_SIZE_MENU));
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+		g_signal_connect(menu_item, "activate", G_CALLBACK(dialog), (gint *) 9);
+
+		// Change the background color for every tab
+		menu_item = gtk_image_menu_item_new_with_label(_("Change the background color"));
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
+					      gtk_image_new_from_stock(GTK_STOCK_SELECT_COLOR, GTK_ICON_SIZE_MENU));
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+		g_signal_connect(menu_item, "activate", G_CALLBACK(dialog), (gint *) 10);
+
+		// ----------------------------------------
+		menu_item = gtk_separator_menu_item_new ();
+		gtk_menu_shell_append (GTK_MENU_SHELL (menu), menu_item);
+	}
+#endif
 	if (show_transparent_menu)
 	{
 #ifdef ENABLE_RGBA
@@ -118,23 +146,24 @@ void create_menu()
 		menu_item = gtk_separator_menu_item_new ();
 		gtk_menu_shell_append (GTK_MENU_SHELL (menu), menu_item);
 	}
-	if (show_resize_menu)
+
+	if (scrollback_lines)
 	{
-		// Window Size
-		menu_item = gtk_image_menu_item_new_with_label(_("Increase window size"));
+		// use scrollback lines
+		menuitem_scrollback_lines = gtk_check_menu_item_new_with_label (_("Scrollback lines"));
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem_scrollback_lines);
+		g_signal_connect(menuitem_scrollback_lines, "activate", G_CALLBACK(clean_scrollback_lines), FALSE);
+
+		// clean scrollback lines
+		menu_item = gtk_image_menu_item_new_with_label(_("Clean scrollback lines of this tab"));
 		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
-					      gtk_image_new_from_stock(GTK_STOCK_ZOOM_IN, GTK_ICON_SIZE_MENU));
+				      gtk_image_new_from_stock(GTK_STOCK_CLEAR, GTK_ICON_SIZE_MENU));
 		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
-		g_signal_connect(menu_item, "activate", G_CALLBACK(set_vtebox_font), (gint *)3);
-		menu_item = gtk_image_menu_item_new_with_label(_("Decrease window size"));
-		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
-					      gtk_image_new_from_stock(GTK_STOCK_ZOOM_OUT, GTK_ICON_SIZE_MENU));
-		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
-		g_signal_connect(menu_item, "activate", G_CALLBACK(set_vtebox_font), (gint *)4);
+		g_signal_connect(menu_item, "activate", G_CALLBACK(clean_scrollback_lines), (gboolean *)TRUE);
+
 		// ----------------------------------------
 		menu_item = gtk_separator_menu_item_new ();
 		gtk_menu_shell_append (GTK_MENU_SHELL (menu), menu_item);
-
 	}
 
 	// Input Method
@@ -168,7 +197,22 @@ void create_menu()
 		// ----------------------------------------
 		menu_item = gtk_separator_menu_item_new ();
 		gtk_menu_shell_append (GTK_MENU_SHELL (menu), menu_item);
-	
+
+		// Window Size
+		menu_item = gtk_image_menu_item_new_with_label(_("Increase window size"));
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
+					      gtk_image_new_from_stock(GTK_STOCK_ZOOM_IN, GTK_ICON_SIZE_MENU));
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+		g_signal_connect(menu_item, "activate", G_CALLBACK(set_vtebox_font), (gint *)3);
+		menu_item = gtk_image_menu_item_new_with_label(_("Decrease window size"));
+		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
+					      gtk_image_new_from_stock(GTK_STOCK_ZOOM_OUT, GTK_ICON_SIZE_MENU));
+		gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
+		g_signal_connect(menu_item, "activate", G_CALLBACK(set_vtebox_font), (gint *)4);
+		// ----------------------------------------
+		menu_item = gtk_separator_menu_item_new ();
+		gtk_menu_shell_append (GTK_MENU_SHELL (menu), menu_item);
+
 		// Reset font and window size
 		menu_item = gtk_image_menu_item_new_with_label(_("Reset to default font/size"));
 		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
@@ -209,14 +253,31 @@ void create_menu()
 	g_signal_connect(menu_item, "activate", G_CALLBACK(dialog), (gint *)4);
 
 	// Profile
-	menu_item = gtk_image_menu_item_new_with_label(_("Profile sample"));
+	//menu_item = gtk_image_menu_item_new_with_label(_("Profile sample"));
+	menu_item = gtk_image_menu_item_new_with_label(_("Save settings"));
 	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
-				      gtk_image_new_from_stock(GTK_STOCK_PREFERENCES, GTK_ICON_SIZE_MENU));
+				      gtk_image_new_from_stock(GTK_STOCK_SAVE, GTK_ICON_SIZE_MENU));
 	gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);
-	g_signal_connect(menu_item, "activate", G_CALLBACK(dialog), (gint *)6);
+	//g_signal_connect(menu_item, "activate", G_CALLBACK(dialog), (gint *)6);
+	g_signal_connect(menu_item, "activate", G_CALLBACK(save_user_settings), current_vtebox);
 
 	gtk_widget_show_all(menu);
 }
+
+void clean_scrollback_lines(GtkWidget *widget, gboolean type)
+{
+	struct Page *current_data = (struct Page *)g_object_get_data(G_OBJECT(current_vtebox), "Data");
+
+	if (!type)
+		current_data->use_scrollback_lines = ! current_data->use_scrollback_lines;
+	
+	if ((type && current_data->use_scrollback_lines) || (! current_data->use_scrollback_lines))
+		vte_terminal_set_scrollback_lines (VTE_TERMINAL(current_vtebox), 0);
+	
+	if ((type && current_data->use_scrollback_lines) || current_data->use_scrollback_lines)
+		vte_terminal_set_scrollback_lines (VTE_TERMINAL(current_vtebox), scrollback_lines);
+}
+
 
 void reset_vtebox(GtkWidget *widget, gpointer user_data)
 {
@@ -289,4 +350,3 @@ void select_font(GtkWidget *widget, gpointer user_data)
 	}
 	gtk_widget_destroy(dialog);
 }
-

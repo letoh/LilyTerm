@@ -43,7 +43,7 @@
 
 void command_option(int *argc, char *argv[]);
 gboolean main_quit ();
-gchar *got_help_message();
+GString *got_help_message();
 gchar *got_profile_sample();
 gboolean window_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
 void deal_key_press(gint type);
@@ -65,5 +65,6 @@ void window_size_request (GtkWidget *window, GtkRequisition *requisition, gpoint
 void window_size_allocate (GtkWidget *window, GtkAllocation *allocation, gpointer user_data);
 
 extern void add_page(gint run_once);
+extern GString *save_user_settings(GtkWidget *widget, GtkWidget *current_vtebox);
 
 #endif

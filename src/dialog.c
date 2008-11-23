@@ -32,9 +32,10 @@ extern GtkWidget *window;
 extern GtkWidget *notebook;
 extern GtkWidget *current_vtebox;
 
-#ifdef ENABLE_RGBA
 extern gboolean use_rgba;
+#ifdef ENABLE_RGBA
 extern gint transparent_window;
+gboolean original_transparent_window;
 extern gdouble window_opacity;
 gdouble original_window_opacity;
 #endif
@@ -42,30 +43,44 @@ extern gdouble background_saturation;
 extern gint transparent_background;
 gboolean original_transparent_background;
 
+GdkColor original_color;
+extern gchar *foreground_color;
+extern gchar *background_color;
+GdkColor fg_color;
+GdkColor bg_color;
+gboolean is_fg;
+
 GtkWidget *adjustment;
-gboolean BOTTON_ORDER=FALSE;
+
+extern GError *error;
 
 gboolean dialog (GtkWidget *widget, gint style)
 {
 	// g_debug("Running dialog mod%d\n", style);
 	
-	// style 1: change the tab's name
-	// style 2: change the saturation of background
-	// style 3: confirm close multi pages
-	// style 4: get funuction key value
-	// style 5: usage message
-	// style 6: profile sample
-	// style 7: confirm close running application
-	// style 8: change the opacity of window
+	// style  1: change the tab's name
+	// style  2: change the saturation of background
+	// style  3: confirm close multi pages
+	// style  4: get funuction key value
+	// style  5: usage message
+	// style  6: failt when saving settings
+	// style  7: confirm close running application
+	// style  8: change the opacity of window
+	// style  9: change the foreground color
+	// style 10: change the background color
 	
-	gchar *string=NULL, *temp_str=NULL;
+	// string: can NOT be free()
+	// temp_str: SHOULD be free()
+	gchar *string=NULL, *temp_str[2]= {NULL};
 	GtkWidget *dialog, *main_hbox, *icon_vbox, *icon, *main_right_vbox,
 		  *state_vbox, *title_hbox, *title, *label, *entry, *entry_hbox, *key_value_label,
 		  *state_bottom_hbox;
 	gboolean response = TRUE;
 
 	struct Page *current_data = (struct Page *)g_object_get_data(G_OBJECT(current_vtebox), "Data");
-	g_object_get (gtk_settings_get_default(), "gtk-alternative-button-order", &BOTTON_ORDER, NULL);
+	// g_object_get (gtk_settings_get_default(), "gtk-alternative-button-order", &BOTTON_ORDER, NULL);
+	gboolean BOTTON_ORDER = gtk_alternative_dialog_button_order(NULL);
+	// g_debug("gtk_alternative_dialog_button_order = %d" ,gtk_alternative_dialog_button_order (NULL));
 
 	/*
 		/--------------main_hbox--------------\
@@ -106,13 +121,19 @@ gboolean dialog (GtkWidget *widget, gint style)
 			string=_("Usage");
 			break;
 		case 6:
-			string=_("Profile sample");
+			string=_("Error when writing profile");
 			break;
 		case 7:
 			string=_("Confirm to close running foreground program");
 			break;
 		case 8:
 			string=_("Change the opacity of window");
+			break;
+		case 9:
+			string=_("Change the foreground color");
+			break;
+		case 10:
+			string=_("Change the background color");
 			break;
 	}
 
@@ -124,6 +145,8 @@ gboolean dialog (GtkWidget *widget, gint style)
 		case 3:
 		case 7:
 		case 8:
+		case 9:
+		case 10:
 			if (BOTTON_ORDER)
 				dialog = gtk_dialog_new_with_buttons (string,
 								      GTK_WINDOW(window),
@@ -146,7 +169,6 @@ gboolean dialog (GtkWidget *widget, gint style)
 								      NULL);
 			break;
 		case 4:
-		case 6:
 			if (BOTTON_ORDER)
 				dialog = gtk_dialog_new_with_buttons (string,
 								      GTK_WINDOW(window),
@@ -169,6 +191,7 @@ gboolean dialog (GtkWidget *widget, gint style)
 								      NULL);
 			break;
 		case 5:
+		case 6:
 			dialog = gtk_dialog_new_with_buttons (string,
 							      GTK_WINDOW(window),
 							      GTK_DIALOG_NO_SEPARATOR | 
@@ -188,11 +211,13 @@ gboolean dialog (GtkWidget *widget, gint style)
 		case 5:
 		case 6:
 		case 7:
-			gtk_window_set_resizable (GTK_WINDOW (dialog), TRUE);
+		case 9:
+		case 10:
+			gtk_window_set_resizable (GTK_WINDOW (dialog), FALSE);
 			break;
 		case 2:
 		case 8:
-			gtk_window_set_resizable (GTK_WINDOW (dialog), FALSE);
+			gtk_window_set_resizable (GTK_WINDOW (dialog), TRUE);
 			break;
 	}
 	
@@ -203,12 +228,14 @@ gboolean dialog (GtkWidget *widget, gint style)
 		case 2:
 		case 3:
 		case 4:
+		case 6:
 		case 7:
 		case 8:
 			gtk_container_set_border_width (GTK_CONTAINER (dialog), 10);
 			break;
 		case 5:
-		case 6:
+		case 9:
+		case 10:
 			gtk_container_set_border_width (GTK_CONTAINER (dialog), 15);
 			break;
 	}
@@ -228,6 +255,7 @@ gboolean dialog (GtkWidget *widget, gint style)
 		case 2:
 		case 3:
 		case 4:
+		case 6:
 		case 7:
 		case 8:
 			icon_vbox = gtk_vbox_new (FALSE, 30);
@@ -246,6 +274,9 @@ gboolean dialog (GtkWidget *widget, gint style)
 					icon = gtk_image_new_from_stock (GTK_STOCK_DIALOG_QUESTION,
 									 GTK_ICON_SIZE_DIALOG);
 					break;
+				case 6:
+					icon = gtk_image_new_from_stock (GTK_STOCK_DIALOG_ERROR,
+                                                                         GTK_ICON_SIZE_DIALOG);
 			}
 			gtk_box_pack_start (GTK_BOX(icon_vbox), icon, FALSE, FALSE, 0);
 			break;
@@ -276,31 +307,53 @@ gboolean dialog (GtkWidget *widget, gint style)
 			break;
 		case 5:
 		{
-			temp_str = got_help_message();
-			gchar *markup_str = g_markup_escape_text(temp_str, -1);
-			string = g_strconcat("<tt>", markup_str, "</tt>", NULL);
-			g_free(markup_str);
+			GString *help_msg = got_help_message();
+			temp_str[1] = g_markup_escape_text(help_msg->str, -1);
+			temp_str[0] = g_strconcat("<tt>", temp_str[1], "</tt>", NULL);
+			g_string_free(help_msg, TRUE);
 			break;
 		}
 		case 6:
 		{
-			temp_str = got_profile_sample();
-			gchar *markup_str = g_markup_escape_text(temp_str, -1);
-			string = g_strconcat("<small><tt>", markup_str, "</tt></small>", NULL);
-			g_free(markup_str);
+			temp_str[0] = g_strdup_printf(_("Error while writing profile '%s/%s':\n\n%s"),
+						   g_get_user_config_dir(), RCFILE, error->message);
 			break;
 		}
 		case 7:
-			temp_str = get_cmdline(get_tpgid(current_data->stat_path, current_data->pid));
-			string = g_strdup_printf(_("There is still a running foreground program on #%d tab:"
+		{
+			temp_str[1] = get_cmdline(get_tpgid(current_data->stat_path, current_data->pid));
+			temp_str[0] = g_strdup_printf(_("There is still a running foreground program on #%d tab:"
 						   "\n\n\t%s\n\n"
 						   "Continue anyway?\n"),
-						   current_data->current_page_no+1, temp_str);
+						   current_data->current_page_no+1, temp_str[1]);
 			break;
+		}
 		case 8:
 			string = _("Change the Opacity of window:");
 			break;
-}
+		case 9:
+		case 10:
+			adjustment = gtk_color_selection_new();
+			gtk_color_selection_set_has_opacity_control(GTK_COLOR_SELECTION(adjustment), FALSE);
+			gtk_color_selection_set_has_palette(GTK_COLOR_SELECTION(adjustment), FALSE);
+			if (style==9)
+			{
+				original_color = fg_color;
+				is_fg = TRUE;
+			}
+			else
+			{
+				original_color = bg_color;
+				is_fg = FALSE;
+			}
+			gtk_color_selection_set_previous_color (GTK_COLOR_SELECTION(adjustment), &original_color);
+			gtk_color_selection_set_current_color (GTK_COLOR_SELECTION(adjustment), &original_color);
+			
+			gtk_box_pack_start (GTK_BOX(title_hbox), adjustment, TRUE, TRUE, 0);
+			g_signal_connect_after( adjustment, "color-changed",
+						G_CALLBACK(set_vtebox_color), current_vtebox);
+			break;
+	}
 
 	// title
 	switch (style)
@@ -313,19 +366,31 @@ gboolean dialog (GtkWidget *widget, gint style)
 			title = gtk_label_new (string);
 			break;
 		case 5:
-		case 6:
 			title = gtk_label_new (NULL);
-			gtk_label_set_markup (GTK_LABEL (title), string);
+			gtk_label_set_markup (GTK_LABEL (title), temp_str[0]);
 			gtk_label_set_selectable(GTK_LABEL(title), TRUE);
 			break;
+		case 6:
+			title = gtk_label_new (temp_str[0]);
 		case 7:
-			title = gtk_label_new (string);
+			title = gtk_label_new (temp_str[0]);
 			gtk_label_set_max_width_chars (GTK_LABEL(title), 50);
 			gtk_label_set_ellipsize(GTK_LABEL(title), PANGO_ELLIPSIZE_MIDDLE);
 			break;
 	}
+	switch (style)
+	{
+		case 1:
+		case 2:
+		case 3:
+		case 4:
+		case 5:
+		case 6:
+		case 7:
+		case 8:
 
-	gtk_box_pack_start (GTK_BOX(title_hbox), title, FALSE, FALSE, 0);
+		gtk_box_pack_start (GTK_BOX(title_hbox), title, FALSE, FALSE, 0);
+	}
 
 	// state_bottom_hbox
 	switch (style)
@@ -334,11 +399,11 @@ gboolean dialog (GtkWidget *widget, gint style)
 		case 2:
 		case 3:
 		case 4:
+		case 6:
 		case 7:
 		case 8:
 			state_bottom_hbox = gtk_hbox_new (FALSE, 3);
 			gtk_box_pack_end (GTK_BOX(state_vbox), state_bottom_hbox, FALSE, FALSE, 0);
-			entry_hbox = gtk_hbox_new (FALSE, 5);
 			break;
 	}
 
@@ -347,8 +412,9 @@ gboolean dialog (GtkWidget *widget, gint style)
 	{
 		case 1:
 		case 2:
-		case 8:
 		case 4:
+		case 8:
+			entry_hbox = gtk_hbox_new (FALSE, 5);
 			gtk_box_pack_start (GTK_BOX(state_vbox), entry_hbox, TRUE, TRUE, 10);
 			break;
 	}
@@ -410,12 +476,20 @@ gboolean dialog (GtkWidget *widget, gint style)
 	switch (style)
 	{
 		case 2:
-			original_transparent_background = transparent_background;
-			transparent_background = TRUE;
-			set_background_saturation( NULL, 0, background_saturation, current_vtebox);
+		case 10:
+			if ((style==2) || ((style==10) && (!use_rgba)))
+			{
+				original_transparent_background = transparent_background;
+				if (style == 2)
+					transparent_background = TRUE;
+				else
+					transparent_background = FALSE;
+				set_background_saturation( NULL, 0, background_saturation, current_vtebox);
+			}
 			break;
 #ifdef ENABLE_RGBA
 		case 8:
+			original_transparent_window = transparent_window;
 			original_window_opacity = window_opacity;
 			transparent_window = TRUE;
 			set_window_opacity( NULL, 0, window_opacity, NULL);
@@ -435,8 +509,11 @@ gboolean dialog (GtkWidget *widget, gint style)
 				// g_debug("Got label name: %s\n",gtk_entry_get_text(GTK_ENTRY(entry)));
 				g_free(current_data->custom_page_name);
 				if (strlen(gtk_entry_get_text(GTK_ENTRY(entry))))
+				{
 					// store current_data->label->name
 					current_data->custom_page_name = g_strdup(gtk_entry_get_text(GTK_ENTRY(entry)));
+					page_name = g_strdup(current_data->custom_page_name);
+				}
 				else
 					current_data->custom_page_name = NULL;
 				
@@ -444,24 +521,59 @@ gboolean dialog (GtkWidget *widget, gint style)
 						 current_data->custom_page_name);
 				break;
 
-			// style 2: change the saturation of background
+			// style  2: change the saturation of background
+			// style  9: change the foreground color
+			// style 10: change the background color
 			case 2:
+			case 9:
+			case 10:
 			{
+				GtkWidget *vtebox;
 				gint i;
-				background_saturation=gtk_range_get_value(GTK_RANGE(adjustment));
+				
+				switch (style)
+				{
+					case 2:
+						background_saturation = gtk_range_get_value(GTK_RANGE(adjustment)) + 0.0005;
+						break;
+#ifdef ENABLE_GDKCOLOR_TO_STRING
+					case 9:
+						g_free(foreground_color);
+						foreground_color = gdk_color_to_string(&fg_color);
+						break;
+					case 10:
+						g_free(background_color);
+						background_color = gdk_color_to_string(&bg_color);
+						// FIXME: GtkColorSelection have no ALPHA-CHANGED signal.
+						//	  so that the following code should be marked for temporary.
+						// background_saturation = gtk_color_selection_get_current_alpha(
+						//		 		GTK_COLOR_SELECTION(adjustment))/65535;
+						break;
+#endif
+				}
+				
 				for (i=0;i<gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook));i++)
-					set_background_saturation (NULL, 0, background_saturation,
-							 g_object_get_data(G_OBJECT(
-								 gtk_notebook_get_tab_label(GTK_NOTEBOOK(notebook),
-									gtk_notebook_get_nth_page(
-										GTK_NOTEBOOK(notebook), i))),
-							"VteBox"));
+				{
+					vtebox=(GtkWidget *)g_object_get_data(G_OBJECT(gtk_notebook_get_tab_label(
+										GTK_NOTEBOOK(notebook),
+										   gtk_notebook_get_nth_page(
+										      GTK_NOTEBOOK(notebook),i))),
+									      "VteBox");
+					if ((style==2) || ((style==10) && (!use_rgba)))
+						set_background_saturation (NULL, 0, background_saturation, 
+									   vtebox);
+
+					if (style!=2)
+						set_vtebox_color (NULL, vtebox);
+				}
 				break;
 			}
-
 			// style 3: confirm close multi pages
 			case 3:
 			{
+				// destroy the dialog before comfirm a working vtebox.
+				gtk_widget_destroy(dialog);
+
 				gint i;
 				gint total_page = gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook));
 				for (i=0;i<total_page;i++)
@@ -478,15 +590,10 @@ gboolean dialog (GtkWidget *widget, gint style)
 				gtk_clipboard_set_text (gtk_clipboard_get (GDK_SELECTION_PRIMARY),
 							gtk_label_get_text(GTK_LABEL(key_value_label)), -1);
 				break;
-
-			// style 6: profile sample
-			case 6:
-				gtk_clipboard_set_text (gtk_clipboard_get (GDK_SELECTION_PRIMARY), temp_str, -1);
-				break;
 #ifdef ENABLE_RGBA
 			// style 8: change the opacity of window
 			case 8:
-				window_opacity=gtk_range_get_value(GTK_RANGE(adjustment));
+				window_opacity = gtk_range_get_value(GTK_RANGE(adjustment))+0.0005;
 				break;
 #endif
 		}
@@ -496,11 +603,26 @@ gboolean dialog (GtkWidget *widget, gint style)
 		switch (style)
 		{
 			case 2:
-				transparent_background = original_transparent_background;
-				set_background_saturation( NULL, 0, background_saturation, current_vtebox);
+			case 9:
+			case 10:
+				if ((style==2) || ((style==10) && (!use_rgba)))
+				{
+					transparent_background = original_transparent_background;
+					// g_debug("transparent_background = %d", transparent_background);
+					set_background_saturation( NULL, 0, background_saturation,
+								   current_vtebox);
+				}
+				if (style==9)
+					fg_color = original_color;
+				else if (style==10)
+					bg_color = original_color;
+
+				if (style!=2)
+					set_vtebox_color(NULL, current_vtebox);
 				break;
 #ifdef ENABLE_RGBA
 			case 8:
+				transparent_window = original_transparent_window;
 				window_opacity = original_window_opacity;
 				set_window_opacity( NULL, 0, window_opacity, NULL);
 				break;
@@ -509,8 +631,10 @@ gboolean dialog (GtkWidget *widget, gint style)
 		response = FALSE;
 	}
 
-	g_free(temp_str);
-	gtk_widget_destroy(dialog);
+	g_free(temp_str[0]);
+	g_free(temp_str[1]);
+	if (style !=3)
+		gtk_widget_destroy(dialog);
 	return response;
 }
 
@@ -549,4 +673,37 @@ gchar *dialog_key_press_join_string(gchar *key_value, gchar *separator, gchar *a
 		g_free(key_value);
 	}
 	return join_string;
+}
+
+void set_vtebox_color (GtkColorSelection *colorselection, GtkWidget *vtebox)
+{
+	// colorselection != NULL -> setting the vtebox color
+	// colorselection != NULL -> restoring the vtebox color
+	
+	if (is_fg)
+	{
+		if (colorselection != NULL)
+			gtk_color_selection_get_current_color (colorselection, &fg_color);
+		vte_terminal_set_color_foreground(VTE_TERMINAL(vtebox), &fg_color);
+	}
+	else
+	{
+		if (colorselection != NULL)
+		{
+			gtk_color_selection_get_current_color (colorselection, &bg_color);
+			// FIXME: GtkColorSelection have no ALPHA CHANGED signal.
+			//	  so that the following code should be marked for temporary
+			//if (use_rgba)
+			//{
+			//	gint alpha = gtk_color_selection_get_current_alpha(colorselection);
+			//	g_debug("Current alpha = %d", alpha);
+			//	vte_terminal_set_opacity(VTE_TERMINAL(vtebox), alpha);
+			//	vte_terminal_set_background_saturation( VTE_TERMINAL(vtebox), 1-alpha/65535);
+			//}
+		}
+		//else if (use_rgba)
+		//	set_background_saturation( NULL, 0, background_saturation, current_vtebox);
+
+		vte_terminal_set_color_background(VTE_TERMINAL(vtebox), &bg_color);
+	}
 }

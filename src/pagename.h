@@ -33,6 +33,11 @@
 #include <unistd.h>
 // for KEYS, struct Page, struct KeyValue
 #include "data.h"
+#ifdef USE_LIBGTOP
+	// for glibtop_get_proc_uid()
+	#include <glibtop/procuid.h>
+#endif
+
 
 void reorder_page_number(GtkWidget *widget, gpointer user_data);
 gboolean monitor_cmdline(gpointer data);

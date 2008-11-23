@@ -1,4 +1,26 @@
-2008-4-28 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+2008-5-9 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+  version 0.9.0
+
+    FIX:
+	* <backspace> don't work under emacs.
+	  Thanks yoyo for report this bug.
+
+    New Feature:
+	* Applied German translation. VERY THANKS to Mario Blättermann.
+	* New menu item: [Scrollback lines] and [Clean scrollback lines of
+	  this tab].
+	  Thanks lpinkliow for this idea.
+	* New menu item: [Change the foreground color] and [Change the
+	  background color]. You man move the cursor in the color selection
+	  dialog and see the result in the vtebox at the same time.
+	  You man use `show_color_selection_menu = 0' in your profile to disable
+	  color selection menu items.
+	* New menu item: [Save settings].
+
+    DROP:
+    	* menu item [Profile sample] is obsoleted.
+
+2008-5-1 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
   version 0.8.9
 
     FIX:
@@ -10,7 +32,7 @@
 	  screen is composited.
 	  You may use `window_opacity = 0.15' in your profile to specify the
 	  opacity.
-	  You may use `transparent_window = 0' in your profile to disable it,
+	  You may use `transparent_window = 0' in your profile to disable it.
 	* May use `show_transparent_menu = 0' to disable transparent/opacity
 	  menu items.
 	* New menu item: [Transparent Window] and [Window Opacity].
@@ -61,7 +83,8 @@
 	* you may use show_resize_menu = 0 to disable [Increase window size],
 	  [Decrease window size], [Reset to default font/size] and [Reset to
 	  system font/size] in menu.
-	* Now [Change Font] in right click menu will change the font of all tabs.
+	* Now [Change Font] in right click menu will change the font of all
+	  tabs.
 	* Now [Transparent Background] and [Background Saturation] will apply
 	  to all tabs.
 	* New menu item: [Reset to default font/size] will reset every tab to
@@ -70,7 +93,7 @@
 	  system default font (Monospace 12) and size (80x24).
 
     DROP:
-	* [Change Font for current tab] is obsoleted.
+	* menu item [Change Font for current tab] is obsoleted.
 
 2008-4-19 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
 
@@ -314,7 +337,7 @@
 	`make no-im-patch' will complile without the dirty im-patch.
 
     AUTHORS:
-	Update homepage, blog, phorum, IRC, and web chat information.
+	Update homepage, blog, phorum, IRC information.
 
 2008-3-2 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
 

@@ -26,7 +26,8 @@
 
 // The defalut Page Name
 extern gchar *page_name;
-extern gchar **page_names;
+extern gchar *page_names;
+extern gchar **splited_page_names;
 extern gint page_names_no;
 extern gboolean reuse_page_names;
 extern gboolean page_shows_current_cmdline;
@@ -136,13 +137,13 @@ void update_page_name(GtkWidget *label, gint page_no, gchar *custom_page_name)
 gchar *get_tab_name_with_page_names()
 {
 	if (reuse_page_names)
-		if (page_names[page_names_no]==NULL)
+		if (splited_page_names[page_names_no]==NULL)
 			page_names_no=0;
 
-	if (page_names[page_names_no]!=NULL)
+	if (splited_page_names[page_names_no]!=NULL)
 	{
 		page_names_no++;
-		return g_strdup(page_names[page_names_no-1]);
+		return g_strdup(splited_page_names[page_names_no-1]);
 	}
 	else
 		return g_strdup(page_name);
@@ -176,6 +177,11 @@ gchar *get_tab_name_with_cmdline(gchar *stat_path, pid_t pid, pid_t *tpgid)
 
 gint get_tpgid(gchar *stat_path, pid_t pid)
 {
+#ifdef USE_LIBGTOP
+	glibtop_proc_uid buf;
+	glibtop_get_proc_uid(&buf, pid);
+	return buf.tpgid;
+#else
 	// we get stat_path from "struct Page" for performance.
 	gchar *stat, **stats=NULL;
 	gsize length;
@@ -190,8 +196,8 @@ gint get_tpgid(gchar *stat_path, pid_t pid)
 	
 	g_free(stat);
 	g_strfreev(stats);
-	
 	return tpgid;
+#endif	
 }
 
 // It will return NULL if fault

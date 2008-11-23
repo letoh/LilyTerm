@@ -59,6 +59,9 @@ GtkWidget *current_vtebox=NULL;
 extern gboolean force_resize_window;
 gint keep_vtebox_size;
 
+extern gint scrollback_lines;
+extern GtkWidget *menuitem_scrollback_lines;
+
 void add_page(gboolean run_once)
 {
 	// the component of a single page
@@ -160,6 +163,8 @@ void add_page(gboolean run_once)
 	update_tab_name(new_page->stat_path, new_page->label, new_page->pid, &(new_page->tpgid),
 			new_page->current_page_no + 1, new_page->custom_page_name);
 	// g_debug("Got label name from update_tab_name(): %s\n", new_page->label->name);
+	if (scrollback_lines)
+		new_page->use_scrollback_lines = TRUE;
 
 	// Monitor cmdline
 	if (page_shows_current_cmdline)
@@ -172,7 +177,10 @@ void add_page(gboolean run_once)
 #endif
 
 	// finish!
+	// g_debug("Showing the new page!");
 	gtk_widget_show_all(new_page->hbox);
+	gtk_widget_queue_draw (new_page->vtebox);
+	gtk_widget_set_redraw_on_allocate (new_page->vtebox, TRUE);
 	gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), new_page->current_page_no);
 	gtk_window_set_focus(GTK_WINDOW(window), new_page->vtebox);
 
@@ -252,24 +260,27 @@ gboolean close_page (GtkWidget *widget, gboolean need_safe_close)
 
 void vtebox_grab_focuse(GtkWidget *vtebox, gpointer user_data)
 {
-	//g_debug ("Update current_vtebox! : %d", vtebox);
-	current_vtebox = vtebox;
-
-	// we should bind the hints information on vtebox.
-	// Or the geometry of vtebox may be changed when deleting the vtebox hold hints info.
-	//g_debug("Updating hints for this page!\n");
-	if (update_hints)
-		// if update_hints = TRUE, we should update the FONT hints for every vtebox.
-		window_resizable(vtebox, 1, -1);
-	else
-		// else, updte the hints without font
-		window_resizable(vtebox, 0, -1);
-
-	if (window_shows_current_page)
+	if (current_vtebox != vtebox)
 	{
-		struct Page *current_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Data");
-		if (current_data!=NULL)
-			update_window_title(current_data->label->name);
+		//g_debug ("Update current_vtebox! : %d", vtebox);
+		current_vtebox = vtebox;
+	
+		// we should bind the hints information on vtebox.
+		// Or the geometry of vtebox may be changed when deleting the vtebox hold hints info.
+		// g_debug("Updating hints for %d page!\n", gtk_notebook_get_n_pages (notebook));
+		if (update_hints)
+			// if update_hints = TRUE, we should update the FONT hints for every vtebox.
+			window_resizable(vtebox, 1, -1);
+		else
+			// else, updte the hints without font
+			window_resizable(vtebox, 0, -1);
+	
+		if (window_shows_current_page)
+		{
+			struct Page *current_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Data");
+			if (current_data!=NULL)
+				update_window_title(current_data->label->name);
+		}
 	}
 }
 
@@ -310,14 +321,14 @@ void vtebox_lost_focuse(GtkWidget *vtebox, gpointer user_data)
 
 void vtebox_style_set (GtkWidget *vtebox, GtkStyle *previous_style, gpointer user_data)
 {
-	g_debug("vtebox_style_set!");
-	g_debug("Current vtebox size is %dx%d\n",
-		vte_terminal_get_column_count(VTE_TERMINAL(vtebox)),
-		vte_terminal_get_row_count(VTE_TERMINAL(vtebox)));
+	//g_debug("vtebox_style_set!");
+	//g_debug("Current vtebox size is %dx%d\n",
+	//	vte_terminal_get_column_count(VTE_TERMINAL(vtebox)),
+	//	vte_terminal_get_row_count(VTE_TERMINAL(vtebox)));
 
 	if (lost_focuse && vtebox!=NULL)
 	{
-		g_debug("Restoring the data...");
+		// g_debug("Restoring the data...");
 		window_resizable(vtebox, 2, -1);
 		// retore the vtebox size
 		struct Page *current_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Data");
@@ -329,10 +340,10 @@ void vtebox_style_set (GtkWidget *vtebox, GtkStyle *previous_style, gpointer use
 
 void vtebox_size_allocate (GtkWidget *vtebox, GtkAllocation *allocation, gpointer user_data)
 {
-	g_debug("vtebox_size_allocate! : %d", vtebox);
-	g_debug("Current vtebox size is %dx%d\n",
-		vte_terminal_get_column_count(VTE_TERMINAL(vtebox)),
-		vte_terminal_get_row_count(VTE_TERMINAL(vtebox)));
+	//g_debug("vtebox_size_allocate! : %d", vtebox);
+	//g_debug("Current vtebox size is %dx%d\n",
+	//	vte_terminal_get_column_count(VTE_TERMINAL(vtebox)),
+	//	vte_terminal_get_row_count(VTE_TERMINAL(vtebox)));
 
 	if (vtebox!=NULL)
 	{
@@ -342,7 +353,7 @@ void vtebox_size_allocate (GtkWidget *vtebox, GtkAllocation *allocation, gpointe
 
 			if (keep_vtebox_size<=0)
 			{
-				g_debug("Updating the hints data!\n");
+				// g_debug("Updating the hints data!\n");
 				if (update_hints)
 					window_resizable(vtebox, 2, 1);
 				else
@@ -352,7 +363,7 @@ void vtebox_size_allocate (GtkWidget *vtebox, GtkAllocation *allocation, gpointe
 		}
 		else
 		{
-			g_debug("! Saving the data...");
+			// g_debug("! Saving the data...");
 			struct Page *current_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Data");
 			current_data->column = vte_terminal_get_column_count(VTE_TERMINAL(vtebox));
 			current_data->row = vte_terminal_get_row_count(VTE_TERMINAL(vtebox));
@@ -376,6 +387,8 @@ gboolean vtebox_button_press(GtkWidget *widget, GdkEventButton *event, gpointer 
 #endif
 			GTK_CHECK_MENU_ITEM(menuitem_trans_bg)->active = transparent_background;
 		}
+		if (scrollback_lines)
+			GTK_CHECK_MENU_ITEM(menuitem_scrollback_lines)->active = current_data->use_scrollback_lines;
 		gtk_menu_popup(GTK_MENU(menu), NULL, NULL, NULL, NULL, event->button, event->time);
 		return TRUE;
 	}

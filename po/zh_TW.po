@@ -5,7 +5,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: LilyTerm 0.8.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-04-30 10:06+0800\n"
+"POT-Creation-Date: 2008-05-09 22:33+0800\n"
 "PO-Revision-Date: 2008-03-21 00:30+0800\n"
 "Last-Translator: Tetralet <tetralet@gmail.com>\n"
 "Language-Team: Tetralet <tetralet@gmail.com>\n"
@@ -13,51 +13,59 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: dialog.c:94
+#: dialog.c:109
 msgid "Rename the tab"
 msgstr "變更分頁的名稱"
 
-#: dialog.c:97
+#: dialog.c:112
 msgid "Change the saturation of background"
 msgstr "改變背景的透明度"
 
-#: dialog.c:100
+#: dialog.c:115
 msgid "Confirm to close multi tabs"
 msgstr "確認是否關閉多個分頁"
 
-#: dialog.c:103
+#: dialog.c:118
 msgid "Get the key value for using in profile"
 msgstr "取得可用於設定檔的鍵值"
 
-#: dialog.c:106 menu.c:198
+#: dialog.c:121 menu.c:242
 msgid "Usage"
 msgstr "使用說明"
 
-#: dialog.c:109 menu.c:212
-msgid "Profile sample"
-msgstr "設定檔範例"
+#: dialog.c:124
+msgid "Error when writing profile"
+msgstr "在寫入設定檔時發生錯誤"
 
-#: dialog.c:112
+#: dialog.c:127
 msgid "Confirm to close running foreground program"
 msgstr "確認是否關閉正在前景執行中的程式"
 
-#: dialog.c:115
+#: dialog.c:130
 msgid "Change the opacity of window"
 msgstr "改變視窗的透明度"
 
-#: dialog.c:264
+#: dialog.c:133 menu.c:96
+msgid "Change the foreground color"
+msgstr "改變文字的顏色"
+
+#: dialog.c:136 menu.c:103
+msgid "Change the background color"
+msgstr "改變背景的顏色"
+
+#: dialog.c:295
 msgid "Please input the Label Name of this tab:"
 msgstr "請輸入這個分頁的名稱："
 
-#: dialog.c:267
+#: dialog.c:298
 msgid "Change the Saturation of background:"
 msgstr "改變背景的透明度"
 
-#: dialog.c:270
+#: dialog.c:301
 msgid "You are about to close multi tabs. Continue anyway?"
 msgstr "您將要關閉多個分頁。是否無論如何仍繼續？"
 
-#: dialog.c:273
+#: dialog.c:304
 msgid ""
 "You may press any key here to get the key value for using in profile.\n"
 "\n"
@@ -69,7 +77,18 @@ msgstr ""
 "按下【複製】可將鍵值複製至剪貼簿；\n"
 "按下【關閉】離開。"
 
-#: dialog.c:295
+#: dialog.c:318
+#, c-format
+msgid ""
+"Error while writing profile '%s/%s':\n"
+"\n"
+"%s"
+msgstr ""
+"在寫入設定檔 %s/%s 時發生錯誤：\n"
+"\n"
+"%s"
+
+#: dialog.c:325
 #, c-format
 msgid ""
 "There is still a running foreground program on #%d tab:\n"
@@ -84,15 +103,15 @@ msgstr ""
 "\n"
 "是否無論如何仍繼續？\n"
 
-#: dialog.c:301
+#: dialog.c:332
 msgid "Change the Opacity of window:"
 msgstr "改變視窗的透明度："
 
-#: dialog.c:360
+#: dialog.c:426
 msgid "Label Name:"
 msgstr "分頁名稱："
 
-#: dialog.c:399
+#: dialog.c:465
 msgid "Key Value:"
 msgstr "鍵值："
 
@@ -218,62 +237,74 @@ msgstr ""
 msgid "Please report bug to %s. Thank you for using %s!\n"
 msgstr "請向 %s 回報錯誤。感謝您使用 %s！\n"
 
-#: menu.c:65
+#: menu.c:71
 msgid "System Default"
 msgstr "系統預設值"
 
-#: menu.c:92
+#: menu.c:120
 msgid "Transparent Window"
 msgstr "透明視窗"
 
-#: menu.c:96
+#: menu.c:124
 msgid "Window Opacity"
 msgstr "視窗透明度"
 
-#: menu.c:108
+#: menu.c:136
 msgid "Transparent Background"
 msgstr "透明背景"
 
-#: menu.c:112
+#: menu.c:140
 msgid "Background Saturation"
 msgstr "背景透明度"
 
-#: menu.c:124
-msgid "Increase window size"
-msgstr "放大視窗"
+#: menu.c:153
+msgid "Scrollback lines"
+msgstr "歷史捲軸"
 
-#: menu.c:129
-msgid "Decrease window size"
-msgstr "縮小視窗"
+#: menu.c:158
+msgid "Clean scrollback lines of this tab"
+msgstr "清除此分頁的歷史捲軸"
 
-#: menu.c:143
+#: menu.c:172
 msgid "Switch input methods"
 msgstr "切換輸入法"
 
-#: menu.c:153
+#: menu.c:182
 msgid "Change the font"
 msgstr "改變字型"
 
-#: menu.c:160
+#: menu.c:189
 msgid "Rename this tab"
 msgstr "變更此分頁的名稱"
 
-#: menu.c:173
+#: menu.c:202
+msgid "Increase window size"
+msgstr "放大視窗"
+
+#: menu.c:207
+msgid "Decrease window size"
+msgstr "縮小視窗"
+
+#: menu.c:217
 msgid "Reset to default font/size"
 msgstr "重置為預設字型及大小"
 
-#: menu.c:179
+#: menu.c:223
 msgid "Reset to system font/size"
 msgstr "重置為系統字型及大小"
 
-#: menu.c:187
+#: menu.c:231
 msgid "Reset the content of this tab"
 msgstr "重置此分頁的內容"
 
-#: menu.c:205
+#: menu.c:249
 msgid "Get function key value"
 msgstr "取得功能鍵值"
 
-#: menu.c:279
+#: menu.c:257
+msgid "Save settings"
+msgstr "儲存設定"
+
+#: menu.c:340
 msgid "Font Selection"
 msgstr "選擇字型"

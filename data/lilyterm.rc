@@ -1,25 +1,26 @@
 [main]
 page_name = Terminal
-page_names = Terminal
+page_names = 
 reuse_page_names = 1
 page_number = 1
 page_shows_current_cmdline = 1
 window_shows_current_page = 1
+show_color_selection_menu = 1
 foreground_color = white
 background_color = black
+show_resize_menu = 1
 font_name = Monospace 12
 column = 80
 row = 24
 use_rgba =
-transparent_window = 0
-window_opacity = 0.05
-transparent_background = 0
-background_saturation = 0.15
+show_transparent_menu = 1
+transparent_window = 1
+window_opacity = 0.050
+transparent_background = 1
+background_saturation = 0.150
 word_chars = -A-Za-z0-9_$.+!*(),;:@&=?/~#%[]
 scrollback_lines = 1024
 show_input_method_menu = 0
-show_resize_menu = 1
-show_transparent_menu = 1
 locales_list = EUC-JP GB2312 Big5
 
 [key]

@@ -39,11 +39,13 @@ void set_trans_bg(GtkWidget *widget, gpointer user_data);
 void set_trans_win(GtkWidget *widget, gpointer user_data);
 extern gboolean set_background_saturation (GtkRange *range, GtkScrollType scroll, gdouble value, GtkWidget *vtebox);
 extern gboolean set_window_opacity(GtkRange *range, GtkScrollType scroll, gdouble value, gpointer user_data);
+void clean_scrollback_lines(GtkWidget *widget, gboolean type);
 void reset_vtebox(GtkWidget *widget, gpointer user_data);
 void select_font(GtkWidget *widget, gpointer user_data);
 void reset_vtebox_font_size(GtkWidget *widget, gboolean reset_all);
 
 extern gboolean dialog (GtkWidget *widget, gint style);
 extern void set_vtebox_font(GtkWidget *widget, gint type);
+extern GString *save_user_settings(GtkWidget *widget, GtkWidget *current_vtebox);
 
 #endif

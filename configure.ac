@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT(LilyTerm, 0.8.9, tetralet@gmail.com)
+AC_INIT(LilyTerm, 0.9.0, tetralet@gmail.com)
 AM_INIT_AUTOMAKE
 AC_CONFIG_SRCDIR([src/main.c])
 AC_CONFIG_HEADERS([config.h])
@@ -15,18 +15,19 @@ AM_PROG_CC_C_O
 AM_PATH_GTK_2_0(2.8.20,,AC_MSG_ERROR([You need Gtk+ >= 2.8.20 to build $PACKAGE]))
 AM_PATH_GLIB_2_0(2.12.4,,AC_MSG_ERROR([You need Glib >= 2.12.4 to build $PACKAGE]))
 PKG_CHECK_MODULES(vte, [vte >= 0.12.2],, AC_MSG_ERROR([You need libvte >= 0.12.2 to build $PACKAGE]))
-AC_SUBST(CFLAGS, [$vte_CFLAGS])
-AC_SUBST(LDFLAGS, [$vte_LIBS])
 
 AC_ARG_ENABLE(debug, AC_HELP_STRING([--enable-debug], [turn on debug]), CFLAGS="$CFLAGS -g")
 PKG_CHECK_EXISTS(gtk+-2.0 >= 2.10,
 		 AC_DEFINE(ENABLE_TAB_REORDER,, [Define only if gtk+-2.0 >= 2.10.0.])
-		 AC_DEFINE(ENABLE_RGBA,, [Define only if gtk+-2.0 >= 2.10.0.]))
+		 AC_DEFINE(ENABLE_RGBA,, [Define only if gtk+-2.0 >= 2.10.0.])
+		 AC_DEFINE(ENABLE_GDKCOLOR_TO_STRING,, [Define only if gtk+-2.0 >= 2.10.0.]))
 PKG_CHECK_EXISTS(vte >= 0.13, AC_DEFINE(ENABLE_SELECT_ALL,, [Define only if vte >= 0.13.]))
 PKG_CHECK_EXISTS(glib-2.0 >= 2.14, AC_DEFINE(USE_TIMEOUT_SECONDS,, [Define only if glib-2.0 >= 2.14.]))
+PKG_CHECK_EXISTS(libgtop-2.0, [PKG_CHECK_MODULES(libgtop, [libgtop-2.0 >= 2.14.4],
+		 				 AC_DEFINE(USE_LIBGTOP,, [Define only if libgtop-2.0 >= 2.14.4.]))])
 
 AC_PROG_INTLTOOL
-ALL_LINGUAS="zh_TW"
+ALL_LINGUAS="zh_TW de"
 GETTEXT_PACKAGE="$PACKAGE"
 AC_SUBST(GETTEXT_PACKAGE)
 AM_GLIB_GNU_GETTEXT

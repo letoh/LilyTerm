@@ -27,13 +27,19 @@
 
 // default settings
 gchar *page_name = "Terminal";
-gchar **page_names = NULL;
+gchar *page_names = "";
+gchar **splited_page_names = NULL;
 gint page_names_no = 0;
 gboolean reuse_page_names = TRUE;
 gboolean page_number = TRUE;
+#if defined(__linux__)
 gboolean page_shows_current_cmdline = TRUE;
+#else
+gboolean page_shows_current_cmdline = FALSE;
+#endif
 // gboolean page_shows_current_dir = FALSE;
 gboolean window_shows_current_page = TRUE;
+gboolean show_color_selection_menu = TRUE;
 gchar *foreground_color = "white";
 gchar *background_color = "black";
 GdkColor fg_color;
@@ -46,11 +52,12 @@ gint default_row = 24;
 gint system_column = 80;
 gint system_row = 24;
 gboolean show_transparent_menu = TRUE;
-#ifdef ENABLE_RGBA
 // 0: do NOT use rgba
 // 1: force to use rgba
 // 2: decide by gdk_screen_is_composited()
 gint use_rgba = 2;
+gint original_use_rgba = 2;
+#ifdef ENABLE_RGBA
 gint transparent_window = 2;
 gdouble window_opacity = 0.05;
 #endif
@@ -73,27 +80,10 @@ extern GtkWidget *window;
 struct KeyValue pagekeys[KEYS] = {{0}};
 struct ModKey modkeys[MOD] = {{0}};
 
-// get user settings from profile.
-void get_user_settings()
+GError *error = NULL;
+
+void init_pagekeys()
 {
-	gint i;
-
-	modkeys[0].name = "Ctrl";
-	modkeys[0].mod = GDK_CONTROL_MASK;
-	modkeys[1].name = "Shift";
-	modkeys[1].mod = GDK_SHIFT_MASK;
-	modkeys[2].name = "Alt";
-	modkeys[2].mod = GDK_MOD1_MASK;
-	modkeys[3].name = "Mod1";
-	modkeys[3].mod = GDK_MOD1_MASK;
-	// Mod2 = NumLock. We won't check it.
-	modkeys[4].name = "Mod3";
-	modkeys[4].mod = GDK_MOD3_MASK;
-	modkeys[5].name = "Mod4";
-	modkeys[5].mod = GDK_MOD4_MASK;
-	modkeys[6].name = "Mod5";
-	modkeys[6].mod = GDK_MOD5_MASK;
-
 	// for disable/enable the function keys
 	pagekeys[0].name = "disable_function_key";
 	pagekeys[0].value = "Ctrl grave";
@@ -173,123 +163,111 @@ void get_user_settings()
 	// reset the font size
 	pagekeys[29].name = "reset_font_size";
 	pagekeys[29].value = "Ctrl Return";
-	
+}
+
+// get user settings from profile.
+void get_user_settings()
+{
+	init_pagekeys();
+
+	gint i;
+
+	modkeys[0].name = "Ctrl";
+	modkeys[0].mod = GDK_CONTROL_MASK;
+	modkeys[1].name = "Shift";
+	modkeys[1].mod = GDK_SHIFT_MASK;
+	modkeys[2].name = "Alt";
+	modkeys[2].mod = GDK_MOD1_MASK;
+	modkeys[3].name = "Mod1";
+	modkeys[3].mod = GDK_MOD1_MASK;
+	// Mod2 = NumLock. We won't check it.
+	modkeys[4].name = "Mod3";
+	modkeys[4].mod = GDK_MOD3_MASK;
+	modkeys[5].name = "Mod4";
+	modkeys[5].mod = GDK_MOD4_MASK;
+	modkeys[6].name = "Mod5";
+	modkeys[6].mod = GDK_MOD5_MASK;
+
 	// got the rc file
 	GKeyFile *keyfile = g_key_file_new();
 	// gchar *profile = g_strdup_printf("%s/%s", g_get_user_config_dir(), RCFILE);
 	// g_debug ("Using the profile: %s \n", profile);
-	GError *error = NULL;
 
 	if (profile != NULL)
 	{
 		if (g_key_file_load_from_file(keyfile, profile, G_KEY_FILE_NONE, &error))
 		{
-			gchar *value = NULL;
-	
-			value = g_key_file_get_value(keyfile, "main", "page_name", NULL);
-			if (value && strlen(value)) page_name = value;
-			else g_free(value);
-
-			value = g_key_file_get_value(keyfile, "main", "page_names", NULL);
-			if (value)
-			{
-				g_strchomp(value);
-				page_names = g_strsplit_set(value, " ", 0);
-			}
-			else
-				page_names = g_strsplit_set("", " ", 0);
-			g_free(value);
-
-			value = g_key_file_get_value(keyfile, "main", "reuse_page_names", NULL);
-			if (value) reuse_page_names = (gboolean)(atoi(value));
-			g_free(value);
-
-			value = g_key_file_get_value(keyfile, "main", "page_shows_current_cmdline", NULL);
-			if (value) page_shows_current_cmdline = (gboolean)(atoi(value));
-			g_free(value);
-
-			// value = g_key_file_get_value(keyfile, "main", "page_shows_current_dir", NULL);
-			// if (value) page_shows_current_dir = (gboolean)(atoi(value));
+			page_name = check_string_value(keyfile, "main", "page_name", page_name, FALSE);
 			
-			value = g_key_file_get_value(keyfile, "main", "window_shows_current_page", NULL);
-			if (value) window_shows_current_page = (gboolean)(atoi(value));
-			g_free(value);
+			page_names = check_string_value(keyfile, "main", "page_names", page_names, TRUE);
+			splited_page_names = g_strsplit_set(page_names, " ", 0);
+			
+			reuse_page_names = check_boolean_value(keyfile, "main", "reuse_page_names", reuse_page_names);
+			
+			page_shows_current_cmdline = check_boolean_value(keyfile, "main", "page_shows_current_cmdline",
+									 page_shows_current_cmdline);
+			
+			window_shows_current_page = check_boolean_value(keyfile, "main", "window_shows_current_page",
+									window_shows_current_page);
+			
+			page_number = check_boolean_value(keyfile, "main", "page_number", page_number);
 
-			value = g_key_file_get_value(keyfile, "main", "page_number", NULL);
-			if (value) page_number = (gboolean)(atoi(value));
-			g_free(value);
+			show_color_selection_menu = check_boolean_value(keyfile, "main", "show_color_selection_menu", 
+									show_color_selection_menu);
 
-			value = g_key_file_get_value(keyfile, "main", "foreground_color", NULL);
-			if (value && strlen(value)) foreground_color = value;
-			else g_free(value);
+			foreground_color = check_string_value(keyfile, "main", "foreground_color", foreground_color, FALSE);
 
-			value = g_key_file_get_value(keyfile, "main", "background_color", NULL);
-			if (value && strlen(value)) background_color = value;
-			else g_free(value);
+			background_color = check_string_value(keyfile, "main", "background_color", background_color, FALSE);
 
-			value = g_key_file_get_value(keyfile, "main", "font_name", NULL);
-			if (value && strlen(value)) default_font_name = value;
-			else g_free(value);
+			default_font_name = check_string_value(keyfile, "main", "font_name", default_font_name, FALSE);
+			PangoFontDescription *font_desc = pango_font_description_from_string(default_font_name);
+			if ((pango_font_description_get_size(font_desc)/PANGO_SCALE)==0)
+			{
+				g_warning("Invalid font name: %s", default_font_name);
+				g_free(default_font_name);
+				default_font_name = g_strdup(system_font_name);
+			}
 
-                        value = g_key_file_get_value(keyfile, "main", "show_resize_menu", NULL);
-                        if (value) show_resize_menu = (gboolean)(atoi(value));
-                        g_free(value);
+			show_resize_menu = check_boolean_value(keyfile, "main", "show_resize_menu", show_resize_menu);
 
-			value = g_key_file_get_value(keyfile, "main", "column", NULL);
-			if (value) default_column = atoi(value);
-			g_free(value);
+			default_column = check_integer_value(keyfile, "main", "column", default_column, FALSE, FALSE);
 
-			value = g_key_file_get_value(keyfile, "main", "row", NULL);
-			if (value) default_row = atoi(value);
-			g_free(value);
+			default_row = check_integer_value(keyfile, "main", "row", default_row, FALSE, FALSE);
 
-			value = g_key_file_get_value(keyfile, "main", "show_transparent_menu", NULL);
-			if (value) show_transparent_menu = (gboolean)(atoi(value));
-			g_free(value);
+			show_transparent_menu = check_boolean_value(keyfile, "main", "show_transparent_menu", 
+								    show_transparent_menu);
 
 #ifdef ENABLE_RGBA
-			// use_rgba won't be set if use_rgba = ""
-			value = g_key_file_get_value(keyfile, "main", "use_rgba", NULL);
-			if (value && strlen(value)) use_rgba = (gboolean)(atoi(value));
-			g_free(value);
-			// g_debug("use_rgba = %d!", use_rgba);
+			use_rgba = check_integer_value(keyfile, "main", "use_rgba", use_rgba, FALSE, TRUE);
+			original_use_rgba = use_rgba;
 
-			value = g_key_file_get_value(keyfile, "main", "transparent_window", NULL);
-			if (value) transparent_window = (gboolean)(atoi(value));
-			g_free(value);
+			transparent_window = check_integer_value(keyfile, "main", "transparent_window",
+								 transparent_window, FALSE, TRUE);
 
-			value = g_key_file_get_value(keyfile, "main", "window_opacity", NULL);
-			if (value && atof(value) < 1 && atof(value) > 0) window_opacity = atof(value);
-			g_free(value);
+			window_opacity = g_key_file_get_double(keyfile, "main", "window_opacity", NULL);
 #endif
 
-			value = g_key_file_get_value(keyfile, "main", "transparent_background", NULL);
-			if (value) transparent_background = (gboolean)(atoi(value));
-			g_free(value);
+			transparent_background = check_integer_value(keyfile, "main", "transparent_background", 
+								     transparent_background, FALSE, TRUE);
 
-			value = g_key_file_get_value(keyfile, "main", "background_saturation", NULL);
-			if (value && atof(value) < 1 && atof(value) > 0) background_saturation = atof(value);
-			g_free(value);
+			background_saturation = g_key_file_get_double(keyfile, "main", "background_saturation", NULL);
 
-			value = g_key_file_get_value(keyfile, "main", "word_chars", NULL);
-			if (value) word_chars = value;
+			word_chars = check_string_value(keyfile, "main", "word_chars", word_chars, TRUE);
 			
-			value = g_key_file_get_value(keyfile, "main", "scrollback_lines", NULL);
-			if (value) scrollback_lines = atoi(value);
-			g_free(value);
+			scrollback_lines = check_integer_value( keyfile, "main",
+								"scrollback_lines", scrollback_lines, FALSE, TRUE);
 
-			value = g_key_file_get_value(keyfile, "main", "show_input_method_menu", NULL);
-			if (value) show_input_method_menu = (gboolean)(atoi(value));
-			g_free(value);
+			show_input_method_menu = check_boolean_value(keyfile, "main", "show_input_method_menu", 
+								     show_input_method_menu);
 
-			value = g_key_file_get_value(keyfile, "main", "locales_list", NULL);
-			if (value) locales_list = value;
+			locales_list = check_string_value(keyfile, "main", "locales_list", locales_list, TRUE);
 			// g_debug("Got locales_list = %s from user's profile!\n", value);
 
 			// g_debug("Key Value: Shift=%x, NumLock=%x, Control=%x, Mod1=%x,"
 			//		"Mod2=%x, Mod3=%x, Mod4=%x, Mod5=%x\n",
 			//		GDK_SHIFT_MASK, GDK_LOCK_MASK, GDK_CONTROL_MASK, GDK_MOD1_MASK, 
 			//		GDK_MOD2_MASK, GDK_MOD3_MASK, GDK_MOD4_MASK, GDK_MOD5_MASK);
+			gchar *value = NULL;
 			for (i=0; i<KEYS; i++)
 			{
 				// g_debug("Checking %s key...", pagekeys[i].name);
@@ -297,10 +275,15 @@ void get_user_settings()
 				if (value)
 				{
 					// g_debug("Got %s key = %s form config file.\n", pagekeys[i].name, value);
-					if ( ! accelerator_parse(pagekeys[i].name, value,
+					if ( accelerator_parse(pagekeys[i].name, value,
 							  &(pagekeys[i].key), &(pagekeys[i].mods)))
-						g_debug("WARNING: %s = %s is not a valid key! Please check!\n",
+						pagekeys[i].value = value;
+					else
+					{
+						g_warning("%s = %s is not a valid key! Please check!\n",
 							pagekeys[i].name, value);
+						g_free(value);
+					}
 					// if (pagekeys[i].key)
 					//	g_debug("Got %s = key %x(%s), mods = %x.\n", pagekeys[i].name,
 					//			pagekeys[i].key, gdk_keyval_name(pagekeys[i].key),
@@ -308,17 +291,20 @@ void get_user_settings()
 				}
 				// else
 				//	g_debug("We can not find %s key in profile...", pagekeys[i].name);
-				g_free(value);
 			}
 		}
 		else
 		{
-			g_debug("WARNNING: the config file %s is invalid: %s\n", profile, error->message);
-			g_error_free (error);
+			g_warning("the config file %s is invalid: %s\n", profile, error->message);
+			g_clear_error (&error);
+			strdup_settings();
 		}
 	}
 	else
-		g_debug("Sorry, can NOT find any profile. Use program defaults.\n");
+	{
+		g_warning("can NOT find any profile. Use program defaults.\n");
+		strdup_settings();
+	}
 	
  	for (i=0; i<KEYS; i++)
  	{
@@ -326,7 +312,7 @@ void get_user_settings()
 		{
  			if ( ! accelerator_parse(pagekeys[i].name, pagekeys[i].value,
 					      &(pagekeys[i].key), &(pagekeys[i].mods)))
-				g_debug("ERROR: %s = %s is not a valid key! Please report bug!\n",
+				g_critical("%s = %s is not a valid key! Please report bug!\n",
 					 pagekeys[i].name, pagekeys[i].value);
  			// g_debug("Use default key %s, %x(%s), mods = %x.\n", pagekeys[i].name,
 			//		pagekeys[i].key, gdk_keyval_name(pagekeys[i].key), pagekeys[i].mods);
@@ -338,8 +324,8 @@ void get_user_settings()
 	// some defaults
 	// g_debug("Got locales_list = '%s' ( %d bytes)",locales_list, strlen(locales_list));
 	supported_locales = g_strsplit_set(locales_list, " ,", 0);
-	if (page_names==NULL)
-		page_names = g_strsplit_set("", " ", 0);
+	if (splited_page_names==NULL)
+		splited_page_names = g_strsplit_set("", " ", 0);
 	
 	gdk_color_parse(foreground_color, &fg_color);
 	gdk_color_parse(background_color, &bg_color);
@@ -361,6 +347,86 @@ void get_user_settings()
 
 	g_key_file_free(keyfile);
 	g_free(profile);
+}
+
+void strdup_settings()
+{
+	page_name = g_strdup(page_name);
+	// page_names = g_strdup(page_names);
+	foreground_color = g_strdup(foreground_color);
+	background_color = g_strdup(background_color);
+	// default_font_name = g_strdup(default_font_name);
+	// word_chars = g_strdup(word_chars);
+	// locales_list = g_strdup(locales_list);
+}
+
+gboolean check_boolean_value(GKeyFile *keyfile, const gchar *group_name, const gchar *key, const gboolean default_value)
+{
+	gchar *value = g_key_file_get_value(keyfile, group_name, key, NULL);
+	gboolean setting;
+
+	if (value)
+	{
+		if (strlen(value))
+			setting = g_key_file_get_boolean(keyfile, group_name, key, NULL);
+		else
+			setting = default_value;
+		g_free(value);
+	}
+	else
+		setting = default_value;
+	
+	// g_debug("Got key value \"%s = %d\"", key, setting);
+	return setting;
+}
+
+gint check_integer_value(GKeyFile *keyfile, const gchar *group_name,
+			 const gchar *key, const gint default_value, gboolean enable_empty, gboolean enable_zero)
+{
+	gchar *value = g_key_file_get_value(keyfile, group_name, key, NULL);
+	gint setting;
+
+	if (value)
+	{
+		if (strlen(value))
+			setting = g_key_file_get_integer(keyfile, group_name, key, NULL);
+		else
+		{
+			if (enable_empty)
+				setting = 0;
+			else
+				setting = default_value;
+		}
+		g_free(value);
+	}
+	else
+		setting = default_value;
+	
+	if ( setting==0 && (! enable_zero))
+		setting = default_value;
+
+	// g_debug("Got key value \"%s = %d\"", key, setting);
+	return setting;
+}
+
+// The returned string should be freed when no longer needed.
+gchar *check_string_value(GKeyFile *keyfile, const gchar *group_name,
+			const gchar *key, const gchar *default_value, gboolean enable_empty)
+{
+	gchar *setting = g_key_file_get_value(keyfile, group_name, key, NULL);
+	if (setting)
+		if (! strlen(setting))
+			if (! enable_empty)
+			{
+				g_free(setting);
+				setting = NULL;
+			}
+	
+	if (!setting)
+		setting = g_strdup(default_value);
+	
+	// g_debug("Got key value \"%s = %s\"", key, setting);
+	return setting;
 }
 
 // get default locale from environ
@@ -404,7 +470,6 @@ void init_new_page(GtkWidget *vtebox, char* font_name, gint column, gint row, gi
 	// g_debug("Set the vtebox size to: %dx%d", column, row);
 	vte_terminal_set_size(VTE_TERMINAL(vtebox), column, row);
 
-
 	// set transparent
 	set_background_saturation (NULL, 0, background_saturation, vtebox);
 
@@ -415,7 +480,8 @@ void init_new_page(GtkWidget *vtebox, char* font_name, gint column, gint row, gi
 	// some fixed parameter
 	vte_terminal_set_scroll_on_output(VTE_TERMINAL(vtebox), FALSE);
 	vte_terminal_set_scroll_on_keystroke(VTE_TERMINAL(vtebox), TRUE);
-	vte_terminal_set_backspace_binding (VTE_TERMINAL(vtebox), VTE_ERASE_ASCII_BACKSPACE);
+	vte_terminal_set_backspace_binding (VTE_TERMINAL(vtebox), VTE_ERASE_ASCII_DELETE);
+	// vte_terminal_set_delete_binding (VTE_TERMINAL(vtebox), VTE_ERASE_ASCII_DELETE);
 }
 
 gboolean set_background_saturation (GtkRange *range, GtkScrollType scroll, gdouble value, GtkWidget *vtebox)
@@ -572,7 +638,7 @@ gboolean accelerator_parse (const gchar *key_name, const gchar *key_value, guint
 			// g_debug("masks = %x\n", tempmods);
 			if (! tempmods)
 			{
-				g_debug("ERROR: No Function Key found in [%s] (%s)!\n", key_name, key_value);
+				g_critical("no Function Key found in [%s] (%s)!\n", key_name, key_value);
 				return FALSE;
 			}
 		
@@ -584,7 +650,7 @@ gboolean accelerator_parse (const gchar *key_name, const gchar *key_value, guint
 				if (tempkey == GDK_VoidSymbol)
 				{
 					// not a valid key
-					g_debug("ERROR: %s in [%s] (%s) is not a valid key!\n",
+					g_critical("%s in [%s] (%s) is not a valid key!\n",
 						values[1], key_name, key_value);
 					return FALSE;
 				}
@@ -603,14 +669,14 @@ gboolean accelerator_parse (const gchar *key_name, const gchar *key_value, guint
 			}
 			else
 			{
-				g_debug("ERROR: No Work Key found in [%s] (%s)!\n", key_name, key_value);
+				g_critical("no Work Key found in [%s] (%s)!\n", key_name, key_value);
 				return FALSE;
 			}
 		}
 		else
 		{
 			// not a valid key, no space in key_name
-			g_debug("ERROR: %s in [%s] (%s) is not a valid key. There is no SPACE in it.\n",
+			g_critical("%s in [%s] (%s) is not a valid key. There is no SPACE in it.\n",
 					values[1], key_name, key_value);
 			return FALSE;
 		}
@@ -618,9 +684,99 @@ gboolean accelerator_parse (const gchar *key_name, const gchar *key_value, guint
 	else
 	{
 		// NULL
-		// g_debug("WARNING: We Got a NULL Key (%s)!\n", key_value);
+		// g_warning("We Got a NULL Key (%s)!\n", key_value);
 		*key=GDK_VoidSymbol;
 		*mods=-1;
 		return TRUE;
 	}
+}
+
+GString *save_user_settings(GtkWidget *widget, GtkWidget *current_vtebox)
+{
+	const gchar *profile_dir = g_get_user_config_dir();
+	gchar *profile = g_strdup_printf("%s/%s", profile_dir, RCFILE);
+	GString *contents = NULL;
+	GKeyFile *keyfile = g_key_file_new();
+	struct Page *current_data = NULL;
+	gint i;
+	
+	if (current_vtebox)
+	{
+		if (g_mkdir_with_parents(profile_dir, 0700))
+		{
+			g_critical("can NOT create the directory: %s", profile_dir);
+			free_user_settings_data(error, profile, contents, keyfile);
+			return NULL;
+		}
+		current_data = (struct Page *)g_object_get_data(G_OBJECT(current_vtebox), "Data");
+	}
+	else
+		init_pagekeys();
+	
+	contents = g_string_new("[main]\n");
+	g_string_append_printf(contents,"page_name = %s\n", page_name);
+	g_string_append_printf(contents,"page_names = %s\n", page_names);
+	g_string_append_printf(contents,"reuse_page_names = %d\n", reuse_page_names);
+	g_string_append_printf(contents,"page_number = %d\n", page_number);
+	g_string_append_printf(contents,"page_shows_current_cmdline = %d\n", page_shows_current_cmdline);
+	g_string_append_printf(contents,"window_shows_current_page = %d\n", window_shows_current_page);
+	g_string_append_printf(contents,"show_color_selection_menu = %d\n", show_color_selection_menu);
+	g_string_append_printf(contents,"foreground_color = %s\n", foreground_color);
+	g_string_append_printf(contents,"background_color = %s\n", background_color);
+	g_string_append_printf(contents,"show_resize_menu = %d\n", show_resize_menu);
+	
+	if (current_vtebox)
+	{
+		g_string_append_printf(contents, "column = %d\n", current_data->column);
+		g_string_append_printf(contents, "row = %d\n", current_data->row);
+		g_string_append_printf(contents, "font_name = %s\n", current_data->font_name);
+		if (original_use_rgba == 2)
+			g_string_append_printf(contents, "use_rgba =\n");
+		else
+			g_string_append_printf(contents, "use_rgba = %d\n", original_use_rgba);
+	}
+	else
+	{
+		g_string_append_printf(contents, "font_name = %s\n", system_font_name);
+		g_string_append_printf(contents, "column = %d\n", system_column);
+		g_string_append_printf(contents, "row = %d\n", system_row);
+		g_string_append_printf(contents, "use_rgba =\n");
+	}
+	g_string_append_printf(contents,"show_transparent_menu = %d\n", show_transparent_menu);
+#ifdef ENABLE_RGBA
+	g_string_append_printf(contents,"transparent_window = %d\n", transparent_window>0);
+	g_string_append_printf(contents,"window_opacity = %1.3f\n", window_opacity);
+#endif
+	g_string_append_printf(contents,"transparent_background = %d\n", transparent_background>0);
+	g_string_append_printf(contents,"background_saturation = %1.3f\n", background_saturation);
+	g_string_append_printf(contents,"word_chars = %s\n", word_chars);
+	g_string_append_printf(contents,"scrollback_lines = %d\n", scrollback_lines);
+	g_string_append_printf(contents,"show_input_method_menu = %d\n", show_input_method_menu);
+	g_string_append_printf(contents,"locales_list = %s\n", locales_list);
+	g_string_append_printf(contents,"\n");
+	g_string_append_printf(contents,"[key]\n");
+	
+	for (i=0; i<KEYS; i++)
+		g_string_append_printf(contents,"%s = %s\n", pagekeys[i].name, pagekeys[i].value);
+
+	if (!current_vtebox)
+		return contents;
+	
+	// g_debug("\n%s\n", contents->str);
+
+	if (!g_file_set_contents(profile, contents->str, -1, &error))
+		dialog (NULL, 6);
+	//	g_debug("Error while writing profile '%s': %s", profile, error->message);
+	
+	free_user_settings_data(error, profile, contents, keyfile);
+	return NULL;
+}
+
+void free_user_settings_data(GError *error, gchar *profile, GString* contents, GKeyFile *keyfile)
+{
+	// g_clear_error(&error);
+	g_free(profile);
+	g_string_free(contents, TRUE);
+	g_key_file_free(keyfile);
+
 }

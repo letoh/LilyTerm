@@ -61,6 +61,8 @@ struct Page
 	gint column;
 	gint row;
 
+	gboolean use_scrollback_lines;
+
 	gchar *custom_page_name;
 	GtkWidget *encoding;
 	// current page no on notebook. *for performance*
