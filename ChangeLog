@@ -1,0 +1,331 @@
+2008-4-28 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+  version 0.8.9
+
+    FIX:
+	* rgba won't be enabled by default if the screen is composited.
+	* Better compatibility when the font rendering / theme changed too fast.
+
+    New Feature:
+        * Window opacity is supported, and it will enabled by default if the
+	  screen is composited.
+	  You may use `window_opacity = 0.15' in your profile to specify the
+	  opacity.
+	  You may use `transparent_window = 0' in your profile to disable it,
+	* May use `show_transparent_menu = 0' to disable transparent/opacity
+	  menu items.
+	* New menu item: [Transparent Window] and [Window Opacity].
+
+2008-4-27 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
+  version 0.8.8
+
+    FIX:
+ 	* Better compatibility with evilwm.
+	  Thanks to caleb for report this bug.
+	* rgba don't work with xcompmgr even though `use_rgba = 1'.
+	  Thanks to caleb for report this bug.
+	* Better behavior when using transparent background.
+	* Better behavior when resizing font/window size.
+
+    New Feature:
+	* [Increase window size] and [Decrease window size] will resize fonts
+	  with */ 1.12.
+	* Using <Ctrl><+> and <Ctrl><-> will resize fonts with +- 1.
+
+2008-4-25 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
+  version 0.8.7
+
+    FIX:
+    	* Now LilyTerm works fine with kwin. (It is the window manager of KDE).
+	  Thanks to swyear and caleb for report this bug.
+	* Better compatibility with some xorg build in video modules when rgba
+	  is enabled. If you still encounter trouble, like black screen,
+	  transparent or colorless text, please insure the following setting:
+	  	option "XAANoOffscreenPixmaps"
+	  is in your /etc/X11/xorg.conf.
+	* Better compatibility when the font rendering / theme changed.
+	* Use <Ctrl><`> (NOT <Ctrl><~>) to disable function keys.
+	  Thanks to BV1AL for report this bug.
+	* `screen_width' is rename to `column' in rcfile.
+	* `screen_height' is rename to `row' in rcfile.
+
+    New Feature:
+	* If you're using a composited window manager, rgba will be enabled by
+	  default.
+	  You may use use_rgba = 0 to trun off True Opacity if you're using
+	  a composited window manager but you don't want to enable it in
+	  LilyTerm.
+	  You may use use_rgba = 1 to turn on True Opacity if you're using
+	  xcompmgr, which can't be resolved by gdk_screen_is_composited().
+	* you may use show_resize_menu = 0 to disable [Increase window size],
+	  [Decrease window size], [Reset to default font/size] and [Reset to
+	  system font/size] in menu.
+	* Now [Change Font] in right click menu will change the font of all tabs.
+	* Now [Transparent Background] and [Background Saturation] will apply
+	  to all tabs.
+	* New menu item: [Reset to default font/size] will reset every tab to
+	  user default font and size.
+	* New menu item: [Reset to system font/size] will reset every tab to
+	  system default font (Monospace 12) and size (80x24).
+
+    DROP:
+	* [Change Font for current tab] is obsoleted.
+
+2008-4-19 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
+  version 0.8.6
+
+    New Feature:
+	* support gtk-alternative-button-order.
+	* Use <Ctrl><`> to disable/enable function keys.
+	* Support true opacity (rgba) now.
+	  (auto detect the screen is composited or not)
+
+    FIX:
+    	* The size of vtebox won't be changed if the font rendering / theme
+	  changed. (hope so.)
+
+2008-4-12 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
+  version 0.8.5
+
+    FIX:
+	* The serial no of the the tab will shown when reorder the tab if
+	  page_names_no=0.
+	* Use <Ctrl><O> to select all the text in vte box.
+	  <Ctrl><S> is used in rtorrent to start a torrent download.
+	* The size of vtebox won't be changed if the themes changed.
+
+    New Feature:
+	* Reuse the page names.
+	* Shows the foreground program command on tab.
+	* Shows the foreground program command on window title.
+	* Confirm to close a tab if there was a running application.
+	* Use kill() to kill running shell when use <Ctrl><W> or <Alt><F4>
+	  to force close this tab. or the sub-process of this tab will be
+	  closed at the same time.
+	* Add [Change the font of every tab] to menu.
+
+2008-4-7 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
+  version 0.8.4:
+
+    FIX:
+	* `screen_with' is rename to `screen_width' in rcfile.
+
+    New Feature:
+	* <Ctrl><F1~F12> switch to 1st ~ 12th tab.
+	* Add [Get the function key value] to menu.
+	* Mutli tab names. but it had been disabled by default.
+	  You need add page_names = blah blah blah (separate with space)
+	  in profile to enable it.
+	* Add a serial no in tab name.
+	* Use <Ctrl><S> to select all the text in vte box.
+	  <Ctrl><A> is the function key of screen.
+	* Use <Ctrl><X> to copy the selected text to clipboard.
+	  <Ctrl><C> is used to terminate a program in shell.
+	* Use <Ctrl><V> to paste the text in clipboard.
+	* Use <Ctrl><+> to Increase font size
+	* Use <Ctrl><-> to Decrease font size
+	* Use <Ctrl><Enter> to Reset font_size
+	* Add [Increase window size], [Decrease window size],
+	  [Reset font and window size] to right click menu.
+	* Add [Profile sample] to menu.
+	* Add [Usage] to menu.
+	* Add [Change font for this tab] to menu.
+	* Menu have icons now.
+
+2008-4-1 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
+  version 0.8.3:
+
+    New Feature:
+	* Input method menu. but it had been disabled by default.
+	  You need add show_input_method_menu = 1 in your profile to enable it.
+	* System config supported. /etc/xdg/lilyterm.rc by default.
+	* Confirm before close multi tabs.
+
+    FIX:
+	* Fixed a segmentation fault error when closing LilyTerm by click [X]
+	  on the window title bar directly.
+
+    Using autotools to generate configure/Makefile now.
+
+2008-3-20 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
+  version 0.8.2:
+  
+    FIX:
+	* A patch from caleb to trim lilyterm. THANKS to caleb!
+
+    New Feature:
+	* Change the background saturation by right click.
+	* Now supports -u/--user_profile to use a specified profile.
+	* Reset current tab by right click.
+
+2008-3-19 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
+  version 0.8.1:
+
+    No more input method patches. Please patch libvte instead!
+    Now LilyTerm works fine with SCIM.
+
+    New Feature:
+	* Using transparent background or not by right click.
+	* May use `pre_tab_key = NULL' to disable a function key.
+
+2008-3-16 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
+  version 0.8.0:
+
+    FIX:
+	* The window size of Lilyterm now can resize correctly when
+	  adding/removing tabs without dirty patches.
+	* The window size of Lilyterm will change if opened too many tabs.
+
+    New Feature:
+	* Add L10n/i18n support. Call for translators!
+	* Add command line options support.
+	  Now -h/--help -v/--version -p/-profile and -e/-execute supported.
+
+2008-3-14 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
+  version 0.7.9:
+    FIX:
+	* <a>-<z> was transfered into <A>-<Z> when solving function key.
+	  Thanks Silice for reporting this bug.
+
+    New Feature:
+	* Use <Ctrl><Left> to move current page forward.
+	* Use <Ctrl><Right> to move current page backward.
+	* Use <Ctrl><Up> to move current page to first.
+	* Use <Ctrl><Down> to move current page to last.
+
+2008-3-12 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
+  version 0.7.8:
+
+    FIX:
+	* The size of resized window will be recovered to original size if
+	  opening a new tab later.
+	* Improve (again) the performance when solving function key.
+
+    Add a refile example `lilyterm.rc' at /usr/share/doc/lilyterm/examples/.
+
+2008-3-11 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
+  version 0.7.7:
+
+    `pre_tab_key' is rename to `prev_tab_key' in rcfile.
+
+    FIX:
+	* FIX: <backspace> don't work in screen.
+
+    New Feature:
+	* show the text column x row information when move/drag the window with
+	  mouse. (need Window Manager supports it too.)
+	* The window of LilyTerm now can resize correctly.
+	* The window increment when resizing is based on the size of single
+	  character.
+	* May use `pre_tab_key = ' to disable a function key.
+	  But it won't increase the performance.
+
+2008-3-8 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
+  version 0.7.6:
+
+    New Feature:
+	* Now we can use <Ctrl><E> to change the name of current tab.
+
+2008-3-7 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
+  version 0.7.5:
+
+    FIX:
+	* Function keys won't work if there is no default rc file. a stupid bug.
+
+2008-3-7 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
+  version 0.7.4:
+
+    FIX:
+	* Will goto next tab when close current tab. a stupid bug...
+	* Improve (again) the performance when solving function key.
+
+    New Feature:
+	* LilyTerm has a window icon now.
+
+2008-3-5 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
+  version 0.7.3:
+
+    New Feature:
+	* Improve the performance when solving function key.
+	* The directory of new tab will use current tab's PWD.
+
+2008-3-4 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
+  version 0.7.2:
+    
+    New Feature:
+	* Now we can configure the finction key via config file.
+	* Default Default Keys:
+	    New Tab: Ctrl T
+	    Close Tab: Ctrl W
+	    Pre Tab: Ctrl Page_Up
+	    Next Tab: Ctrl Page_Down
+	    First Tab: Ctrl Home
+	    Last Tab: Ctrl End
+
+    COPYING:
+	Change from 3-clause BSD to 2-clause BSD.
+
+    Add Copyright in every file.
+    Add lilyterm.desktop.
+    Add a lots of LilyTerm icons.
+
+2008-3-2 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
+  version 0.7.1:
+
+    FIX:
+	* A segmentation fault error fixed.
+	  VERY THANKS to letoh.bbs@bbs.sayya.org!
+	* Default Function Keys:
+	  Use <Ctrl><Insert> to add a new page.
+	  Use <Ctrl><Delete> to close current page.
+	  This bug is reported by letoh.bbs@bbs.sayya.org:
+	  <Ctrl><W> was used by vim to delete a word.
+	  <Ctrl><T> was used by vim to pop tag stack.
+
+    New Feature:
+	* Use <Ctrl><Home> to switch to the first page.
+	* Use <Ctrl><End> to switch to the first page.
+	* <Shift><Insert> to pase clipboard. It was done in libvte.
+
+    Makefile:
+	Remove useless '--libs' when complie *.o.
+	Thanks to letoh.bbs@bbs.sayya.org again!
+
+    INSTALL:
+	Update some typo.
+	`make' will complile *with* the dirty im-patch.
+	`make no-im-patch' will complile without the dirty im-patch.
+
+    AUTHORS:
+	Update homepage, blog, phorum, IRC, and web chat information.
+
+2008-3-2 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
+  version 0.7.0:
+
+	* Initial release.
+	* Started recording ChangeLog.
+
+2008-2-25 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
+  version 0.1.0
+
+	* Initial revision.
+

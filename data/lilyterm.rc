@@ -1,0 +1,55 @@
+[main]
+page_name = Terminal
+page_names = Terminal
+reuse_page_names = 1
+page_number = 1
+page_shows_current_cmdline = 1
+window_shows_current_page = 1
+foreground_color = white
+background_color = black
+font_name = Monospace 12
+column = 80
+row = 24
+use_rgba =
+transparent_window = 0
+window_opacity = 0.05
+transparent_background = 0
+background_saturation = 0.15
+word_chars = -A-Za-z0-9_$.+!*(),;:@&=?/~#%[]
+scrollback_lines = 1024
+show_input_method_menu = 0
+show_resize_menu = 1
+show_transparent_menu = 1
+locales_list = EUC-JP GB2312 Big5
+
+[key]
+disable_function_key = Ctrl grave
+new_tab_key = Ctrl T
+close_tab_key = Ctrl W
+edit_label_key = Ctrl E
+prev_tab_key = Ctrl Page_Up
+next_tab_key = Ctrl Page_Down
+first_tab_key = Ctrl Home
+last_tab_key = Ctrl End
+move_tab_forward = Ctrl Left
+move_tab_backward = Ctrl Right
+move_tab_first = Ctrl Up
+move_tab_last = Ctrl Down
+swith_to_tab_1 = Ctrl F1
+swith_to_tab_2 = Ctrl F2
+swith_to_tab_3 = Ctrl F3
+swith_to_tab_4 = Ctrl F4
+swith_to_tab_5 = Ctrl F5
+swith_to_tab_6 = Ctrl F6
+swith_to_tab_7 = Ctrl F7
+swith_to_tab_8 = Ctrl F8
+swith_to_tab_9 = Ctrl F9
+swith_to_tab_10 = Ctrl F10
+swith_to_tab_11 = Ctrl F11
+swith_to_tab_12 = Ctrl F12
+select_all = Ctrl O
+copy_clipboard = Ctrl X
+past_clipboard = Ctrl V
+increase_font_size = Ctrl equal
+decrease_font_size = Ctrl minus
+reset_font_size = Ctrl Return

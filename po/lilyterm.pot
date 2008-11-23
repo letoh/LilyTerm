@@ -1,0 +1,263 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-04-30 10:06+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: dialog.c:94
+msgid "Rename the tab"
+msgstr ""
+
+#: dialog.c:97
+msgid "Change the saturation of background"
+msgstr ""
+
+#: dialog.c:100
+msgid "Confirm to close multi tabs"
+msgstr ""
+
+#: dialog.c:103
+msgid "Get the key value for using in profile"
+msgstr ""
+
+#: dialog.c:106 menu.c:198
+msgid "Usage"
+msgstr ""
+
+#: dialog.c:109 menu.c:212
+msgid "Profile sample"
+msgstr ""
+
+#: dialog.c:112
+msgid "Confirm to close running foreground program"
+msgstr ""
+
+#: dialog.c:115
+msgid "Change the opacity of window"
+msgstr ""
+
+#: dialog.c:264
+msgid "Please input the Label Name of this tab:"
+msgstr ""
+
+#: dialog.c:267
+msgid "Change the Saturation of background:"
+msgstr ""
+
+#: dialog.c:270
+msgid "You are about to close multi tabs. Continue anyway?"
+msgstr ""
+
+#: dialog.c:273
+msgid ""
+"You may press any key here to get the key value for using in profile.\n"
+"\n"
+"Press [Copy] to copy the key value to clipboard;\n"
+"And press [Close] to exit."
+msgstr ""
+
+#: dialog.c:295
+#, c-format
+msgid ""
+"There is still a running foreground program on #%d tab:\n"
+"\n"
+"\t%s\n"
+"\n"
+"Continue anyway?\n"
+msgstr ""
+
+#: dialog.c:301
+msgid "Change the Opacity of window:"
+msgstr ""
+
+#: dialog.c:360
+msgid "Label Name:"
+msgstr ""
+
+#: dialog.c:399
+msgid "Key Value:"
+msgstr ""
+
+#: main.c:193
+#, c-format
+msgid ""
+"%s is a libvte based X Terminal Emulater.\n"
+"\n"
+msgstr ""
+
+#: main.c:195
+#, c-format
+msgid "Use -e/--execute {Command} to run a command after %s start.\n"
+msgstr ""
+
+#: main.c:196
+msgid "Use -v/--version to show the version infomation.\n"
+msgstr ""
+
+#: main.c:197
+msgid "Use -p/--profile to got a profile sample.\n"
+msgstr ""
+
+#: main.c:199
+#, c-format
+msgid ""
+"Use -u/--user_profile {%s} to use a specified profile.\n"
+"\n"
+msgstr ""
+
+#: main.c:202
+#, c-format
+msgid "The %s system config is: %s/%s\n"
+msgstr ""
+
+#: main.c:204
+#, c-format
+msgid ""
+"And your %s profile is: %s/%s\n"
+"\n"
+msgstr ""
+
+#: main.c:206
+msgid ""
+"Default shortcut key: (It may custom by editing user's profile)\n"
+"\n"
+msgstr ""
+
+#: main.c:207
+msgid "  * <Ctrl><`>\t\tDisable/Enable function keys\n"
+msgstr ""
+
+#: main.c:208
+msgid "  * <Ctrl><T/W>\t\tAdd a New tab/Close current tab\n"
+msgstr ""
+
+#: main.c:209
+msgid "  * <Ctrl><E>\t\tRename current tab\n"
+msgstr ""
+
+#: main.c:210
+msgid "  * <Ctrl><PgUp/PgDn>\tSwitch to Prev/Next tab\n"
+msgstr ""
+
+#: main.c:211
+msgid "  * <Ctrl><Home/End>\tSwitch to First/Last tab\n"
+msgstr ""
+
+#: main.c:212
+msgid "  * <Ctrl><Left/Right>\tMove current page Forward/Backward\n"
+msgstr ""
+
+#: main.c:213
+msgid "  * <Ctrl><Up/Down>\tMove current page to First/Last\n"
+msgstr ""
+
+#: main.c:214
+msgid "  * <Ctrl><F1~F12>\tSwitch to 1st ~ 12th tab\n"
+msgstr ""
+
+#: main.c:215
+msgid "  * <Ctrl><O>\t\tSelect all the text in the Vte Terminal box\n"
+msgstr ""
+
+#: main.c:216
+msgid "  * <Ctrl><X>\t\tCopy the text to clipboard\n"
+msgstr ""
+
+#: main.c:217
+msgid "  * <Ctrl><V>\t\tPast the text in clipboard\n"
+msgstr ""
+
+#: main.c:218
+msgid "  * <Ctrl><+/->\t\tIncrease/Decrease the font size of current tab\n"
+msgstr ""
+
+#: main.c:219
+msgid "  * <Ctrl><Enter>\tReset the font size of current tab\n"
+msgstr ""
+
+#: main.c:220
+msgid "  * <Shift><Insert>\tPast the text in primary clipboard\n"
+msgstr ""
+
+#: main.c:221
+msgid ""
+"\t\t\t(i.e. Emulate a middle button mouse click to past the text)\n"
+"\n"
+msgstr ""
+
+#: main.c:223
+#, c-format
+msgid "Please report bug to %s. Thank you for using %s!\n"
+msgstr ""
+
+#: menu.c:65
+msgid "System Default"
+msgstr ""
+
+#: menu.c:92
+msgid "Transparent Window"
+msgstr ""
+
+#: menu.c:96
+msgid "Window Opacity"
+msgstr ""
+
+#: menu.c:108
+msgid "Transparent Background"
+msgstr ""
+
+#: menu.c:112
+msgid "Background Saturation"
+msgstr ""
+
+#: menu.c:124
+msgid "Increase window size"
+msgstr ""
+
+#: menu.c:129
+msgid "Decrease window size"
+msgstr ""
+
+#: menu.c:143
+msgid "Switch input methods"
+msgstr ""
+
+#: menu.c:153
+msgid "Change the font"
+msgstr ""
+
+#: menu.c:160
+msgid "Rename this tab"
+msgstr ""
+
+#: menu.c:173
+msgid "Reset to default font/size"
+msgstr ""
+
+#: menu.c:179
+msgid "Reset to system font/size"
+msgstr ""
+
+#: menu.c:187
+msgid "Reset the content of this tab"
+msgstr ""
+
+#: menu.c:205
+msgid "Get function key value"
+msgstr ""
+
+#: menu.c:279
+msgid "Font Selection"
+msgstr ""
