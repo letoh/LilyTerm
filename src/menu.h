@@ -40,6 +40,8 @@
 void create_menu(GtkWidget *window);
 void set_encoding(GtkWidget *menuitem, GtkWidget *vtebox);
 void new_tab_with_locale(GtkWidget *local_menu_item, GtkWidget *menuitem);
+GtkWidget *check_encoding_in_menuitem(GtkWidget *sub_menu, const gchar *name);
+gboolean check_locale_in_menuitem(GList *widget_list, const gchar *name);
 void set_trans_bg(GtkWidget *widget, GtkWidget *window);
 void set_trans_win(GtkWidget *widget, GtkWidget *window);
 void clean_scrollback_lines(GtkWidget *widget, gboolean type);

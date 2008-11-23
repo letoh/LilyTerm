@@ -61,16 +61,22 @@ struct Command
 	gchar *match;
 	gchar *comment;
 	gchar *method_name;
+	gchar *environ_name;
+	gchar *VTE_CJK_WIDTH_name;
 };
 
 struct User_Command
 {
 	gchar *command;
 	gint method;
+	gchar *environ;
+	gchar **environments;
+	gint VTE_CJK_WIDTH;
 };
 
 struct Window
 {
+	gchar **argv;
 	// The first command in -e option
 	gchar *command_line;
 	// the argc after -e option
@@ -159,10 +165,21 @@ struct Window
 	gboolean show_input_method_menu;
 	gboolean show_get_function_key_menu;
 	gboolean show_change_page_name_menu;
+
+	// environment: the environ for every lilyterm window. Do NOT to free it!
+	gchar **environment;
 	// the default_locale is got from environment
 	gchar *default_locale;
 	gchar *locales_list;
 	gchar **supported_locales;
+	// for env VTE_CJK_WIDTH
+	// 0: by environment
+	// 1: force to use narrow ideograph
+	// 2: force to use wide ideograph
+	// default_VTE_CJK_WIDTH: The data come from profile.
+	// system_VTE_CJK_WIDTH: The data that is currently using.
+	gint default_VTE_CJK_WIDTH;
+	gint system_VTE_CJK_WIDTH;
 
 	struct User_KeyValue user_keys[KEYS];
 	gboolean enable_hyperlink;
@@ -233,6 +250,14 @@ struct Page
 	GtkWidget *encoding;
 	// locale: a string like "LC=ALL zh_TW.Big5".
 	gchar *locale;
+	// environ: The environ that user specify in profile
+	gchar *environ;
+
+	// for env VTE_CJK_WIDTH
+	// 0: by environment
+	// 1: force to use narrow ideograph
+	// 2: force to use wide ideograph
+	gint VTE_CJK_WIDTH;
 
 	// current page no on notebook. *for performance*
 	gint page_no;

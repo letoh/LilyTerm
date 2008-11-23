@@ -25,6 +25,7 @@
 
 #include "dialog.h"
 extern GtkWidget *current_vtebox;
+// A critical error message for current_vtebox = NULL.
 gchar *err_str;
 
 gboolean dialog(GtkWidget *widget, gint style)
@@ -654,7 +655,7 @@ gboolean dialog(GtkWidget *widget, gint style)
 
 			// add new pages to 6.
 			for (i=dialog_data->total_page;i<6;i++)
-				add_page(page_data->window, page_data->notebook, NULL, NULL, FALSE);
+				add_page(page_data->window, page_data->notebook, NULL, NULL, NULL, FALSE, 0);
 			// we need to set the current page to 1st page after adding page.
 			gtk_notebook_set_current_page(GTK_NOTEBOOK(win_data->notebook), 0);
 

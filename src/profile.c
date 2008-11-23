@@ -39,32 +39,40 @@ void init_command()
 	#define USER "[-A-Za-z0-9]+"
 	#define PASS "(:[^ \t\r\n]+)?"
 	#define LOGIN "(" USER PASS "@)?"
-	#define HOST "[A-Za-z0-9][-A-Za-z0-9.]+\\.[A-Za-z0-9][-A-Za-z0-9.]+[-A-Za-z0-9]"
-	#define END "[^< \t\r\n,;\\\"]*"
+	#define HOST "[A-Za-z0-9][-A-Za-z0-9.]+\\.[A-Za-z0-9]+[-A-Za-z0-9.]*[-A-Za-z0-9]*"
+	#define END "[^< \t\r\n,;\\\"]*[^.< \t\r\n,;\\\"]"
 
 	// WWW
 	command[0].name = "web_browser";
-	command[0].match = "[Hh][Tt][Tt][Pp][Ss]?://" LOGIN HOST "(/" END ")?";
+	command[0].match = "[Hh][Tt][Tt][Pp][Ss]?://" LOGIN HOST "(/" END ")?/*";
 	command[0].comment = "# The web browser using for http(s)://";
 	command[0].method_name = "web_method";
+	command[0].environ_name = "web_environ";
+	command[0].VTE_CJK_WIDTH_name = "web_VTE_CJK_WIDTH";
 
 	// FTP
 	command[1].name = "ftp_client";
-	command[1].match = "[Ff][Tt][Pp][Ss]?://" LOGIN HOST "(/" END ")?";
+	command[1].match = "[Ff][Tt][Pp][Ss]?://" LOGIN HOST "(/" END ")?/*";
 	command[1].comment = "# The ftp client using for ftp(s)://";
 	command[1].method_name = "ftp_method";
+	command[1].environ_name = "ftp_environ";
+	command[1].VTE_CJK_WIDTH_name = "ftp_VTE_CJK_WIDTH";
 
 	// FILE
 	command[2].name = "file_manager";
 	command[2].match = "[Ff][Ii][Ll][Ee]:///" END;
 	command[2].comment = "# The file manager using for file://";
 	command[2].method_name = "file_method";
+	command[2].environ_name = "file_environ";
+	command[2].VTE_CJK_WIDTH_name = "file_VTE_CJK_WIDTH";
 
 	// MAIL
 	command[3].name = "email_client";
 	command[3].match = "([Mm][Aa][Ii][Ll][Tt][Oo]:)?" USER "@" HOST;
 	command[3].comment = "# The email client using for user@host";
 	command[3].method_name = "email_method";
+	command[3].environ_name = "email_environ";
+	command[3].VTE_CJK_WIDTH_name = "email_VTE_CJK_WIDTH";
 }
 
 void init_user_command(struct Window *win_data)
@@ -80,7 +88,11 @@ void init_user_command(struct Window *win_data)
 
 	gint i;
 	for (i=0;i<COMMAND;i++)
+	{
 		win_data->user_command[i].method = 1;
+		win_data->user_command[i].environ = g_strdup("");
+		win_data->user_command[i].VTE_CJK_WIDTH = 0;
+	}
 }
 
 void init_window_option(struct Window *win_data)
@@ -185,6 +197,7 @@ void init_window_parameter(struct Window *win_data)
 //	win_data->show_change_page_name_menu = FALSE;
 //	win_data->default_locale = NULL;
 	win_data->locales_list = g_strdup("ja_JP.EUC-JP zh_CN.GB2312 zh_TW.Big5");
+//	win_data->default_VTE_CJK_WIDTH = 0;
 	// supported_locales CAN NOT be free!
 //	win_data->supported_locales = NULL;
 	// the default key value. the default value is initialed in get_user_settings().
@@ -313,29 +326,29 @@ void init_function_keys()
 	system_keys[11].name = "move_tab_last";
 	system_keys[11].comment = "# Move current page to last.";
 	// switch to #%d page
-	system_keys[12].name = "swith_to_tab_1";
+	system_keys[12].name = "switch_to_tab_1";
 	system_keys[12].comment = "# Switch to 1st tab directly.";
-	system_keys[13].name = "swith_to_tab_2";
+	system_keys[13].name = "switch_to_tab_2";
 	system_keys[13].comment = "# Switch to 2nd tab directly.";
-	system_keys[14].name = "swith_to_tab_3";
+	system_keys[14].name = "switch_to_tab_3";
 	system_keys[14].comment = "# Switch to 3rd tab directly.";
-	system_keys[15].name = "swith_to_tab_4";
+	system_keys[15].name = "switch_to_tab_4";
 	system_keys[15].comment = "# Switch to 4th tab directly.";
-	system_keys[16].name = "swith_to_tab_5";
+	system_keys[16].name = "switch_to_tab_5";
 	system_keys[16].comment = "# Switch to 5th tab directly.";
-	system_keys[17].name = "swith_to_tab_6";
+	system_keys[17].name = "switch_to_tab_6";
 	system_keys[17].comment = "# Switch to 6th tab directly.";
-	system_keys[18].name = "swith_to_tab_7";
+	system_keys[18].name = "switch_to_tab_7";
 	system_keys[18].comment = "# Switch to 7th tab directly.";
-	system_keys[19].name = "swith_to_tab_8";
+	system_keys[19].name = "switch_to_tab_8";
 	system_keys[19].comment = "# Switch to 8th tab directly.";
-	system_keys[20].name = "swith_to_tab_9";
+	system_keys[20].name = "switch_to_tab_9";
 	system_keys[20].comment = "# Switch to 9th tab directly.";
-	system_keys[21].name = "swith_to_tab_10";
+	system_keys[21].name = "switch_to_tab_10";
 	system_keys[21].comment = "# Switch to 10th tab directly.";
-	system_keys[22].name = "swith_to_tab_11";
+	system_keys[22].name = "switch_to_tab_11";
 	system_keys[22].comment = "# Switch to 11th tab directly.";
-	system_keys[23].name = "swith_to_tab_12";
+	system_keys[23].name = "switch_to_tab_12";
 	system_keys[23].comment = "# Switch to 12th tab directly.";
 	// select all
 	system_keys[24].name = "select_all";
@@ -557,6 +570,9 @@ void get_user_settings(GtkWidget *window, struct Window *win_data)
 								     win_data->locales_list, TRUE);
 			// g_debug("Got locales_list = %s from user's profile!\n", value);
 
+			win_data->default_VTE_CJK_WIDTH = check_integer_value( keyfile, "main", "VTE_CJK_WIDTH",
+						win_data->default_VTE_CJK_WIDTH, FALSE, TRUE, TRUE, 0, TRUE, 2);
+
 			// g_debug("Key Value: Shift=%x, NumLock=%x, Control=%x, Mod1=%x,"
 			//		"Mod2=%x, Mod3=%x, Mod4=%x, Mod5=%x\n",
 			//		GDK_SHIFT_MASK, GDK_LOCK_MASK, GDK_CONTROL_MASK, GDK_MOD1_MASK, 
@@ -568,7 +584,7 @@ void get_user_settings(GtkWidget *window, struct Window *win_data)
 				value = g_key_file_get_value(keyfile, "key", system_keys[i].name, NULL);
 				if (value)
 				{
-					// g_debug("Got %s key = %s form config file.\n", pagekeys[i].name, value);
+					// g_debug("Got %s key = %s form profile.\n", pagekeys[i].name, value);
 					if ( accelerator_parse(system_keys[i].name, value,
 							  &(win_data->user_keys[i].key), &(win_data->user_keys[i].mods)))
 						win_data->user_keys[i].value = value;
@@ -593,13 +609,18 @@ void get_user_settings(GtkWidget *window, struct Window *win_data)
 				win_data->user_command[i].method = check_integer_value(
 						keyfile, "command", command[i].method_name,
 						win_data->user_command[i].method, FALSE, TRUE, TRUE, 0, TRUE, 2);
+				win_data->user_command[i].environ = check_string_value(keyfile, "command",
+						command[i].environ_name, win_data->user_command[i].environ, FALSE);
+				win_data->user_command[i].VTE_CJK_WIDTH = check_integer_value(
+						keyfile, "command", command[i].VTE_CJK_WIDTH_name,
+						win_data->user_command[i].VTE_CJK_WIDTH, FALSE, TRUE, TRUE, 0, TRUE, 2);
 				//g_debug("command[i].name = %s (%d)",
 				//	win_data->user_command[i].command, win_data->user_command[i].method);
 			}
 		}
 		else
 		{
-			g_warning("the config file %s is invalid: %s\n", win_data->profile, error->message);
+			g_warning("the profile %s is invalid: %s\n", win_data->profile, error->message);
 			g_clear_error (&error);
 		}
 	}
@@ -620,19 +641,14 @@ void get_user_settings(GtkWidget *window, struct Window *win_data)
 		// g_debug("* We'll use the key for %s: %x(%s), mods = %x.\n", pagekeys[i].name,
 		//		pagekeys[i].key, gdk_keyval_name(pagekeys[i].key), pagekeys[i].mods);
  	}
-	// some defaults
-	// g_debug("Got locales_list = '%s' ( %d bytes)",locales_list, strlen(locales_list));
-	if (strlen(win_data->locales_list))
+
+	for (i=0; i<COMMAND; i++)
 	{
-		gchar *full_locales_list = NULL;
-		full_locales_list = g_strconcat("  ", win_data->locales_list, NULL);
-		win_data->supported_locales = g_strsplit_set(full_locales_list, " ,", 0);
-		g_free(win_data->supported_locales[0]);
-		// win_data->supported_locales[0] will never be freed. so we can assign a const value here.
-		win_data->supported_locales[0] = _("System Default");
-		g_free(full_locales_list);
+		// g_debug("Got the environ = %s", win_data->user_command[i].environ);
+		win_data->user_command[i].environments = g_strsplit(win_data->user_command[i].environ, " ", -1);
 	}
 
+	// some defaults
 	if (win_data->splited_page_names==NULL)
 		win_data->splited_page_names = g_strsplit_set("", " ", 0);
 
@@ -653,6 +669,20 @@ void get_user_settings(GtkWidget *window, struct Window *win_data)
 
 	// get the default locale from environment
 	win_data->default_locale = get_default_locale();
+	if (win_data->default_VTE_CJK_WIDTH==0)
+		win_data->system_VTE_CJK_WIDTH = get_default_VTE_CJK_WIDTH();
+	else
+		win_data->system_VTE_CJK_WIDTH = win_data->default_VTE_CJK_WIDTH;
+
+	// g_debug("Got locales_list = '%s' ( %d bytes)",locales_list, strlen(locales_list));
+	if (strlen(win_data->locales_list))
+	{
+		gchar *full_locales_list = NULL;
+		full_locales_list = g_strconcat(win_data->default_locale, " ", win_data->locales_list, NULL);
+		// g_debug("Got the full_locales_list = %s", full_locales_list);
+		win_data->supported_locales = g_strsplit_set(full_locales_list, " ,", 0);
+		g_free(full_locales_list);
+	}
 
 	g_key_file_free(keyfile);
 	// the win_data->profile will be free when close window
@@ -777,7 +807,25 @@ gchar *get_default_locale()
 	if (!LC_CTYPE)
 		LC_CTYPE = "UTF-8";
 
+	// g_debug("Get LC_CTYPE = %s", LC_CTYPE);
+
 	return g_strdup(LC_CTYPE);
+}
+
+gint get_default_VTE_CJK_WIDTH()
+{
+	
+	const gchar *VTE_CJK_WIDTH = g_getenv("VTE_CJK_WIDTH");
+	if (VTE_CJK_WIDTH==NULL)
+		return 0;
+	else
+	{
+		// VTE_CJK_WIDTH only work under UTF-8
+		if ((g_ascii_strcasecmp (VTE_CJK_WIDTH, "wide")==0) || (g_ascii_strcasecmp (VTE_CJK_WIDTH, "1")==0))
+			return 2;
+		else
+			return 1;
+	}
 }
 
 // to init a new page
@@ -1235,7 +1283,7 @@ GString *save_user_settings(GtkWidget *widget, GtkWidget *vtebox)
 	g_string_append_printf(contents,"# The ratio when resizing font via function key <Ctrl><+> and <Ctrl><->.\n"
 					"# 0: the font size is +/- 1 when resizing.\n"
 					"font_resize_ratio = %1.3f\n\n", win_data->font_resize_ratio);
-	g_string_append_printf(contents,"# The ratio when resizing window via right clieck menu.\n"
+	g_string_append_printf(contents,"# The ratio when resizing window via right click menu.\n"
 					"# 0: the font size is +/- 1 when resizing window.\n"
 					"window_resize_ratio = %1.3f\n\n", win_data->window_resize_ratio);
 	g_string_append_printf(contents,"# When user double clicks on a text, which character will be selected.\n"
@@ -1245,11 +1293,11 @@ GString *save_user_settings(GtkWidget *widget, GtkWidget *vtebox)
 	g_string_append_printf(contents,"# The position of scrollbar.\n"
 					"# 0: don't use scrollbar; 1: scrollbar is on right; 2: scrollbar is on left.\n"
 					"scrollbar_position = %d\n\n", win_data->scrollbar_position);
-	g_string_append_printf(contents,"# Shows input method menu on right cilck menu.\n"
+	g_string_append_printf(contents,"# Shows input method menu on right click menu.\n"
 					"show_input_method_menu = %d\n\n", win_data->show_input_method_menu);
-	g_string_append_printf(contents,"# Shows get function key menu on right cilck menu.\n"
+	g_string_append_printf(contents,"# Shows get function key menu on right click menu.\n"
 					"show_get_function_key_menu = %d\n\n", win_data->show_get_function_key_menu);
-	g_string_append_printf(contents,"# Shows change page name menu on right cilck menu.\n"
+	g_string_append_printf(contents,"# Shows change page name menu on right click menu.\n"
 					"show_change_page_name_menu = %d\n\n", win_data->show_change_page_name_menu);
 	g_string_append_printf(contents,"# Enable hyperlink in vte terminal.\n"
 					"enable_hyperlink = %d\n\n", win_data->enable_hyperlink);
@@ -1257,6 +1305,9 @@ GString *save_user_settings(GtkWidget *widget, GtkWidget *vtebox)
 					"# You may use zh_TW or zh_TW.Big5 here.\n"
 					"# Left it blank will disable locale select menu items.\n"
 					"locales_list = %s\n\n", win_data->locales_list);
+	g_string_append_printf(contents,"# The environment 'VTE_CJK_WIDTH' used when init a vte terminal.\n"
+					"# 0: get via environment; 1: use narrow ideograph; 2: use wide ideograph\n"
+					"VTE_CJK_WIDTH = %d\n\n", win_data->default_VTE_CJK_WIDTH);
 	g_string_append_printf(contents,"\n");
 	g_string_append_printf(contents,"[key]\n\n");
 	
@@ -1276,8 +1327,12 @@ GString *save_user_settings(GtkWidget *widget, GtkWidget *vtebox)
 	{
 		g_string_append_printf( contents,"%s\n%s = %s\n",
 					command[i].comment, command[i].name, win_data->user_command[i].command);
-		g_string_append_printf( contents,"%s = %d\n\n",
+		g_string_append_printf( contents,"%s = %d\n",
 					command[i].method_name, win_data->user_command[i].method);
+		g_string_append_printf( contents,"%s = %d\n",
+					command[i].VTE_CJK_WIDTH_name, win_data->user_command[i].VTE_CJK_WIDTH);
+		g_string_append_printf( contents,"%s = %s\n\n",
+					command[i].environ_name, win_data->user_command[i].environ);
 	}
 
 	if (!vtebox)
@@ -1289,6 +1344,7 @@ GString *save_user_settings(GtkWidget *widget, GtkWidget *vtebox)
 	{
 		win_data->temp_str = error->message;
 		dialog (NULL, 6);
+		win_data->temp_str = NULL;
 	}
 	//	g_debug("Error while writing profile '%s': %s", profile, error->message);
 	

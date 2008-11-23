@@ -47,7 +47,8 @@
 #define ALL_ACCELS_MASK (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK | GDK_MOD3_MASK | GDK_MOD4_MASK | GDK_MOD5_MASK)
 #define SHIFT_ONLY_MASK (GDK_CONTROL_MASK | GDK_MOD1_MASK | GDK_MOD3_MASK | GDK_MOD4_MASK | GDK_MOD5_MASK)
 
-void new_window(int argc, char *argv[]);
+void new_window(int argc, char *argv[], char **environment, gint VTE_CJK_WIDTH, gchar *user_environ);
+gchar **apply_new_environ(gchar **sys_environ, gchar* user_environ);
 void window_option(struct Window *win_data, int argc, char *argv[]);
 gboolean window_quit(GtkWidget *window, GdkEvent *event, struct Window *win_data);
 GString *got_help_message();

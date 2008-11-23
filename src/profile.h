@@ -47,6 +47,7 @@ struct ModKey
 };
 
 gchar *get_default_locale();
+gint get_default_VTE_CJK_WIDTH();
 void init_new_page(GtkWidget *window, struct Window *win_data, GtkWidget *vtebox, char* font_name, gint column, gint row, gint run_once, gboolean enable_hyperlink);
 void set_hyprelink(GtkWidget *vtebox);
 void init_window_option(struct Window *win_data);
@@ -56,7 +57,7 @@ void init_mod_keys();
 void get_user_settings(GtkWidget *window, struct Window *win_data);
 gboolean check_boolean_value(GKeyFile *keyfile, const gchar *group_name, const gchar *key, const gboolean default_vaule);
 gchar *check_string_value(GKeyFile *keyfile, const gchar *group_name,
-			const gchar *key, gchar *default_value, gboolean enable_empty);
+			 const gchar *key, gchar *default_value, gboolean enable_empty);
 gint check_integer_value(GKeyFile *keyfile, const gchar *group_name, const gchar *key,
 			 const gint default_value, gboolean enable_empty, gboolean enable_zero,
 			 gboolean check_min, gint min, gboolean check_max, gint max);

@@ -32,28 +32,47 @@ extern gboolean single_process;
 extern GtkWidget *active_window;
 GtkWidget *current_vtebox=NULL;
 
-GtkWidget *add_page(GtkWidget *window, GtkWidget *notebook, GtkWidget *menuitem_encoding, gchar *locale, gboolean run_once)
+GtkWidget *add_page(GtkWidget *window, GtkWidget *notebook, GtkWidget *menuitem_encoding,
+		    gchar *locale, gchar *user_environ, gboolean run_once, gint VTE_CJK_WIDTH)
 {
 	GtkWidget *prev_vtebox = current_vtebox;
 #ifdef DEBUG
 	if (menuitem_encoding)
-		g_debug("! Launch add_page() with window = %p, encoding = %s, locale = %s, run_once = %d",
-			window, menuitem_encoding->name, locale, run_once);
+		g_debug("! Launch add_page() with window = %p, encoding = %s, locale = %s,"
+			"environ = %s, run_once = %d, VTE_CJK_WIDTH = %d",
+			window, menuitem_encoding->name, locale, user_environ, run_once, VTE_CJK_WIDTH);
 	else
-		g_debug("! Launch add_page() with window = %p, encoding = %p, locale = %s, run_once = %d",
-			window, menuitem_encoding, locale, run_once);
+		g_debug("! Launch add_page() with window = %p, encoding = %p, locale = %s,"
+			"environ = %s, run_once = %d, VTE_CJK_WIDTH = %d",
+			window, menuitem_encoding, locale, user_environ, run_once, VTE_CJK_WIDTH);
 #endif
 
 	struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(window), "Win_Data");
 	// g_debug("Get win_data = %d when adding page!", win_data);
 
+	extern char **environ;
+	gchar **environ_orig = environ;
+	environ = win_data->environment;
+
+	//if (environ)
+	//{
+	//	gint i = 0;
+	//	while (environ[i])
+	//		g_debug("%d, %s", i, environ[i++]);
+	//}
+	
+	// Set the VTE_CJK_WIDTH environment
+	set_VTE_CJK_WIDTH_environ(VTE_CJK_WIDTH);
+	// g_debug("Get VTE_CJK_WIDTH =%d", VTE_CJK_WIDTH);
+	
 	guint column, row;
-	gchar **environment=NULL;
+	gchar **LC_ALL=NULL;
 
 	// the component of a single page
 	struct Page *page_data = g_new0(struct Page, 1);
 	page_data->window = window;
 	page_data->notebook = notebook;
+	page_data->VTE_CJK_WIDTH = VTE_CJK_WIDTH;
 	
 	// create label
 	page_data->label = gtk_label_new(win_data->page_name);
@@ -65,6 +84,8 @@ GtkWidget *add_page(GtkWidget *window, GtkWidget *notebook, GtkWidget *menuitem_
 
 	// create vtebox
 	page_data->vtebox = vte_terminal_new();
+	// g_debug("The default encoding of vtebox is %s",
+	// 					vte_terminal_get_encoding(VTE_TERMINAL(page_data->vtebox)));
 
 	// save the data first
 	g_object_set_data(G_OBJECT(page_data->vtebox), "Page_Data", page_data);
@@ -99,22 +120,46 @@ GtkWidget *add_page(GtkWidget *window, GtkWidget *notebook, GtkWidget *menuitem_
 			// g_debug("call set_encoding() by %p to %p", page_data->vtebox, page_data->encoding);
 			set_encoding(page_data->encoding, page_data->vtebox);
 		}
+		else
+			set_encoding(NULL, page_data->vtebox);
+		
 		if (locale==NULL)
 			page_data->locale = g_strdup(prev_page->locale);
 		else
-			page_data->locale = g_strdup_printf("LC_ALL=%s", locale);
+			page_data->locale = g_strdup(locale);
+		if (user_environ==NULL)
+			page_data->environ = g_strdup(prev_page->environ);
+		else
+			page_data->environ = g_strdup(user_environ);
 	}
 	else
 	{
 		page_data->font_name = g_strdup(win_data->default_font_name);
 		column = win_data->default_column;
 		row = win_data->default_row;
-		page_data->locale = g_strdup("");
-//		page_data->encoding = NULL;
+		if (locale==NULL)
+			page_data->locale = g_strdup("");
+		else
+			page_data->locale = g_strdup(locale);
+		if (user_environ==NULL)
+			page_data->environ = g_strdup("");
+		else
+			page_data->environ = g_strdup(user_environ);
 		page_data->pwd = g_strdup(g_getenv("PWD"));
+		// g_debug("call set_encoding() with menuitem = NULL");
+		set_encoding(NULL, page_data->vtebox);
 	}
-	// g_debug("Set locale to %s", page_data->locale);
-	environment = g_strsplit_set(page_data->locale, " ", 0);
+	// g_debug("Set the encoding of vtebox to %s" ,vte_terminal_get_encoding(VTE_TERMINAL(page_data->vtebox)));
+	gchar *temp_LC_ALL;
+	// g_debug("page_data->locale = %s", page_data->locale);
+	if (strlen(page_data->locale))
+		temp_LC_ALL = g_strdup_printf("LANG=%s LANGUAGE=%s LC_ALL=%s %s",
+				page_data->locale, page_data->locale, page_data->locale, page_data->environ);
+	else
+		temp_LC_ALL = g_strdup_printf("%s", page_data->environ);
+	LC_ALL = g_strsplit_set(temp_LC_ALL, " ", 0);
+	// g_debug("Set locale to %s, default is %s", temp_LC_ALL, win_data->default_locale);
+	g_free(temp_LC_ALL);
 	// g_debug("Init New vtebox with %d x %d!", column, row);
 	// g_debug("Using the font : %s\n", page_data->font_name);
 
@@ -163,7 +208,7 @@ GtkWidget *add_page(GtkWidget *window, GtkWidget *notebook, GtkWidget *menuitem_
 	gtk_notebook_set_tab_reorderable(GTK_NOTEBOOK(notebook), page_data->hbox, TRUE);
 	gtk_notebook_set_tab_detachable(GTK_NOTEBOOK(notebook), page_data->hbox, FALSE);
 #endif
-	g_object_set(gtk_widget_get_parent(page_data->label), "can-focus", FALSE, NULL);
+	// g_object_set(gtk_widget_get_parent(page_data->label), "can-focus", FALSE, NULL);
 	if (win_data->fill_tab_bar)
 		gtk_notebook_set_tab_label_packing(GTK_NOTEBOOK(notebook), page_data->hbox, TRUE, TRUE, GTK_PACK_START);
 
@@ -175,17 +220,19 @@ GtkWidget *add_page(GtkWidget *window, GtkWidget *notebook, GtkWidget *menuitem_
 	//	g_debug("cmmand line = %s", win_data->command_line);
 	//if (win_data->parameters)
 	//	g_debug("parameters = %s", *(win_data->parameters));
-	//if (environment)
-	//	g_debug("environment = %s", *environment);
+	//if (LC_ALL)
+	//	g_debug("LC_ALL = %s", *LC_ALL);
 	page_data->pid = vte_terminal_fork_command(VTE_TERMINAL(page_data->vtebox),
-						      win_data->command_line, win_data->parameters, environment,
+						      win_data->command_line, win_data->parameters, LC_ALL,
 						      page_data->pwd, TRUE, TRUE, TRUE);
 	// treat '-e option' as `custom_page_name'
 	if (win_data->parameters != NULL && win_data->page_shows_current_cmdline)
 		page_data->custom_page_name = get_cmdline(page_data->pid);
 //	else
 //		page_data->custom_page_name = NULL;
-	
+
+	win_data->environment = environ;
+	environ = environ_orig;	
 	// set the tab name.
 	page_data->tpgid = page_data->pid;
 	page_data->tab_color = win_data->page_normal_color;
@@ -225,29 +272,35 @@ GtkWidget *add_page(GtkWidget *window, GtkWidget *notebook, GtkWidget *menuitem_
 		// keep_vtebox_size |= 2;
 		gtk_notebook_set_show_tabs(GTK_NOTEBOOK(notebook), TRUE);
 		gtk_notebook_set_show_border(GTK_NOTEBOOK(notebook), TRUE);
+		GTK_WIDGET_UNSET_FLAGS(notebook, GTK_CAN_FOCUS);
 	}
 
 	// finish!
 	gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), page_data->page_no);
 	gtk_window_set_focus(GTK_WINDOW(window), page_data->vtebox);
 
-	// page_data->pid < 0: Error occurrd when creating sub process.
+	// g_debug("The final encoding of vtebox is %s" ,vte_terminal_get_encoding(VTE_TERMINAL(page_data->vtebox)));
+
+	// page_data->pid < 0: Error occurred when creating sub process.
 	if (page_data->pid < 0)
 	{
-		// g_debug("Error occurrd when creating sub process");
-		gint i;
+		// g_debug("Error occurred when creating sub process");
 		GString *arg_str = g_string_new("");
+		// Trying to avoid double_free()
+		gchar *old_temp_str;
 		
+		gint i;
 		for (i=0; i<win_data->parameter; i++)
 			g_string_append_printf(arg_str, "%s ", win_data->parameters[i]);
-
+		old_temp_str = win_data->temp_str;
 		win_data->temp_str = arg_str->str;
 		dialog (NULL, 16);
 		close_page (page_data->vtebox, FALSE);
+		win_data->temp_str = old_temp_str;
 		g_string_free(arg_str, TRUE);
 	}
 
-	g_strfreev(environment);
+	g_strfreev(LC_ALL);
 	
 	// g_debug("current_vtebox = %d and page_data->vtebox = %d", current_vtebox, page_data->vtebox);
 	if ((current_vtebox == NULL) || (current_vtebox != page_data->vtebox))
@@ -311,20 +364,37 @@ gboolean close_page(GtkWidget *vtebox, gboolean need_safe_close)
 		{
 			// close window only
 			int i;
+			// g_debug("Free user_keys");
 			for (i=0; i<KEYS; i++)
 				g_free(win_data->user_keys[i].value);
 
+			// g_debug("Free user_command");
+			for (i=0; i<COMMAND; i++)
+			{
+				g_free(win_data->user_command[i].command);
+				g_free(win_data->user_command[i].environ);
+				g_strfreev(win_data->user_command[i].environments);
+			}
+
+			// g_debug("Free menu");
 			if (win_data->menu!=NULL)
 				gtk_widget_destroy(win_data->menu);
 
+			// g_debug("** Free argv");
+			g_free(win_data->argv);
 			// command_line and parameters can NOT be freed.
+			// They are a pointer for win_data->argv.
 			// win_data->command_line = NULL;
 			// win_data->parameters = NULL;
+			
+			// g_debug("Free win_data->profile");
 			g_free(win_data->profile);
 
+			// g_debug("Free page_names");
 			g_free(win_data->page_name);
 			g_free(win_data->page_names);
 			g_strfreev(win_data->splited_page_names);
+			// g_debug("Free colors");
 			g_free(win_data->foreground_color);
 			g_free(win_data->background_color);
 			g_free(win_data->page_cmdline_color);
@@ -332,16 +402,21 @@ gboolean close_page(GtkWidget *vtebox, gboolean need_safe_close)
 			g_free(win_data->page_custom_color);
 			g_free(win_data->page_root_color);
 			g_free(win_data->page_normal_color);
+			// g_debug("Free font_name");
 			g_free(win_data->default_font_name);
 			g_free(win_data->system_font_name);
+			// g_debug("Free word_chars");
 			g_free(win_data->word_chars);
-			// supported_locales will be free when destroy win_data->menu
-			// g_strfreev(win_data->supported_locales);
+			// g_debug("** Free supported_locales");
+			g_strfreev(win_data->supported_locales);
+			// g_debug("Free locales_list");
 			g_free(win_data->locales_list);
-			// default_locale will be free when destroy win_data->menu
-			// g_free(win_data->default_locale);
+			// g_debug("** Free default_locale");
+			g_free(win_data->default_locale);
+			// g_debug("Free restore_font_name");
 			g_free(win_data->restore_font_name);
-			// g_debug("Clean win_data : %d", win_data);
+			// g_debug("Clean win_data : %p", win_data);
+			// g_debug("Free win_data");
 			g_free(win_data);
 			
 			// g_debug("Clean active_window : %d", page_data->window);
@@ -422,11 +497,18 @@ gboolean close_page(GtkWidget *vtebox, gboolean need_safe_close)
 	}
 
 	// free the memory used by this page
-	// g_debug("freeing page_data!\n");
+	// g_debug("Free page_data!\n");
+	// g_debug("Free custom_page_name");
 	g_free(page_data->custom_page_name);
+	// g_debug("Free pwd");
 	g_free(page_data->pwd);
+	// g_debug("Free font_name");
 	g_free(page_data->font_name);
+	// g_debug("Free locale");
 	g_free(page_data->locale);
+	// g_debug("Free environ");
+	g_free(page_data->environ);
+	// g_debug("Free page_data");
 	g_free(page_data);
 
 	return TRUE;
@@ -513,11 +595,12 @@ gboolean vtebox_button_press(GtkWidget *vtebox, GdkEventButton *event, GtkWidget
 #ifdef DEBUG
 	g_debug("! Launch vtebox_button_press for window %p", window);
 #endif
+	struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(window), "Win_Data");
+	if (! win_data->enable_function_key) return FALSE;
 
 	if (event->button == 3)
 	{
 		struct Page *page_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Page_Data");
-		struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(window), "Win_Data");
 		// g_debug ("Get win_data = %d in show_menu", win_data);
 		if (win_data->supported_locales!=NULL)
 		{
@@ -554,7 +637,6 @@ gboolean vtebox_button_press(GtkWidget *vtebox, GdkEventButton *event, GtkWidget
 		gint pad_x, pad_y, tag;
 		gchar *url = NULL;
 		struct Page *page_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Page_Data");
-		struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(window), "Win_Data");
 
 		// return if hyperlink is disabled.
 		if ( ! win_data->enable_hyperlink) return FALSE;
@@ -582,7 +664,9 @@ gboolean vtebox_button_press(GtkWidget *vtebox, GdkEventButton *event, GtkWidget
 					win_data->parameters = argv;
 					win_data->parameter = 2;
 					// we don't need to free win_data->temp_str. it will be free in add_page.
-					add_page(page_data->window, page_data->notebook, NULL, NULL, FALSE);
+					add_page(page_data->window, page_data->notebook, NULL, page_data->locale,
+						 win_data->user_command[tag].environ, FALSE,
+						 win_data->user_command[tag].VTE_CJK_WIDTH);
 					break;
 				}
 				case 1:
@@ -598,8 +682,21 @@ gboolean vtebox_button_press(GtkWidget *vtebox, GdkEventButton *event, GtkWidget
 						case 0:
 						{
 							gchar **argv = g_strsplit(win_data->temp_str, " ", -1);
+							// Trying to set the VTE_CJK_WIDTH and eviron
+							gchar **new_environ = apply_new_environ(win_data->environment,
+											win_data->user_command[tag].environ);
+							extern gchar **environ;
+							gchar **environ_orig = environ;
+							environ = new_environ;
+							if (win_data->user_command[tag].VTE_CJK_WIDTH)
+								set_VTE_CJK_WIDTH_environ(
+										win_data->user_command[tag].VTE_CJK_WIDTH);
+							//gint i=0;
+							//while (environ[i])
+							//	g_debug("%s", environ[i++]);
 							if (execvp(argv[0], argv)<0)
 								dialog(NULL, 16);
+							environ = environ_orig;
 							exit (0);
 							break;
 						}
@@ -611,13 +708,18 @@ gboolean vtebox_button_press(GtkWidget *vtebox, GdkEventButton *event, GtkWidget
 					// 1: new window
 					gchar *command = g_strdup_printf("-e %s", win_data->temp_str);
 					gchar **argv = g_strsplit(command, " ", -1);
-					new_window(3, argv);
+					gchar *user_environ = g_strdup_printf("%s %s", page_data->locale,
+									 win_data->user_command[tag].environ);
+					new_window(3, argv, win_data->environment,
+						   win_data->user_command[tag].VTE_CJK_WIDTH, user_environ);
+					g_free(user_environ);
 					g_strfreev(argv);
 					g_free(command);
 					break;
 				}
 			}
 			g_free(win_data->temp_str);
+			win_data->temp_str = NULL;
 			g_free(url);
 			return TRUE;
 		}
@@ -625,3 +727,21 @@ gboolean vtebox_button_press(GtkWidget *vtebox, GdkEventButton *event, GtkWidget
 	return FALSE;
 }
 
+void set_VTE_CJK_WIDTH_environ(gint VTE_CJK_WIDTH)
+{
+	// Set the VTE_CJK_WIDTH environment
+	switch (VTE_CJK_WIDTH)
+	{
+		case 0:
+		case 1:
+			unsetenv("VTE_CJK_WIDTH");
+			break;
+		//case 1:
+		//	// VTE_CJK_WIDTH=narrow only work for vte >= 0.16.14
+		//	setenv("VTE_CJK_WIDTH", "narrow", TRUE);
+		//	break;
+		case 2:
+			setenv("VTE_CJK_WIDTH", "wide", TRUE);
+			break;
+	}
+}

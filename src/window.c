@@ -31,7 +31,7 @@ gint total_window = 0;
 extern GtkWidget *current_vtebox;
 GtkWidget *active_window;
 
-void new_window(int argc, char *argv[])
+void new_window(int argc, char *argv[], char **environment, gint VTE_CJK_WIDTH, gchar *user_environ)
 {
 #ifdef DEBUG
 	g_debug("! Launch new_window()!");
@@ -41,6 +41,7 @@ void new_window(int argc, char *argv[])
 
 	struct Window *win_data = g_new0(struct Window, 1);
 	// g_debug ("win_data = %d", win_data);
+	// win_data->argv = argv;
 
 	init_window_option(win_data);
 	window_option(win_data, argc, argv);
@@ -56,8 +57,21 @@ void new_window(int argc, char *argv[])
 	// g_debug("Save window = %d and win_data = %d when init window!", window, win_data);
 	g_object_set_data(G_OBJECT(window), "Win_Data", win_data);
 
+	extern gchar **environ;
+	// environ_orig: The ENVIRON of 1st lilyterm
+	gchar **environ_orig = environ;
+	// win_data->environment: the ENVIRON of later lilyterm
+	win_data->environment = apply_new_environ(environment, user_environ);
+	environ = win_data->environment;
+
 	// get user settings. we may init RGBA so that we need create main window first.
 	get_user_settings(window, win_data);
+
+	if (VTE_CJK_WIDTH)
+		win_data->system_VTE_CJK_WIDTH = VTE_CJK_WIDTH;
+
+	// Recover the environ to the ENVIRON of 1st lilyterm
+	environ = environ_orig;
 	
 	// close application if [Close Button] clicked
 	g_signal_connect(G_OBJECT(window), "delete_event", G_CALLBACK(window_quit), win_data);
@@ -84,7 +98,8 @@ void new_window(int argc, char *argv[])
 	g_signal_connect(G_OBJECT(win_data->notebook), "page-reordered", G_CALLBACK(reorder_page_number), window);
 #endif
 	// add a new page to notebook. run_once=TRUE.
-	GtkWidget *vtebox = add_page(window, win_data->notebook, NULL, NULL, TRUE);
+	GtkWidget *vtebox = add_page(window, win_data->notebook, NULL, NULL, user_environ,
+				     TRUE, win_data->system_VTE_CJK_WIDTH);
 	// vtebox = NULL: the creation of vtebox is fault.
 	if (vtebox == NULL)
 	{
@@ -95,9 +110,10 @@ void new_window(int argc, char *argv[])
 	else
 		win_data->current_vtebox = vtebox;
 	
-	int i;
+	gint i;
 	for (i=1;i<win_data->init_tab_number;i++)
-		 add_page(window, win_data->notebook, NULL, NULL, FALSE);
+		 add_page(window, win_data->notebook, NULL, NULL, user_environ,
+		 	  FALSE, win_data->system_VTE_CJK_WIDTH);
 
 	// gtk_window_set_gravity(GTK_WINDOW(window), GDK_GRAVITY_NORTH);
 	gtk_window_move (GTK_WINDOW(window), 0, 0);
@@ -109,6 +125,37 @@ void new_window(int argc, char *argv[])
 	// create menu
 	// input method menu can't not be shown before window is shown.
 	create_menu(window);
+}
+
+gchar **apply_new_environ(gchar **sys_environ, gchar* user_environ)
+{
+	if ((user_environ==NULL) || (strlen(user_environ)==0)) return sys_environ;
+	extern gchar **environ;
+	gchar **environ_orig = environ;
+	environ = sys_environ;
+	gchar **user_environments = g_strsplit_set(user_environ, " ,", -1);
+	gint i=0;
+
+	while (user_environments[i])
+	{
+		// g_debug("Setting the environ: %s",user_environments[i]);
+		gchar **env = g_strsplit(user_environments[i], "=", -1);
+		if (env[0] && env[1])
+		{
+			// g_debug("Set the environ: %s=%s", env[0], env[1]);
+			setenv(env[0], env[1], TRUE);
+		}
+		else if (env[0])
+			unsetenv(env[0]);
+
+		g_strfreev(env);
+		i++;
+	}
+	g_strfreev(user_environments);
+
+	sys_environ =  environ;
+	environ = environ_orig;
+	return sys_environ;
 }
 
 gboolean window_quit(GtkWidget *window, GdkEvent *event, struct Window *win_data)
@@ -315,7 +362,7 @@ void deal_key_press(GtkWidget *window, gint type, struct Window *win_data)
 			break;
 		case 1:
 			// add a new page
-			add_page(window, win_data->notebook, NULL, NULL, FALSE);
+			add_page(window, win_data->notebook, NULL, NULL, NULL, FALSE, page_data->VTE_CJK_WIDTH);
 			break;
 		case 2:
 			// close page

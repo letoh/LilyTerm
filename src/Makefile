@@ -13,7 +13,7 @@ INCLUDES = -DENABLE_DEVELOP \
 	   -DENABLE_GDKCOLOR_TO_STRING \
 	   -DPACKAGE_NAME=\"LilyTerm\" \
 	   -DPACKAGE=\"lilyterm\" \
-	   -DVERSION=\"0.9.5\" \
+	   -DVERSION=\"0.9.6\" \
 	   -DPACKAGE_BUGREPORT=\"tetrlet@gmail.com\" \
 	   -DLOCALEDIR=\"$(datadir)/locale\" \
 	   -DICONDIR=\"$(datadir)/pixmaps\"

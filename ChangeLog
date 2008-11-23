@@ -1,6 +1,33 @@
+2008-7-25 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
+  version 0.9.6
+
+  For GJK users:
+	
+	If your vte is >= 0.16.14 (Debian Lenny), and you want to enable
+	VTE_CJK_WIDTH, Please make sure that you have applied the patch on
+	http://bugzilla.gnome.org/show_bug.cgi?id=542795.
+
+  FIX:
+  	* Better behavior when run with LC_ALL=zh_TW (not zh_TW.Big5).
+	  Thanks Balázs Hámorszky for reporting this bug.
+	* The label of GtkNotebook won't be on-focus-able when tab number = 2.
+	  Thanks PCMan for fixing this bug.
+	* Better compatibility with hyperlink.
+
+  New Feature:
+	* Applied updated German translation.
+	  VERY THANKS to Mario Blättermann.
+	* Switch VTE_CJK_WIDTH = wide/narrow via right click menu.
+	* Better hyperlink support. You may specify the VTE_CJK_WIDTH and
+	  environment used for the hyperlink via edit the profile.
+	* Every LilyTerm window may use separate environment in single process
+	  mode.
+	* <Ctrl><`> will disable mouse right click menu too.
+
 2008-7-8 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
 
-  vsersion 0.9.5
+  version 0.9.5
 
     FIX:
 	* Better compatibility with -e command line option.
@@ -39,7 +66,7 @@
     use only one process. The newer launched LilyTerm will be just a new window
     of 1st launched LilyTerm, so that we may reduce the usage of memory.
 
-    Unlike roxterm, gnome-terminal or xfce4-termianl, Every single window of
+    Unlike roxterm, gnome-terminal or xfce4-terminal, Every single window of
     LilyTerm is independent. They may has it's own settings and profile, and
     won't bother each other.
 
@@ -139,7 +166,7 @@
 
     FIX:
 	* <backspace> don't work under emacs.
-	  Thanks yoyo for report this bug.
+	  Thanks yoyo for reporting this bug.
 	* page_shows_current_cmdline only enabled under GNU/Linux for temporary.
 
     New Feature:
@@ -181,9 +208,9 @@
 
     FIX:
  	* Better compatibility with evilwm.
-	  Thanks to caleb for report this bug.
+	  Thanks to caleb for reporting this bug.
 	* rgba don't work with xcompmgr even though `use_rgba = 1'.
-	  Thanks to caleb for report this bug.
+	  Thanks to caleb for reporting this bug.
 	* Better behavior when using transparent background.
 	* Better behavior when resizing font/window size.
 
@@ -198,7 +225,7 @@
 
     FIX:
     	* Now LilyTerm works fine with kwin. (It is the window manager of KDE).
-	  Thanks to swyear and caleb for report this bug.
+	  Thanks to swyear and caleb for reporting this bug.
 	* Better compatibility with some xorg build in video modules when rgba
 	  is enabled. If you still encounter trouble, like black screen,
 	  transparent or colorless text, please insure the following setting:
@@ -206,7 +233,7 @@
 	  is in your /etc/X11/xorg.conf.
 	* Better compatibility when the font rendering / theme changed.
 	* Use <Ctrl><`> (NOT <Ctrl><~>) to disable function keys.
-	  Thanks to BV1AL for report this bug.
+	  Thanks to BV1AL for reporting this bug.
 	* `screen_width' is rename to `column' in profile.
 	* `screen_height' is rename to `row' in profile.
 

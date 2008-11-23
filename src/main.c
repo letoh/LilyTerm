@@ -67,7 +67,11 @@ int main( int   argc,
 	}
 	
 	// start LilyTerm
-	new_window(argc, argv);
+	extern gchar **environ;
+	new_window(argc, argv, environ, 0, NULL);
+	// The argv of "main" LilyTerm can't be free.
+	// Set it to NULL here to avoid double_free().
+	argv=NULL;
 
 	// g_debug("Start to run LilyTerm");
 	gtk_main();
@@ -134,7 +138,7 @@ GString *got_help_message()
 					_("And your %s profile is: %s/%s\n\n"),
 								PACKAGE_NAME, g_get_user_config_dir(), RCFILE);
 	g_string_append( help_message,  _("Default shortcut key: (It may custom by editing user's profile)\n\n"));
-	g_string_append( help_message,  _("  * <Ctrl><`>\t\tDisable/Enable function keys and hyperlinks\n"));
+	g_string_append( help_message,  _("  * <Ctrl><`>\t\tDisable/Enable hyperlinks, function keys and right click menu\n"));
 	g_string_append( help_message,  _("  * <Ctrl><T/Q>\t\tAdd a New tab/Close current tab\n"));
 	g_string_append( help_message,  _("  * <Ctrl><E>\t\tRename current tab\n"));
 	g_string_append( help_message,  _("  * <Ctrl><PgUp/PgDn>\tSwitch to Prev/Next tab\n"));
@@ -222,11 +226,23 @@ gboolean send_socket( int   argc,
 	GError *error = NULL;
 	gsize len;
 	int i;
+	extern gchar **environ;
 
-	// put the argc/argv information to 1 line.
-	GString *arg_str = g_string_new(g_strdup_printf("%d ",argc));
+	// send data: VTE_CJK_WIDTH argc argv environment.
+	GString *arg_str = g_string_new(g_strdup_printf("%d ", argc));
 	for (i=0; i<argc; i++)
 		g_string_append_printf(arg_str, "%s ", argv[i]);
+	i=0;
+	if (environ!=NULL)
+	{
+		while (environ[i]!=NULL)
+		{
+			// g_debug("%d: %s", i, environ[i]);
+			g_string_append_printf(arg_str, "%s ", environ[i]);
+			i++;
+		}
+	}
+	
 	g_string_append_printf(arg_str, "\n");
 	// g_debug("Sent data: %s", arg_str->str);
 
@@ -330,12 +346,41 @@ gboolean read_socket(GIOChannel *channel, GIOCondition condition, gpointer user_
 	// g_debug("Read %u bytes from Lilyterm socket: '%s'", len, data);
 	if (len > 0)
 	{
+		// get data: VTE_CJK_WIDTH argc argv environment.
 		// clear '\n' at the end of data[]
 		data[len-1] = 0;
-		datas = g_strsplit(data, " ", -1);
-		new_window(atoi(datas[0]), &(datas[1]));
-		g_free(data);
+
+		// VTE_CJK_WIDTH
+		datas = g_strsplit(data, " ", 2);
+		gint argc = atoi(datas[0]);
+		// g_debug("Get argc =%d", argc);
+		
+		// g_debug("Get Other data = %s", datas[1]);
+		gchar **argv = g_strsplit(datas[1], " ", argc+1);
 		g_strfreev(datas);
+		
+		// g_debug("Get environment = %s", argv[argc]);
+		gchar **environment = g_strsplit(argv[argc], " ", -1);
+
+		g_free(argv[argc]);
+		argv[argc] = NULL;
+
+		//g_debug("Final:\n");
+		//g_debug("\tVTE_CJK_WIDTH =%d\n", VTE_CJK_WIDTH);
+		//g_debug("\targc =%d\n", argc);
+		//
+		//g_debug("\targv=\n");
+		//gint i = 0;
+		//while (argv[i]!=NULL)
+		//	g_debug("\t\t%d: %s\n", i-1, argv[i++]);
+
+		//g_debug("\tenvironment =\n");
+		//i = 0;
+		//while (environment[i]!=NULL)
+		//	g_debug("\t\t%d, %s\n", i-1, environment[i++]);
+
+		new_window(argc, argv, environment, 0, NULL);
+		g_free(data);
 	}
 	clear_channel(channel, TRUE);
 	// return FALSE means this connection is finish.

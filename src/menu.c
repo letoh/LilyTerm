@@ -39,83 +39,180 @@ void create_menu(GtkWidget *window)
 	// g_debug("Get win_data = %d when creating menu!", win_data);
 
 	GSList *group=NULL;
-	GtkWidget *menu_item, *sub_menu;
+	GtkWidget *menu_item, *sub_menu=NULL;
 	gint i=0;
-	
+	gboolean enable_vte_cjk_width = win_data->system_VTE_CJK_WIDTH ? 1 : 0;
+	//g_debug("enable_vte_cjk_width = %d, and VTE_CJK_WIDTH = %s",
+	//	enable_vte_cjk_width, g_getenv("VTE_CJK_WIDTH"));
 	win_data->menu = gtk_menu_new();
 
-	if (win_data->supported_locales!=NULL)
+	if ((win_data->supported_locales!=NULL) ||
+	     (enable_vte_cjk_width &&
+	     		(g_ascii_strcasecmp(vte_terminal_get_encoding(VTE_TERMINAL(current_vtebox)), "UTF-8")==0)))
 	{
+		// We will create 2 sub menu here:
+		// [New Tab/Change text encoding] and [New tab with specified locale]
+		
+		// create a fake supported_locales for [enable_vte_cjk_width=TRUE but supported_locales=""]
+		gchar **temp_locales = win_data->supported_locales;
+		if (! temp_locales) temp_locales = g_strsplit("UTF-8.UTF-8", " ", -1);
+
+		// enable_locale_menu: if the items in supported_locales is like 'zh_TW.Big5', not only 'Big5'
+		// enable_locale_menu = TRUE will create [New tab with specified locale] sub menu.
 		gboolean enable_locale_menu = FALSE;
 		GtkWidget *locale_sub_menu = NULL, *locales_menu_item, *locale_menu_item;
-		// locales can NOT be free!
 		gchar **locales;
+		GList *locale_list = NULL;
 
-		menu_item = gtk_image_menu_item_new_with_label(_("Change text encoding"));
-		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
-					      gtk_image_new_from_stock(GTK_STOCK_DND, GTK_ICON_SIZE_MENU));
-		sub_menu = gtk_menu_new ();
-		gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item), sub_menu);
-		gtk_menu_shell_append (GTK_MENU_SHELL (win_data->menu), menu_item);
+		// win_data->supported_locales=NULL: The supported_locales is empty but it is using UTF-8 locale.
+		if (win_data->supported_locales!=NULL)
+		{
+			menu_item = gtk_image_menu_item_new_with_label(_("Change text encoding"));
+			gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
+						      gtk_image_new_from_stock(GTK_STOCK_DND, GTK_ICON_SIZE_MENU));
+			sub_menu = gtk_menu_new ();
+			gtk_menu_item_set_submenu (GTK_MENU_ITEM (menu_item), sub_menu);
+			gtk_menu_shell_append (GTK_MENU_SHELL (win_data->menu), menu_item);
+		}
 
-		locales_menu_item = gtk_image_menu_item_new_with_label(_("New tab with specified locale"));
+		// We create locales_menu_item first, And append it to menu if enable_locale_menu = TRUE
+		if ((win_data->supported_locales))
+			locales_menu_item = gtk_image_menu_item_new_with_label(_("New tab with specified locale"));
+		else
+			locales_menu_item = gtk_image_menu_item_new_with_label(_("New tab"));
 		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(locales_menu_item),
 					      gtk_image_new_from_stock( GTK_STOCK_DND_MULTIPLE,
 									GTK_ICON_SIZE_MENU));
 		locale_sub_menu = gtk_menu_new ();
 		gtk_menu_item_set_submenu (GTK_MENU_ITEM (locales_menu_item), locale_sub_menu);
-
-		// menu_item->name: stores the locale string
-		while (win_data->supported_locales[i]!=NULL)
+		
+		while (temp_locales[i]!=NULL)
 		{
-			if (*(win_data->supported_locales[i]))
+			if (*(temp_locales[i]))
 			{
-				if (i)
-				{
-					// other Locales
-					locales = g_strsplit_set(win_data->supported_locales[i], ".", 0);
-					if (locales[1])
-						menu_item = gtk_radio_menu_item_new_with_label(group, locales[1]);
-					else
-						menu_item = gtk_radio_menu_item_new_with_label(group, win_data->supported_locales[i]);
-					menu_item->name = win_data->supported_locales[i];
-				}
-				else
-				{
-					// 1st item: System Default
-					locales = g_strsplit_set(win_data->default_locale, ".", 0);
-					menu_item = gtk_radio_menu_item_new_with_label (group,
-											win_data->supported_locales[i]);
-					win_data->default_encoding = menu_item;
-					menu_item->name = win_data->default_locale;
-				}
-				gtk_menu_shell_append(GTK_MENU_SHELL(sub_menu), menu_item);
-				group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (menu_item));
-				g_signal_connect(menu_item, "activate", G_CALLBACK(set_encoding), NULL);
-				// g_debug("Init the menuitem %d with %s.", menu_item, menu_item->name);
+				// zh_TW.Big5 -> [0]zh_TW, [1]Big5
+				locales = g_strsplit(temp_locales[i], ".", 0);
+				menu_item = NULL;
 
-				if (locales[1])
+				// Create the menuitem for [Change text encoding]
+				if ((win_data->supported_locales))
 				{
-					if (i) enable_locale_menu = TRUE;
-					
-					locale_menu_item = gtk_image_menu_item_new_with_label(win_data->supported_locales[i]);
-					gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(locale_menu_item),
+					// tmp_local can NOT free()!
+					const gchar *tmp_local;
+
+					// The system default.
+					// Use vte_terminal_get_encoding here for LC_CTYPE=zh_TW (Not zh_TW.Big5)
+					if (i==0)
+						tmp_local = vte_terminal_get_encoding(VTE_TERMINAL(current_vtebox));
+					// For "zh_TW.Big5 -> [0]zh_TW, [1]Big5"
+					else if (locales[1])
+					{
+						tmp_local = locales[1];
+						menu_item = check_encoding_in_menuitem(sub_menu, tmp_local);
+					}
+					// For "Big5"
+					else
+					{
+						tmp_local = win_data->supported_locales[i];
+						menu_item = check_encoding_in_menuitem(sub_menu,tmp_local);
+					}
+
+					// menu_item = NULL: Not find in sub_menu
+					if (! menu_item)
+					{
+						menu_item = gtk_radio_menu_item_new_with_label(group, tmp_local);
+						if (i==0)
+							win_data->default_encoding = menu_item;
+						if (win_data->supported_locales)
+							// zh_TW.UTF-8
+							menu_item->name = g_strdup(win_data->supported_locales[i]);
+						else
+							// UTF-8.UTF-8
+							menu_item->name = g_strdup(tmp_local);
+						// g_debug("Set the %d encoding to %s", i, tmp_local);
+						gtk_menu_shell_append(GTK_MENU_SHELL(sub_menu), menu_item);
+						group = gtk_radio_menu_item_get_group (GTK_RADIO_MENU_ITEM (menu_item));
+						g_signal_connect(menu_item, "activate", G_CALLBACK(set_encoding), NULL);
+						// g_debug("Init the menuitem %p with %s.", menu_item, tmp_local);
+					}
+				}
+				
+				// The menuitem for [New tab with specified locale]
+				// menu_item = NULL: [enable_vte_cjk_width=TRUE but supported_locales=""]
+				if ((locales[1] || (!menu_item)) &&
+				    (! check_locale_in_menuitem(locale_list, temp_locales[i])))
+				{
+					// g_debug("Append %s to locale_list", temp_locales[i]);
+					locale_list = g_list_append(locale_list, temp_locales[i]);
+					if (i || (!menu_item)) enable_locale_menu = TRUE;
+
+					gint j = 0, k;
+					// g_debug("locales[1] = %s", locales[1]);
+					if (enable_vte_cjk_width && ((g_ascii_strcasecmp(locales[1], "UTF-8")==0) ||
+								     (!menu_item)))
+						j=1;
+
+					for (k=0; k<=j; k++)
+					{
+						if (k)
+						{
+							gchar *temp_label;
+							if (win_data->supported_locales)
+								temp_label = g_strdup_printf("%s%s",
+											temp_locales[i], _(" (Wide)"));
+							else
+								 temp_label = g_strdup_printf("%s%s",
+								 			locales[0], _(" (Wide)"));
+							locale_menu_item = gtk_image_menu_item_new_with_label(
+													temp_label);
+							locale_menu_item->name = g_strdup_printf("%d", j+1);
+							g_free(temp_label);
+						}
+						else
+						{
+							if (win_data->supported_locales)
+								locale_menu_item = gtk_image_menu_item_new_with_label(
+													temp_locales[i]);
+							else
+								locale_menu_item = gtk_image_menu_item_new_with_label(
+													locales[0]);
+							locale_menu_item->name = g_strdup_printf("0");
+						}
+						gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(locale_menu_item),
 								gtk_image_new_from_stock(GTK_STOCK_DND_MULTIPLE,
 											 GTK_ICON_SIZE_MENU));
-					gtk_menu_shell_append(GTK_MENU_SHELL(locale_sub_menu), locale_menu_item);
-					g_signal_connect(locale_menu_item, "activate",
-							 G_CALLBACK(new_tab_with_locale), menu_item);
+						gtk_menu_shell_append(GTK_MENU_SHELL(locale_sub_menu),
+												locale_menu_item);
+						g_signal_connect(locale_menu_item, "activate",
+									G_CALLBACK(new_tab_with_locale), menu_item);
+					}
+				g_strfreev(locales);
 				}
 			}
 			i++;
 		}
+		g_list_free(locale_list);
 		if (enable_locale_menu)
+		{
 			gtk_menu_shell_append (GTK_MENU_SHELL (win_data->menu), locales_menu_item);
+			// ----------------------------------------
+			menu_item = gtk_separator_menu_item_new ();
+			gtk_menu_shell_append (GTK_MENU_SHELL (win_data->menu), menu_item);
+		}
 
-		// ----------------------------------------
-		menu_item = gtk_separator_menu_item_new ();
-		gtk_menu_shell_append (GTK_MENU_SHELL (win_data->menu), menu_item);
 	}
+
+//	// ----------------------------------------
+//	menu_item = gtk_separator_menu_item_new ();
+//	gtk_menu_shell_append (GTK_MENU_SHELL (win_data->menu), menu_item);
+
+	// Change the font for every tab
+	menu_item = gtk_image_menu_item_new_with_label(_("Change the font"));
+	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
+				      gtk_image_new_from_stock(GTK_STOCK_SELECT_FONT, GTK_ICON_SIZE_MENU));
+	gtk_menu_shell_append(GTK_MENU_SHELL(win_data->menu), menu_item);
+	g_signal_connect(menu_item, "activate", G_CALLBACK(select_font), window);
+
 #ifdef ENABLE_GDKCOLOR_TO_STRING
 	if (win_data->show_color_selection_menu)
 	{
@@ -228,7 +325,7 @@ void create_menu(GtkWidget *window)
 		g_signal_connect(win_data->menuitem_scrollback_lines, "activate", G_CALLBACK(clean_scrollback_lines), FALSE);
 
 		// clean scrollback lines
-		menu_item = gtk_image_menu_item_new_with_label(_("Clean scrollback lines of this tab"));
+		menu_item = gtk_image_menu_item_new_with_label(_("Clean scrollback lines"));
 		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
 				      gtk_image_new_from_stock(GTK_STOCK_CLEAR, GTK_ICON_SIZE_MENU));
 		gtk_menu_shell_append(GTK_MENU_SHELL(win_data->menu), menu_item);
@@ -251,13 +348,6 @@ void create_menu(GtkWidget *window)
 		vte_terminal_im_append_menuitems (VTE_TERMINAL(current_vtebox), GTK_MENU_SHELL (sub_menu));
 	}
 
-	// Change the font for every tab
-	menu_item = gtk_image_menu_item_new_with_label(_("Change the font"));
-	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
-				      gtk_image_new_from_stock(GTK_STOCK_SELECT_FONT, GTK_ICON_SIZE_MENU));
-	gtk_menu_shell_append(GTK_MENU_SHELL(win_data->menu), menu_item);
-	g_signal_connect(menu_item, "activate", G_CALLBACK(select_font), window);
-
 	// Edit tab name
 	if (win_data->show_change_page_name_menu)
 	{
@@ -268,12 +358,15 @@ void create_menu(GtkWidget *window)
 		g_signal_connect(menu_item, "activate", G_CALLBACK(dialog), (gint *)1);
 	}
 
-	if (win_data->show_resize_menu)
+	if (win_data->show_input_method_menu || win_data->show_change_page_name_menu)
 	{
 		// ----------------------------------------
 		menu_item = gtk_separator_menu_item_new ();
 		gtk_menu_shell_append (GTK_MENU_SHELL (win_data->menu), menu_item);
+	}
 
+	if (win_data->show_resize_menu)
+	{
 		// Window Size
 		menu_item = gtk_image_menu_item_new_with_label(_("Increase window size"));
 		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
@@ -304,7 +397,7 @@ void create_menu(GtkWidget *window)
 	}
 	
 	// Reset
-	menu_item = gtk_image_menu_item_new_with_label(_("Reset the content of this tab"));
+	menu_item = gtk_image_menu_item_new_with_label(_("Reset the content"));
 	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
 				      gtk_image_new_from_stock(GTK_STOCK_REFRESH, GTK_ICON_SIZE_MENU));
 	gtk_menu_shell_append(GTK_MENU_SHELL(win_data->menu), menu_item);
@@ -361,6 +454,54 @@ void clean_scrollback_lines(GtkWidget *widget, gboolean type)
 		vte_terminal_set_scrollback_lines (VTE_TERMINAL(current_vtebox), win_data->scrollback_lines);
 }
 
+GtkWidget *check_encoding_in_menuitem(GtkWidget *sub_menu, const gchar *name)
+{
+	GList *widget_list = GTK_MENU_SHELL(sub_menu)->children;
+	GtkWidget *return_menuitem = NULL;
+	GtkWidget *menu_item = NULL;
+
+	while (widget_list!=NULL)
+	{
+		menu_item = widget_list->data;
+		// g_debug("Got the menu_item = %p", menu_item);
+		if (menu_item==NULL) break;
+
+		gchar **check_names =  g_strsplit(menu_item->name, ".", 0);
+		if (check_names[1])
+		{
+			// g_debug("Checking the encoding %s with %s", check_names[1], name);
+			if (g_ascii_strcasecmp (check_names[1], name)==0)
+				return_menuitem = menu_item;
+		}
+		else
+		{
+			// g_debug("Checking the encoding %s with %s", menu_item->name, name);
+			if (g_ascii_strcasecmp (menu_item->name, name)==0)
+				return_menuitem = menu_item;
+		}
+		g_strfreev(check_names);
+		if (return_menuitem) return return_menuitem;
+		widget_list = widget_list->next;
+	}
+	return NULL;
+}
+
+gboolean check_locale_in_menuitem(GList *locale_list, const gchar *name)
+{
+	//g_debug("Calling check_locale_in_menuitem with locale_list = %p, name =%s, total = %d",
+	//	locale_list, name, g_list_length(locale_list));
+	GList *widget_list = NULL;
+	int i;
+
+	for (i=0; i< g_list_length(locale_list); i++)
+	{
+		widget_list = g_list_nth(locale_list, i);
+		// g_debug("Checking the locale %s with %s", (gchar *)widget_list->data, name);
+		if (g_ascii_strcasecmp (widget_list->data, name)==0)
+			return TRUE;
+	}
+	return FALSE;
+}
 
 void reset_vtebox(GtkWidget *widget, gpointer user_data)
 {
@@ -409,16 +550,17 @@ void set_trans_win(GtkWidget *widget, GtkWidget *window)
 }
 #endif
 
-// it is OK to use either zh_TW.Big5 or Big5
+// it is OK to use either zh_TW.Big5 or Big5 here
 void set_encoding(GtkWidget *menuitem, GtkWidget *vtebox)
 {
 #ifdef DEBUG
 	g_debug("! Launch set_encoding() for vte %p", vtebox);
 #endif
-	// g_debug("Got the encoding item: %d", menuitem);
-	if (menuitem==NULL)
+	const gchar *encoding;
+	// g_debug("Got the encoding item: %p", menuitem);
+	if (menuitem==NULL && vtebox==NULL)
 	{
-		err_str = g_strdup_printf("set_encoding(): menuitem = NULL\n\n"
+		err_str = g_strdup_printf("set_encoding(): menuitem = NULL and vtebox = NULL\n\n"
 					  "Please report bug to %s, Thanks!",
 					  PACKAGE_BUGREPORT);
 		dialog(NULL, 17);
@@ -426,7 +568,7 @@ void set_encoding(GtkWidget *menuitem, GtkWidget *vtebox)
 		return;
 	}
 
-	// vtebox==NULL: called by the "activate" signal of menuitem.
+	// vtebox==NULL: called by the "activate" signal of menuitem. vtebox = current_vtebox.
 	if (vtebox==NULL)
 	{
 		// GTK_CHECK_MENU_ITEM(menuitem)->active = false: We only set the encoding with actived menuitem. 
@@ -439,16 +581,28 @@ void set_encoding(GtkWidget *menuitem, GtkWidget *vtebox)
 	// No action when just right click the mouse
 	if (win_data->query_encoding) return;
 
-	// g_debug("Trying to set %d page (%p) to encoding %s...", page_data->page_no, vtebox, menuitem->name);
+	if (menuitem)
+	{
+		encoding = menuitem->name;
+		page_data->encoding=menuitem;
+	}
+	else
+	{
+		// g_debug("win_data->default_locale = %s", win_data->default_locale);
+		gchar **locales = g_strsplit(win_data->default_locale, ".", -1);
+		if (locales[1])
+			encoding = win_data->default_locale;
+		else
+			encoding = vte_terminal_get_encoding(VTE_TERMINAL(vtebox));
+		g_strfreev(locales);
+	}
+	// g_debug("Trying to set %d page (%p) to encoding %s...", page_data->page_no, vtebox, encoding);
 	
-	gchar **locales;
-	locales = g_strsplit_set(menuitem->name, ".", 0);
+	gchar **locales = g_strsplit(encoding, ".", -1);
 	if (locales[1])
 		vte_terminal_set_encoding(VTE_TERMINAL(vtebox), locales[1]);
 	else
 		vte_terminal_set_encoding(VTE_TERMINAL(vtebox), locales[0]);
-
-	page_data->encoding=menuitem;
 
 	// page_data->label->name==NULL: add_page() will call set_encoding() before page_data->label is created.
 	// And it will cause the following error: "Document ended unexpectedly while inside an attribute value"
@@ -464,12 +618,23 @@ void set_encoding(GtkWidget *menuitem, GtkWidget *vtebox)
 void new_tab_with_locale(GtkWidget *local_menuitem, GtkWidget *menuitem)
 {
 #ifdef DEBUG
-	g_debug("! Launch new_tab_with_locale() with locale = %s", menuitem->name);
+	if (menuitem)
+		g_debug("! Launch new_tab_with_locale() with locale = %s and VTE_CJK_WIDTH = %s", menuitem->name, local_menuitem->name);
+	else
+		g_debug("! Launch new_tab_with_locale() with VTE_CJK_WIDTH = %s", local_menuitem->name);
 #endif
+	// g_debug("Got the VTE_CJK_WIDTH = %s", local_menuitem->name);
 	struct Page *page_data = (struct Page *)g_object_get_data(G_OBJECT(current_vtebox), "Page_Data");
 
-	// g_debug("Add page by %d to locale %s", current_vtebox, menuitem->name);
-	add_page(page_data->window, page_data->notebook, menuitem, menuitem->name, FALSE);
+	// menuitem == NULL: The locales_list in profile is empty. Only VTE_CJK_WIDTH is setted.
+	// if (menuitem)
+	//	g_debug("Add page by %p to locale %s", current_vtebox, menuitem->name);
+	if (menuitem)
+		add_page(page_data->window, page_data->notebook, menuitem,
+			 menuitem->name, NULL, FALSE, atoi(local_menuitem->name));
+	else
+		add_page(page_data->window, page_data->notebook, NULL, NULL, NULL,
+			 FALSE, atoi(local_menuitem->name));
 }
 
 void select_font(GtkWidget *widget, GtkWidget *window)

@@ -124,7 +124,7 @@ font_anti_alias = 0
 # 0: the font size is +/- 1 when resizing.
 font_resize_ratio = 0.000
 
-# The ratio when resizing window via right clieck menu.
+# The ratio when resizing window via right click menu.
 # 0: the font size is +/- 1 when resizing window.
 window_resize_ratio = 1.120
 
@@ -138,13 +138,13 @@ scrollback_lines = 1024
 # 0: don't use scrollbar; 1: scrollbar is on right; 2: scrollbar is on left.
 scrollbar_position = 1
 
-# Shows input method menu on right cilck menu.
+# Shows input method menu on right click menu.
 show_input_method_menu = 0
 
-# Shows get function key menu on right cilck menu.
+# Shows get function key menu on right click menu.
 show_get_function_key_menu = 1
 
-# Shows change page name menu on right cilck menu.
+# Shows change page name menu on right click menu.
 show_change_page_name_menu = 0
 
 # Enable hyperlink in vte terminal.
@@ -154,6 +154,10 @@ enable_hyperlink = 1
 # You may use zh_TW or zh_TW.Big5 here.
 # Left it blank will disable locale select menu items.
 locales_list = ja_JP.EUC-JP zh_CN.GB2312 zh_TW.Big5
+
+# The environment 'VTE_CJK_WIDTH' used when init a vte terminal.
+# 0: get via environment; 1: use narrow ideograph; 2: use wide ideograph
+VTE_CJK_WIDTH = 0
 
 
 [key]
@@ -195,40 +199,40 @@ move_tab_first = Ctrl Up
 move_tab_last = Ctrl Down
 
 # Switch to 1st tab directly.
-swith_to_tab_1 = Ctrl F1
+switch_to_tab_1 = Ctrl F1
 
 # Switch to 2nd tab directly.
-swith_to_tab_2 = Ctrl F2
+switch_to_tab_2 = Ctrl F2
 
 # Switch to 3rd tab directly.
-swith_to_tab_3 = Ctrl F3
+switch_to_tab_3 = Ctrl F3
 
 # Switch to 4th tab directly.
-swith_to_tab_4 = Ctrl F4
+switch_to_tab_4 = Ctrl F4
 
 # Switch to 5th tab directly.
-swith_to_tab_5 = Ctrl F5
+switch_to_tab_5 = Ctrl F5
 
 # Switch to 6th tab directly.
-swith_to_tab_6 = Ctrl F6
+switch_to_tab_6 = Ctrl F6
 
 # Switch to 7th tab directly.
-swith_to_tab_7 = Ctrl F7
+switch_to_tab_7 = Ctrl F7
 
 # Switch to 8th tab directly.
-swith_to_tab_8 = Ctrl F8
+switch_to_tab_8 = Ctrl F8
 
 # Switch to 9th tab directly.
-swith_to_tab_9 = Ctrl F9
+switch_to_tab_9 = Ctrl F9
 
 # Switch to 10th tab directly.
-swith_to_tab_10 = Ctrl F10
+switch_to_tab_10 = Ctrl F10
 
 # Switch to 11th tab directly.
-swith_to_tab_11 = Ctrl F11
+switch_to_tab_11 = Ctrl F11
 
 # Switch to 12th tab directly.
-swith_to_tab_12 = Ctrl F12
+switch_to_tab_12 = Ctrl F12
 
 # Select all the text in the Vte Terminal box.
 select_all = Ctrl O
@@ -262,16 +266,24 @@ reset_font_size = Ctrl Return
 # The web browser using for http(s)://
 web_browser = firefox
 web_method = 1
+web_VTE_CJK_WIDTH = 0
+web_environ = 
 
 # The ftp client using for ftp(s)://
 ftp_client = firefox
 ftp_method = 1
+ftp_VTE_CJK_WIDTH = 0
+ftp_environ = 
 
 # The file manager using for file://
 file_manager = firefox
 file_method = 1
+file_VTE_CJK_WIDTH = 0
+file_environ = 
 
 # The email client using for user@host
 email_client = thunderbird
 email_method = 1
+email_VTE_CJK_WIDTH = 0
+email_environ = 
 
