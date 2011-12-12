@@ -232,6 +232,8 @@ struct Window
 	gint init_tab_number;
 	// For -d option
 	gchar *init_dir;
+	// For -l option
+	gboolean login_shell;
 
 	// If the profile is specify with -u option.
 	gboolean use_custom_profile;
@@ -352,6 +354,7 @@ struct Window
 	struct User_Command user_command[COMMAND];
 	GtkWidget *menuitem_copy_url;
 
+	GtkWidget *menuitem_dim_text;
 	GtkWidget *menuitem_cursor_blinks;
 	GtkWidget *menuitem_audible_bell;
 	GtkWidget *menuitem_show_tabs_bar;
@@ -443,12 +446,15 @@ struct Window
 
 //	gboolean use_scrollback_lines;			/* May move to page_data */
 	gint scrollback_lines;				/* May move to page_data */
+	gboolean dim_text;
 	gboolean cursor_blinks;				/* May move to page_data */
 	gboolean audible_bell;				/* May move to page_data */
 	gboolean visible_bell;				/* May move to page_data */
 	gint erase_binding;				/* May move to page_data */
 
 // ---- other ---- //
+
+	gboolean confirm_to_close_multi_tabs;
 
 	gboolean query_encoding;
 	gboolean dialog_actived;
@@ -510,6 +516,7 @@ struct Page
 	gboolean is_bold;
 	// The text of current vte is 'inactived'
 	gboolean vte_is_inactived;
+	gboolean dim_text_expect;
 
 	// 'sleep': a program that is not using window-title.
 	// 'vim': a program that is using window-title.

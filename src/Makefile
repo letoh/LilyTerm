@@ -14,7 +14,7 @@ INCLUDES = -DENABLE_DEVELOP \
 	   -DENABLE_GDKCOLOR_TO_STRING \
 	   -DPACKAGE_NAME=\"LilyTerm\" \
 	   -DPACKAGE=\"lilyterm\" \
-	   -DVERSION=\"0.9.7\" \
+	   -DVERSION=\"0.9.8\" \
 	   -DPACKAGE_BUGREPORT=\"tetrlet@gmail.com\" \
 	   -DLOCALEDIR=\"$(datadir)/locale\" \
 	   -DICONDIR=\"$(datadir)/pixmaps\" \
@@ -82,9 +82,9 @@ data: compile
 	xgettext --from-code=UTF-8 -k_ -o ../po/lilyterm.pot *.c
 	msgmerge ../po/zh_TW.po ../po/lilyterm.pot -o ../po/zh_TW.po
 	msgfmt --check --statistics ../po/zh_TW.po -o /dev/null
-	msgmerge ../po/de.po ../po/lilyterm.pot -o ../po/de.po
+	msgmerge --previous ../po/de.po ../po/lilyterm.pot -o ../po/de.po
 	msgfmt --check --statistics ../po/de.po -o /dev/null
-	msgmerge ../po/tr.po ../po/lilyterm.pot -o ../po/tr.po
+	msgmerge --previous ../po/tr.po ../po/lilyterm.pot -o ../po/tr.po
 	msgfmt --check --statistics ../po/tr.po -o /dev/null
 	msgmerge ../po/zh_CN.po ../po/lilyterm.pot -o ../po/zh_CN.po
 	msgfmt --check --statistics ../po/zh_CN.po -o /dev/null

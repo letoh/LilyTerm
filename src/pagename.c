@@ -592,6 +592,7 @@ gboolean update_page_name(GtkWidget *window, GtkWidget *vte, gchar *page_name, G
 #endif
 		g_free(label_name);
 	}
+
 	// we should update window title if page name changed.
 	if (win_data->window_shows_current_page && (! custom_window_title))
 	{
@@ -599,6 +600,10 @@ gboolean update_page_name(GtkWidget *window, GtkWidget *vte, gchar *page_name, G
 
 		// we only update the window title for current page
 		// g_debug("current_page_no = %d, page_no = %d", current_page_no, page_no);
+
+		// FIXME: A dirty hack... current_page_no=-1 when creating a 2rd new window.
+		// if (win_data->adding_page && (current_page_no<0)) current_page_no = 0;
+
 		if (current_page_no == (page_no-1))
 		{
 			if (custom_page_name==NULL)
@@ -730,6 +735,7 @@ gint get_tpgid(pid_t pid)
 #endif
 		g_free(stat_path);
 	}
+	// g_debug("The pid =%d, tpgid=%d", pid, new_tpgid);
 	return new_tpgid;
 }
 

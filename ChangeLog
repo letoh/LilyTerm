@@ -1,3 +1,41 @@
+2009-12-15 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
+  version 0.9.8
+
+  FIX:
+	* Wrong pages may be closed when adjusting the color of page name.
+	* Wrong pages may be closed after confirm to close multi pages.
+	* New added tab may not get focus correctly, and it may cause segfault
+	  if close this tab immediately.
+	* The window title may not be updated when creating a new window.
+	* A compile warning when using clang as default compiler.
+	  VERY THANKS to caleb for reporting this bug.
+
+  New Feature:
+	* Applied updated German translation.
+	  VERY THANKS to Mario Blättermann.
+	* Applied updated Turkish translation.
+	  VERY THANKS to Samed Beyribey.
+	* Applied updated Simplified Chinese translation.
+	  VERY THANKS to caleb.
+	* A check box to exit lilyterm directly when closing multi pages or
+	  terminating a running command.
+	* May disable/enable the confirm dialog when closing multi pages via
+	  editing the profile. It is disabled by default.
+	* Using -l/--login option to make the shell be invoked as a login
+	  shell. VERY THANKS to caleb for reporting this bug.
+	* Support gnome-default-applications-properties, may configure
+	  lilyterm as a default x terminal emulator entry in the default
+	  applications preferences in GNOME control center.
+	  Please see the following links for more details:
+	  http://live.gnome.org/ControlCenter/AddingDefaultApplications
+	  You need to complie lilyterm with gnome-control-center-dev package
+	  (>2.24.0 I think) to enable this options.
+	  VERY THANKS to caleb for reporting this bug and providing the
+	  lilyterm.xml.
+	* New menu item: [Dim text when inactive].
+	* New menu item: [Exit LilyTerm].
+
 2009-9-6 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
 
   version 0.9.7

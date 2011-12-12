@@ -1,7 +1,6 @@
 BUG:
 
 *.h
-
 Trying to not use kill()
 Check every singal function for "gpointer user_data".
 How to init color data?

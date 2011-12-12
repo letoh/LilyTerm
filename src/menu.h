@@ -47,6 +47,7 @@ void clean_scrollback_lines(GtkWidget *widget, gpointer user_data);
 void reset_vte(GtkWidget *widget, gpointer user_data);
 void select_font(GtkWidget *widget, GtkWidget *window);
 void reset_vte_font_size(GtkWidget *widget, gboolean reset_all);
+void set_dim_text(GtkWidget *menuitem_dim_text, struct Window *win_data);
 void set_cursor_blinks(GtkWidget *widget, struct Window *win_data);
 void set_audible_bell(GtkWidget *widget, struct Window *win_data);
 void launch_hide_and_show_tabs_bar(GtkWidget *widget, gboolean show_tabs_bar);
@@ -54,5 +55,6 @@ void hide_and_show_tabs_bar(struct Window *win_data , gboolean show_tabs_bar);
 void copy_url_clipboard(GtkWidget *widget, gpointer user_data);
 void copy_clipboard(GtkWidget *widget, gpointer user_data);
 void paste_clipboard(GtkWidget *widget, gpointer user_data);
+void quit(GtkWidget *widget, gpointer user_data);
 
 #endif

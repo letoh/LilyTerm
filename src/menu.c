@@ -301,14 +301,14 @@ void create_menu(struct Window *win_data)
 		if (win_data->use_rgba)
 		{
 			// Transparent Window
-			win_data->menuitem_trans_win = gtk_check_menu_item_new_with_label (_("Transparent Window"));
+			win_data->menuitem_trans_win = gtk_check_menu_item_new_with_label (_("Transparent window"));
 			gtk_menu_shell_append(GTK_MENU_SHELL(win_data->menu), win_data->menuitem_trans_win);
 			g_signal_connect(win_data->menuitem_trans_win,
 					 "activate",
 					 G_CALLBACK(set_trans_win),
 					 win_data->window);
 		
-			menu_item = gtk_image_menu_item_new_with_label(_("Window Opacity"));
+			menu_item = gtk_image_menu_item_new_with_label(_("Window opacity"));
 			gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
 						      gtk_image_new_from_stock(GTK_STOCK_EXECUTE, GTK_ICON_SIZE_MENU));
 			gtk_menu_shell_append(GTK_MENU_SHELL(win_data->menu), menu_item);
@@ -320,14 +320,14 @@ void create_menu(struct Window *win_data)
 		}
 #endif
 		// Transparent Background
-		win_data->menuitem_trans_bg = gtk_check_menu_item_new_with_label (_("Transparent Background"));
+		win_data->menuitem_trans_bg = gtk_check_menu_item_new_with_label (_("Transparent background"));
 		gtk_menu_shell_append(GTK_MENU_SHELL(win_data->menu), win_data->menuitem_trans_bg);
 		g_signal_connect(win_data->menuitem_trans_bg,
 				 "activate",
 				 G_CALLBACK(set_trans_bg),
 				 win_data);
 	
-		menu_item = gtk_image_menu_item_new_with_label(_("Background Saturation"));
+		menu_item = gtk_image_menu_item_new_with_label(_("Background saturation"));
 		gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
 					      gtk_image_new_from_stock(GTK_STOCK_EXECUTE, GTK_ICON_SIZE_MENU));  
 		gtk_menu_shell_append(GTK_MENU_SHELL(win_data->menu), menu_item);
@@ -394,15 +394,27 @@ void create_menu(struct Window *win_data)
 	menu_item = gtk_separator_menu_item_new ();
 	gtk_menu_shell_append (GTK_MENU_SHELL (win_data->menu), menu_item);
 
+	if (win_data->dim_text)
+	{
+		// Dim when inactive
+	       	win_data->menuitem_dim_text = gtk_check_menu_item_new_with_label (_("Dim text when inactive"));
+		gtk_menu_shell_append(GTK_MENU_SHELL(win_data->menu), win_data->menuitem_dim_text);
+		g_signal_connect(win_data->menuitem_dim_text,
+				 "activate",
+				 G_CALLBACK(set_dim_text),
+				 win_data);
+	}
+
 	// Cursor Blinks
-	win_data->menuitem_cursor_blinks = gtk_check_menu_item_new_with_label (_("Cursor Blinks"));
+	win_data->menuitem_cursor_blinks = gtk_check_menu_item_new_with_label (_("Cursor blinks"));
 	gtk_menu_shell_append(GTK_MENU_SHELL(win_data->menu), win_data->menuitem_cursor_blinks);
 	g_signal_connect(win_data->menuitem_cursor_blinks,
 			 "activate",
 			 G_CALLBACK(set_cursor_blinks),
 			 win_data);
 
-	win_data->menuitem_audible_bell = gtk_check_menu_item_new_with_label (_("Audible Bell"));
+	// Audible bell
+	win_data->menuitem_audible_bell = gtk_check_menu_item_new_with_label (_("Audible bell"));
 	gtk_menu_shell_append(GTK_MENU_SHELL(win_data->menu), win_data->menuitem_audible_bell);
 	g_signal_connect(win_data->menuitem_audible_bell, "activate", G_CALLBACK(set_audible_bell), win_data);
 
@@ -525,6 +537,15 @@ void create_menu(struct Window *win_data)
 	//g_signal_connect(menu_item, "activate", G_CALLBACK(dialog), (gint *)6);
 	g_signal_connect(menu_item, "activate", G_CALLBACK(save_user_settings), win_data->current_vte);
 
+	// Exit LilyTerm
+	gchar *exit_str = g_strdup_printf(_("Quit %s"), PACKAGE_NAME);
+	menu_item = gtk_image_menu_item_new_with_label(_(exit_str));
+	gtk_image_menu_item_set_image(GTK_IMAGE_MENU_ITEM(menu_item),
+				      gtk_image_new_from_stock(GTK_STOCK_QUIT, GTK_ICON_SIZE_MENU));
+	gtk_menu_shell_append(GTK_MENU_SHELL(win_data->menu), menu_item);
+	g_signal_connect(menu_item, "activate", G_CALLBACK(quit), NULL);
+	g_free(exit_str);
+
 	gtk_widget_show_all(win_data->menu);
 }
 
@@ -587,6 +608,15 @@ void paste_clipboard(GtkWidget *widget, gpointer user_data)
 	struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(menu_active_window),
 								     "Win_Data");
 	vte_terminal_paste_clipboard(VTE_TERMINAL(win_data->current_vte));
+}
+
+void set_dim_text(GtkWidget *menuitem_dim_text, struct Window *win_data)
+{
+#ifdef DETAIL
+	g_debug("! Launch set_dim_text() with win_data = %p", win_data);
+#endif
+	win_data->dim_text = GTK_CHECK_MENU_ITEM(menuitem_dim_text)->active;
+	dim_vte_text(win_data, NULL, 2);
 }
 
 void set_cursor_blinks(GtkWidget *menuitem_cursor_blinks, struct Window *win_data)
@@ -921,4 +951,9 @@ void select_font(GtkWidget *widget, GtkWidget *window)
 		set_vte_font(NULL, 7);
 	}
 	gtk_widget_destroy(dialog);
+}
+
+void quit(GtkWidget *widget, gpointer user_data)
+{
+	gtk_main_quit();
 }

@@ -211,15 +211,42 @@ gboolean window_quit(GtkWidget *window, GdkEvent *event, struct Window *win_data
 #endif
 	menu_active_window = window;
 	gint total_page = gtk_notebook_get_n_pages(GTK_NOTEBOOK(win_data->notebook));
+	// g_debug("total_page = %d in window_quit()", total_page);
 	if (total_page>1)
-		// confirm to close multi pages.
-		dialog(NULL, 3);
+	{
+		if (win_data->confirm_to_close_multi_tabs)
+			// confirm to close multi pages.
+			dialog(NULL, 3);
+		else
+			close_multi_tabs(win_data);
+	}
 	else
 		close_page(win_data->current_vte, TRUE);
 	
 	// g_debug("Close window finish!");
 	// It will be segmentation fault if retrun FALSE
 	return TRUE;
+}
+
+void close_multi_tabs(struct Window *win_data)
+{
+	gint i;
+	GtkWidget *tmp_vte;
+	gint total_page = gtk_notebook_get_n_pages(GTK_NOTEBOOK(win_data->notebook));
+	// g_debug("total_page = %d in close_multi_tabs()", total_page);
+
+	for (i=total_page-1;i>-1;i--)
+	{
+		tmp_vte=(GtkWidget *)g_object_get_data(G_OBJECT(gtk_notebook_get_tab_label(
+							GTK_NOTEBOOK(win_data->notebook),
+							   gtk_notebook_get_nth_page(
+							      GTK_NOTEBOOK(
+								 win_data->notebook),i))),
+						      "VteBox");
+		// g_debug("Trying to close %d vte = %p", i, tmp_vte);
+		if (close_page(tmp_vte, TRUE)==FALSE)
+			break;
+	}
 }
 
 gboolean window_option(struct Window *win_data, gchar *encoding, int argc, char *argv[])
@@ -278,12 +305,17 @@ gboolean window_option(struct Window *win_data, gchar *encoding, int argc, char 
 				win_data->init_tab_number=1;
 			// g_debug("Init LilyTerm with %d page(s)!", init_tab_number);
 		}
+		else if ((!strcmp(argv[i], "-l")) || (!strcmp(argv[i], "-ls")) || (!strcmp(argv[i], "--login")))
+		{
+			win_data->login_shell = TRUE;
+		}
 		else if ((!strcmp(argv[i], "-e")) || (!strcmp(argv[i], "-x")) || (!strcmp(argv[i], "--execute")))
 		{
 			if (++i==argc)
 				g_critical("missing command after -e/-x/--execute option!\n");
 			else
 			{
+				win_data->login_shell = FALSE;
 				gint j;
 				GString *arg_str = g_string_new(NULL);
 				for (j=0; j<argc-i; j++)
@@ -648,18 +680,7 @@ gboolean window_get_focus(GtkWidget *window, GdkEventFocus *event, struct Window
 	menu_active_window = window;
 	// g_debug("set menu_active_window = %p", menu_active_window);
 
-	if (win_data->color_brightness != win_data->color_brightness_inactive)
-	{
-		struct Page *page_data = (struct Page *)g_object_get_data(G_OBJECT(win_data->current_vte),
-									  "Page_Data");
-		vte_terminal_set_colors(VTE_TERMINAL(win_data->current_vte),
-					&(win_data->fg_color),
-					&(win_data->bg_color),
-					win_data->color,
-					16);
-		vte_terminal_set_color_bold (VTE_TERMINAL(page_data->vte), &(win_data->fg_color));
-		page_data->vte_is_inactived = FALSE;
-	}
+	dim_vte_text(win_data, NULL, 0);
 
 	menu_actived = FALSE;
 	return FALSE;
@@ -672,21 +693,6 @@ gboolean window_lost_focus(GtkWidget *window, GdkEventFocus *event, struct Windo
 #endif
 	// g_debug("Window lost focus!");
 
-	if (win_data->using_custom_color &&
-	    (win_data->color_brightness != win_data->color_brightness_inactive) &&
-	    (! menu_actived) &&
-	    (! dialog_actived))
-	{
-		struct Page *page_data = (struct Page *)g_object_get_data(G_OBJECT(win_data->current_vte),
-									  "Page_Data");
-		page_data->vte_is_inactived = TRUE;
-		vte_terminal_set_colors(VTE_TERMINAL(win_data->current_vte),
-					&(win_data->fg_color_inactive),
-					&(win_data->bg_color),
-					win_data->color_inactive,
-					16);
-		vte_terminal_set_color_bold (VTE_TERMINAL(page_data->vte), &(win_data->fg_color_inactive));
-	}
 	if (win_data->page_shows_window_title &&
 	    (vte_terminal_get_window_title(VTE_TERMINAL(win_data->current_vte))!=NULL))
 	{
@@ -702,6 +708,7 @@ gboolean window_lost_focus(GtkWidget *window, GdkEventFocus *event, struct Windo
 		}
 	}
 	win_data->lost_focus = TRUE;
+	dim_vte_text(win_data, NULL, 1);
 	active_window = NULL;
 	return FALSE;
 }
@@ -1163,11 +1170,14 @@ void reorder_page_after_added_removed_page(struct Window *win_data, guint page_n
 		reorder_page_number(GTK_NOTEBOOK(win_data->notebook), NULL, 0, win_data->window);
 		win_data->adding_page = FALSE;
 
-		// g_debug("Set current page!");
+		// g_debug("Set current page to %d!", page_num);
 		// gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook), page_data->page_no);
 		gtk_notebook_set_current_page(GTK_NOTEBOOK(win_data->notebook), page_num);
-		// g_debug("Set focus!");
-		gtk_window_set_focus(GTK_WINDOW(win_data->window), win_data->current_vte);
+		// g_debug("Set focus to win_data->current_vte %p!", win_data->current_vte);
+		struct Page *page_data = get_page_data_from_nth_page(win_data, page_num);
+		
+		// gtk_window_set_focus(GTK_WINDOW(win_data->window), win_data->current_vte);
+		gtk_window_set_focus(GTK_WINDOW(win_data->window), page_data->vte);
 }
 
 void remove_notebook_page (GtkNotebook *notebook, GtkWidget *child, guint page_num, struct Window *win_data)
@@ -1182,9 +1192,8 @@ void remove_notebook_page (GtkNotebook *notebook, GtkWidget *child, guint page_n
 	if (total_page)
 	{
 		// g_debug("Update the hint data!");
-		struct Page *page_data = (struct Page *)g_object_get_data(
-								G_OBJECT(win_data->current_vte),
-								"Page_Data");
+		struct Page *page_data = (struct Page *)g_object_get_data(G_OBJECT(win_data->current_vte), "Page_Data");
+		// g_debug("win_data->current_vte = %p, page_data = %p", win_data->current_vte, page_data);
 		update_window_hint(win_data, page_data);
 
 		// g_debug("hide the tab bar if necessary");
@@ -1307,6 +1316,7 @@ void dump_data (struct Window *win_data, struct Page *page_data)
 	print_array("win_data->argv", win_data->argv);
 	g_debug("- win_data->command = %s", win_data->command);
 	g_debug("- win_data->init_tab_number = %d", win_data->init_tab_number);
+	g_debug("- win_data->login_shell = %d", win_data->login_shell);
 	g_debug("- win_data->init_dir = %s", win_data->init_dir);
 	g_debug("- win_data->use_custom_profile = %d", win_data->use_custom_profile);
 	g_debug("- win_data->profile = %s", win_data->profile);
@@ -1374,6 +1384,8 @@ void dump_data (struct Window *win_data, struct Page *page_data)
 	g_debug("- win_data->menuitem_copy_url = %p", win_data->menuitem_copy_url);
 	if (win_data->menuitem_copy_url)
 		g_debug("- win_data->menuitem_copy_url->name = %s", gtk_widget_get_name (win_data->menuitem_copy_url));
+	
+	g_debug("- win_data->menuitem_dim_text = %p", win_data->menuitem_dim_text);
 	g_debug("- win_data->menuitem_cursor_blinks = %p", win_data->menuitem_cursor_blinks);
 	g_debug("- win_data->menuitem_audible_bell = %p", win_data->menuitem_audible_bell);
 	g_debug("- win_data->menuitem_show_tabs_bar = %p", win_data->menuitem_show_tabs_bar);
@@ -1447,6 +1459,7 @@ void dump_data (struct Window *win_data, struct Page *page_data)
 //	g_debug("- win_data->use_scrollback_lines = %d", win_data->use_scrollback_lines);
 	g_debug("- win_data->show_scrollbar = %d", win_data->show_scrollbar);
 	g_debug("- win_data->scrollback_lines = %d", win_data->scrollback_lines);
+	g_debug("- win_data->dim_text = %d", win_data->dim_text);
 	g_debug("- win_data->cursor_blinks = %d", win_data->cursor_blinks);
 	g_debug("- win_data->audible_bell = %d", win_data->audible_bell);
 	g_debug("- win_data->visible_bell = %d", win_data->visible_bell);

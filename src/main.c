@@ -161,7 +161,7 @@ void command_option(int   argc,
 		}
 		else if ((!strcmp(argv[i], "-p")) || (!strcmp(argv[i], "--profile")))
 		{
-			g_print(save_user_settings(NULL, NULL)->str);
+			g_print("%s", save_user_settings(NULL, NULL)->str);
 			exit (0);
 		}
 		else if ((!strcmp(argv[i], "-s")) || (!strcmp(argv[i], "--separate")))
@@ -186,6 +186,8 @@ GString *got_help_message()
 	g_string_append( help_message,  _("Use -T/--title {title} to specify the window title.\n"));
 	g_string_append( help_message,  _("Use -t/--tab {number} to open multi tabs when start up.\n"));
 	g_string_append( help_message,  _("Use -d/--directory {directory} to specify the init directory when start up.\n"));
+	g_string_append( help_message,  _("Use -l/-ls/--login to make the shell invoked as a login shell.\n"));
+//	g_string_append( help_message,  _("\t\t\tThis option will be ignored when using with -e/-x/--execute option.\n"));
 	g_string_append( help_message,  _("Use -s/--separate to run in separate process.\n"));
 	g_string_append( help_message,  _("Use -v/--version to show the version information.\n"));
 	g_string_append( help_message,  _("Use -p/--profile to got a profile sample.\n"));

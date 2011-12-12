@@ -24,7 +24,12 @@ extern GtkWidget *active_window;
 extern GtkWidget *menu_active_window;
 extern GtkClipboard *pclipboard;
 
+extern gboolean dialog_actived;
+extern gboolean menu_actived;
+
+extern gboolean force_to_quit;
 gboolean menu_actived;
+gchar *login_shell_str[] = {"-", NULL};
 
 // prev_vte: the new vte will be the clone of prev_vte.
 // menuitem_encoding: using right menu to open a new vtw with specified locale.
@@ -62,6 +67,7 @@ struct Page *add_page(struct Window *win_data,
 // ---- Clone the page_data ---- //
 
 	struct Page *page_data = g_new0(struct Page, 1);
+	// g_debug ("init page_date = %p!!!", page_data);
 	if (page_data_prev)
 		page_data_dup(page_data_prev, page_data);
 	else
@@ -139,6 +145,7 @@ struct Page *add_page(struct Window *win_data,
 	//	vte_terminal_get_encoding(VTE_TERMINAL(page_data->vte)));
 
 	// save the data first
+	// g_debug("Save the data with page_data->vte = %p, page_data = %p", page_data->vte, page_data);
 	g_object_set_data(G_OBJECT(page_data->vte), "Page_Data", page_data);
 
 	//g_debug("call set_encoding() by %p to %s", page_data->vte, page_data->encoding_str);
@@ -155,10 +162,20 @@ struct Page *add_page(struct Window *win_data,
 	//	g_debug("cmmand line = %s", win_data->command);
 	//if (win_data->argv)
 	//	g_debug("parameters = %s", *(win_data->argv));
+	if ((win_data->argv==NULL) && win_data->login_shell)
+	{
+		// print_array("login_shell_str", login_shell_str);
+		page_data->pid = vte_terminal_fork_command(VTE_TERMINAL(page_data->vte),
+							   win_data->command, login_shell_str,
+							   new_environs, page_data->pwd, TRUE, TRUE, TRUE);
+	}
+	else
+	{
+		page_data->pid = vte_terminal_fork_command(VTE_TERMINAL(page_data->vte),
+							   win_data->command, win_data->argv,
+							   new_environs, page_data->pwd, TRUE, TRUE, TRUE);
+	}
 
-	page_data->pid = vte_terminal_fork_command(VTE_TERMINAL(page_data->vte),
-						   win_data->command, win_data->argv,
-						   new_environs, page_data->pwd, TRUE, TRUE, TRUE);
 	g_strfreev(new_environs);
 	// treat '-e option' as `custom_page_name'
 	if (win_data->argv != NULL && win_data->page_shows_current_cmdline)
@@ -175,8 +192,8 @@ struct Page *add_page(struct Window *win_data,
 	gtk_label_set_ellipsize(GTK_LABEL(page_data->label), PANGO_ELLIPSIZE_MIDDLE);
 	g_object_set_data(G_OBJECT(page_data->label), "VteBox", page_data->vte);
 	// when draging the tab on a vte, or draging a vte to itself, may change the size of vte.
-        g_signal_connect(G_OBJECT(page_data->label), "size_request",
-	                         G_CALLBACK(label_size_request), page_data);
+	g_signal_connect(G_OBJECT(page_data->label), "size_request",
+				 G_CALLBACK(label_size_request), page_data);
 
 	// create a hbox
 	page_data->hbox = gtk_hbox_new(FALSE, 0);
@@ -254,7 +271,7 @@ struct Page *add_page(struct Window *win_data,
 	if (page_data_prev)
 	{
 		gtk_notebook_reorder_child(GTK_NOTEBOOK(page_data->notebook), page_data->hbox,
-        	                                        page_data_prev->page_no + 1);
+							page_data_prev->page_no + 1);
 		// g_debug("New Page No after move to next to prev page = %d", page_data->page_no);
 	}
 	win_data->current_vte = page_data->vte;
@@ -327,10 +344,10 @@ struct Page *add_page(struct Window *win_data,
 void label_size_request (GtkWidget *label, GtkRequisition *requisition, struct Page *page_data)
 {
 #ifdef DETAIL
-        g_debug("! Launch label_size_request() with page_data = %p", page_data);
+	g_debug("! Launch label_size_request() with page_data = %p", page_data);
 #endif
-        struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(page_data->window), "Win_Data");
-        keep_window_size (win_data, page_data->vte, 0x3);
+	struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(page_data->window), "Win_Data");
+	keep_window_size (win_data, page_data->vte, 0x3);
 }
 
 gboolean close_page(GtkWidget *vte, gboolean need_safe_close)
@@ -340,17 +357,34 @@ gboolean close_page(GtkWidget *vte, gboolean need_safe_close)
 #endif
 
 	struct Page *page_data = (struct Page *)g_object_get_data(G_OBJECT(vte), "Page_Data");
-	// g_debug("Get page_data = %p when closing page!", page_data);
+	// g_debug("Get page_data = %p, vte = %p when closing page!", page_data, vte);
 
 	// g_debug("Deleting Page ID: %d\n", page_data->pid);
-	if (page_data->pid<1)
+	// need_safe_close = confirm to exit foreground running command
+	if ((force_to_quit) || (page_data->pid<1))
 		need_safe_close = FALSE;
 
 	// only "child_exited" don't need need_safe_close to kill SHELL
 	if (need_safe_close)
-		if (page_data->pid != get_tpgid(page_data->pid))
-			if (dialog(NULL, 7)==FALSE)
+	{
+		pid_t tpgid = get_tpgid(page_data->pid);
+		if (page_data->pid != tpgid)
+		{
+			// g_debug("Got page_data->pid = %d, tpgid = %d", page_data->pid, tpgid);
+
+			// We need to set "win_data->current_vte = vte", or wrong page may be closed.
+			struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(page_data->window), "Win_Data");
+			GtkWidget *current_vte_orig = win_data->current_vte;
+			win_data->current_vte = vte;
+			gboolean return_value;
+
+			return_value = dialog(NULL, 7);
+			// restore win_data->current_vte
+			win_data->current_vte = current_vte_orig;
+			if (! return_value)
 				return FALSE;
+		}
+	}
 
 	// remove timeout event for page_shows_current_cmdline
 	if (page_data->page_shows_current_cmdline || page_data->page_shows_current_dir || page_data->page_shows_window_title)
@@ -358,7 +392,7 @@ gboolean close_page(GtkWidget *vte, gboolean need_safe_close)
 		g_source_remove (page_data->timeout_id);
 
 	// kill running shell
-	if (need_safe_close)
+	if (need_safe_close || force_to_quit)
 	{
 		// FIXME: Trying to not use kill()?
 		// if the tab is not close by <Ctrl><D>, we need to launch kill()
@@ -462,17 +496,8 @@ void vte_grab_focus(GtkWidget *vte, gpointer user_data)
 	//if (win_data->lost_focus)
 	//	return;
 
-	if (page_data->vte_is_inactived)
-	{
-		vte_terminal_set_colors(VTE_TERMINAL(win_data->current_vte),
-					&(win_data->fg_color),
-					&(win_data->bg_color),
-					win_data->color,
-					16);
-		vte_terminal_set_color_bold (VTE_TERMINAL(page_data->vte), &(win_data->fg_color));
-		page_data->vte_is_inactived = FALSE;
-	}
-
+	// Recover the dim text of vte
+	dim_vte_text (win_data, page_data, 0);
 
 	// Don't update page name when win_data->kill_color_demo_vte.
 	// Or LilyTerm will got warning: "Failed to set text from markup due to error parsing markup"
@@ -547,6 +572,79 @@ void vte_grab_focus(GtkWidget *vte, gpointer user_data)
 					  FALSE);
 		}
 	}
+}
+
+// dim_text = 0: dim the vte
+// dim_text = 1: light up the vte
+// dim_text = 2: auto detect
+void dim_vte_text (struct Window *win_data, struct Page *page_data, gint dim_text)
+{
+#ifdef DETAIL
+	g_debug("! Launch dim_vte_text() with win_data = %p, page_data = %p, dim_text = %d",
+		win_data, page_data, dim_text);
+#endif
+
+	// dim_type = TRUE: dim the vte
+	// dim_type = FALSE: light up the vte
+	gint dim_type = FALSE;
+
+	// if page_data==NULL, using "win_data->current_vte"
+	if (! page_data)
+		page_data = (struct Page *)g_object_get_data(G_OBJECT(win_data->current_vte), "Page_Data");
+
+	if (dim_text==2)
+	{
+		if (win_data->dim_text)
+			dim_type = page_data->dim_text_expect;
+		else
+			dim_type = FALSE;
+	}
+	else
+	{
+		page_data->dim_text_expect = FALSE;
+		if (dim_text)
+		{
+			// Trying to check if we should dim the vte
+			// g_debug("menu_actived = %d, dialog_actived = %d, win_data->lost_focus = %d",
+			//	menu_actived, dialog_actived, win_data->lost_focus);
+			if ((! menu_actived) && (! dialog_actived) && (win_data->lost_focus))
+			{
+				page_data->dim_text_expect = TRUE;
+				if (win_data->dim_text)
+					dim_type = TRUE;
+			}
+		}
+	}
+	
+	// Sometimes we should to force light up the vte
+	if ((! win_data->using_custom_color))
+		dim_type = FALSE;
+	
+	// g_debug("CHECK: dim_type = %d, page_data->vte_is_inactived = %d", dim_type, page_data->vte_is_inactived);
+
+	if (page_data->vte_is_inactived != dim_type)
+	{
+		if (dim_type)
+		{
+			vte_terminal_set_colors(VTE_TERMINAL(page_data->vte),
+						&(win_data->fg_color_inactive),
+						&(win_data->bg_color),
+						win_data->color_inactive,
+						16);
+			vte_terminal_set_color_bold (VTE_TERMINAL(page_data->vte), &(win_data->fg_color_inactive));
+		}
+		else
+		{
+			vte_terminal_set_colors(VTE_TERMINAL(page_data->vte),
+						&(win_data->fg_color),
+						&(win_data->bg_color),
+						win_data->color,
+						16);
+			vte_terminal_set_color_bold (VTE_TERMINAL(page_data->vte), &(win_data->fg_color));
+		}
+		page_data->vte_is_inactived = dim_type;
+	}
+	// g_debug("FINAL: dim_type = %d, page_data->vte_is_inactived = %d", dim_type, page_data->vte_is_inactived);
 }
 
 gboolean vte_button_press(GtkWidget *vte, GdkEventButton *event, gpointer user_data)
@@ -657,6 +755,8 @@ gboolean vte_button_press(GtkWidget *vte, GdkEventButton *event, gpointer user_d
 
 		// if (page_data->use_scrollback_lines)
 		// GTK_CHECK_MENU_ITEM(win_data->menuitem_scrollback_lines)->active = page_data->use_scrollback_lines;
+		if (win_data->dim_text)
+			GTK_CHECK_MENU_ITEM(win_data->menuitem_dim_text)->active = win_data->dim_text;
 		GTK_CHECK_MENU_ITEM(win_data->menuitem_cursor_blinks)->active = win_data->cursor_blinks;
 		GTK_CHECK_MENU_ITEM(win_data->menuitem_audible_bell)->active = win_data->audible_bell;
 

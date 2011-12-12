@@ -24,6 +24,7 @@ extern struct Page_Color page_color[PAGE_COLOR];
 
 struct ErrorData err_str;
 gboolean dialog_actived;
+gboolean force_to_quit = FALSE;
 
 gboolean dialog(GtkWidget *widget, gint style)
 {
@@ -87,7 +88,7 @@ gboolean dialog(GtkWidget *widget, gint style)
 	// temp_str: SHOULD be free()
 	gchar *string=NULL, *temp_str[2]={NULL};
 	GtkWidget *dialog = NULL, *main_hbox, *icon_vbox, *icon = NULL, *main_right_vbox,
-		  *state_vbox, *title_hbox, *title = NULL, *label, *entry = NULL,
+		  *state_vbox, *title_hbox, *title = NULL, *label=NULL, *entry = NULL,
 		  *entry_hbox = NULL, *key_value_label = NULL, *state_bottom_hbox;
 	gboolean response = TRUE;
 
@@ -106,7 +107,8 @@ gboolean dialog(GtkWidget *widget, gint style)
 		{
 			page_data = (struct Page *)g_object_get_data(G_OBJECT(win_data->current_vte), "Page_Data");
 
-			// g_debug("Get win_data = %p when creating dialog!", win_data);
+			// g_debug("Get win_data = %p, page_data = %p, current_vte = %p when creating dialog!",
+			//	win_data, page_data, win_data->current_vte);
 			// For change the text color of tab
 			dialog_data->total_page = gtk_notebook_get_n_pages(GTK_NOTEBOOK(
 										page_data->notebook));
@@ -690,8 +692,12 @@ gboolean dialog(GtkWidget *widget, gint style)
 	// state_vbox
 	switch (style)
 	{
+		case 7:
+			if (dialog_data->total_page>1 && win_data->confirm_to_close_multi_tabs)
+				break;
 		case 1:
 		case 2:
+		case 3:
 		case 4:
 		case 8:
 		case 19:
@@ -767,6 +773,15 @@ gboolean dialog(GtkWidget *widget, gint style)
 			gtk_box_pack_end (GTK_BOX(entry_hbox), hbox, FALSE, FALSE, 5);
 			break;
 		}
+		case 7:
+			if (dialog_data->total_page>1 && win_data->confirm_to_close_multi_tabs)
+				break;
+		case 3:
+			label = gtk_check_button_new_with_label(_("Force to close all the tabs and windows!"));
+			gtk_box_pack_start (GTK_BOX(entry_hbox), label, FALSE, FALSE, 0);
+			GTK_WIDGET_UNSET_FLAGS(label, GTK_CAN_FOCUS);
+			// g_debug("LABEL is initd!!!");
+			break;
 		case 4:
 			label = gtk_label_new (_("Key Value:"));
 			gtk_box_pack_start (GTK_BOX(entry_hbox), label, FALSE, FALSE, 0);
@@ -834,6 +849,9 @@ gboolean dialog(GtkWidget *widget, gint style)
 						G_CALLBACK(adjest_vte_color), page_data->vte);
 
 			// add new pages to PAGE_COLOR+1.
+			// g_debug("dialog_data->total_page = %d, current_page = %d",
+			//	dialog_data->total_page, gtk_notebook_get_current_page(GTK_NOTEBOOK(win_data->notebook)));
+			// The new pages will added next to 1st page!
 			for (i=dialog_data->total_page;i<=PAGE_COLOR;i++)
 				add_page(win_data,
 					 page_data,
@@ -894,8 +912,7 @@ gboolean dialog(GtkWidget *widget, gint style)
 		}
 		case 19:
 		{
-			// win_data->using_custom_color = FALSE :
-			// the color data of this page is not inited.
+			// win_data->using_custom_color = FALSE: the color data of this page is not inited.
 			if ( ! (win_data->using_custom_color))
 			{
 				// save the datas for default theme.
@@ -1055,24 +1072,27 @@ gboolean dialog(GtkWidget *widget, gint style)
 #ifdef DETAIL
 				g_debug("+ destory dialog %p before confirm a working vte", dialog);
 #endif
-				gtk_widget_destroy(dialog);
-				gint i;
-				GtkWidget *tmp_vte;
-
-				for (i=dialog_data->total_page-1;i>-1;i--)
+				if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(label)))
 				{
-					tmp_vte=(GtkWidget *)g_object_get_data(G_OBJECT(gtk_notebook_get_tab_label(
-										GTK_NOTEBOOK(win_data->notebook),
-										   gtk_notebook_get_nth_page(
-										      GTK_NOTEBOOK(
-										    	 win_data->notebook),i))),
-									      "VteBox");
-					if (close_page(tmp_vte, TRUE)==FALSE)
-						break;
+					gtk_main_quit();
+					force_to_quit = TRUE;
 				}
+
+				gtk_widget_destroy(dialog);
+				close_multi_tabs(win_data);
+				
 				break;
 			}
-			
+			case 7:
+				if (dialog_data->total_page==1)
+				{
+					if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(label)))
+					{
+						gtk_main_quit();
+						force_to_quit = TRUE;
+					}
+				}
+				break;
 			// style 4: get function key value, copy the text to clipboard
 			case 4:
 				gtk_clipboard_set_text (gtk_clipboard_get (GDK_SELECTION_PRIMARY),
@@ -1420,10 +1440,11 @@ void recover_page_colors(GtkWidget *dialog, GtkWidget *window, GtkWidget *notebo
 	win_data->kill_color_demo_vte = TRUE;
 	for (i=PAGE_COLOR+1; i>dialog_data->total_page;i--)
 	{
+		// New pages is added to next to 1st page!
 		vte=(GtkWidget *)g_object_get_data(G_OBJECT(gtk_notebook_get_tab_label(
 							GTK_NOTEBOOK(notebook),
 							   gtk_notebook_get_nth_page(
-							      GTK_NOTEBOOK(notebook),i-1))),
+							      GTK_NOTEBOOK(notebook), 1))),
 						      "VteBox");
 		// g_debug("Closing %d page in recover_page_colors...", i);
 		close_page (vte, TRUE);
@@ -1539,3 +1560,16 @@ gboolean set_ansi_color(GtkRange *range, GtkScrollType scroll, gdouble value, Gt
 
 	return FALSE;
 }
+
+//void err_page_data_is_null(gchar *function_name)
+//{
+//	gchar *err_msg = g_strdup_printf("%s: page_data = NULL\n\n"
+//					 "Please report bug to %s, Thanks!",
+//					 function_name,
+//					 PACKAGE_BUGREPORT);
+//	error_dialog(NULL, err_msg, NULL, 18);
+//#ifdef DETAIL
+//	g_debug("* free err_msg %p (%s) in set_encoding()", err_msg, err_msg);
+//#endif
+//	g_free(err_msg);
+//}

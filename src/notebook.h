@@ -52,6 +52,7 @@ void label_size_request (GtkWidget *label, GtkRequisition *requisition, struct P
 gboolean close_page (GtkWidget *vte, gboolean need_safe_close);
 gboolean vte_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 void vte_grab_focus(GtkWidget *vte, gpointer user_data);
+void dim_vte_text (struct Window *win_data, struct Page *page_data, gint dim_text);
 void vte_style_set (GtkWidget *vte, GtkStyle *previous_style, gpointer user_data);
 void vte_size_request (GtkWidget *vte, GtkRequisition *requisition, gpointer user_data);
 void vte_size_allocate (GtkWidget *vte, GtkAllocation *allocation, gpointer user_data);

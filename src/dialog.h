@@ -73,4 +73,5 @@ void recover_page_colors(GtkWidget *dialog, GtkWidget *window, GtkWidget *notebo
 void error_dialog(struct Window *win_data, gchar *error_message, gchar *encoding, gint style);
 gboolean set_ansi_color(GtkRange *range, GtkScrollType scroll, gdouble value, GtkWidget *vte);
 void adjest_vte_color (GtkColorSelection *colorselection, GtkWidget *vte);
+// void err_page_data_is_null(gchar *function_name);
 #endif

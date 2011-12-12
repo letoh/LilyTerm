@@ -53,6 +53,7 @@ GtkNotebook *new_window(int argc,
 void set_window_icon(GtkWidget *window);
 gboolean window_option(struct Window *win_data, gchar *encoding, int argc, char *argv[]);
 gboolean window_quit(GtkWidget *window, GdkEvent *event, struct Window *win_data);
+void close_multi_tabs(struct Window *win_data);
 gchar *got_profile_sample();
 gboolean window_key_press(GtkWidget *widget, GdkEventKey *event, struct Window *win_data);
 void deal_key_press(GtkWidget *window, gint type, struct Window *win_data);

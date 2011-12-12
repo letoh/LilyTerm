@@ -158,6 +158,7 @@ void init_window_parameters(struct Window *win_data)
 	win_data->enable_hyperlink = TRUE;
 	// win_data->User_Command user_command[COMMAND];
 	// win_data->menuitem_copy_url;
+	// win_data->menuitem_dim_text;
 	// win_data->menuitem_cursor_blinks;
 	// win_data->menuitem_audible_bell;
 	// win_data->menuitem_show_tabs_bar;
@@ -222,8 +223,10 @@ void init_window_parameters(struct Window *win_data)
 	win_data->scrollbar_position = 1;
 	win_data->transparent_background = 2;
 	win_data->background_saturation = 0.15;
+	win_data->confirm_to_close_multi_tabs = FALSE;
 	win_data->scrollback_lines = 1024;
 	win_data->cursor_blinks = TRUE;
+	win_data->dim_text = TRUE;
 	win_data->audible_bell = TRUE;
 	// win_data->visible_bell = FALSE;
 	win_data->erase_binding = VTE_ERASE_ASCII_DELETE;
@@ -732,6 +735,9 @@ void get_user_settings(GtkWidget *window, struct Window *win_data, gchar *encodi
 			win_data->background_saturation = check_double_value(keyfile, "main", "background_saturation",
 									     win_data->background_saturation);
 
+			win_data->confirm_to_close_multi_tabs = check_boolean_value(keyfile, "main",
+										    "confirm_to_close_multi_tabs",
+										    win_data->confirm_to_close_multi_tabs);
 			win_data->show_transparent_menu = check_boolean_value(keyfile, "main", "show_transparent_menu",
 								    win_data->show_transparent_menu);
 
@@ -979,8 +985,11 @@ void get_user_settings(GtkWidget *window, struct Window *win_data, gchar *encodi
 										 "color",
 										 "inactive_brightness",
 										 win_data->color_brightness);
-			if (win_data->color_brightness_inactive != win_data->color_brightness_inactive)
+			if (win_data->color_brightness != win_data->color_brightness_inactive)
 				win_data->using_custom_color = TRUE;
+			else
+				win_data->dim_text = FALSE;
+			// g_debug("win_data->dim_text = %d", win_data->dim_text);
 		}
 		else
 		{
@@ -1684,7 +1693,7 @@ GString *save_user_settings(GtkWidget *widget, GtkWidget *vte)
 	}
 	
 	contents = g_string_new("[main]\n\n");
-	g_string_append_printf(contents,"# The version of this profile's format.\n"
+	g_string_append_printf(contents,"# The version of this profile's format. DO NOT EDIT IT!\n"
 					"version = %s\n\n", RCFILE_FORMAT_VERSION);
 	if (vte)
 	{
@@ -1725,6 +1734,8 @@ GString *save_user_settings(GtkWidget *widget, GtkWidget *vte)
 					"transparent_background = %d\n\n", win_data->transparent_background>0);
 	g_string_append_printf(contents,"# The saturation of transparent background.\n"
 					"background_saturation = %1.3f\n\n", win_data->background_saturation);
+       g_string_append_printf(contents,"# Comfirm to close multi tabs.\n"
+					"confirm_to_close_multi_tabs = %d\n\n", win_data->confirm_to_close_multi_tabs);
 	g_string_append_printf(contents,"# Shows [Transparent Background], [Background Saturation]\n"
 					"# [Transparent Window] and [Window Opacity] on right click menu.\n"
 					"show_transparent_menu = %d\n\n", win_data->show_transparent_menu);
@@ -2101,6 +2112,7 @@ void win_data_dup(struct Window *win_data_orig, struct Window *win_data)
 						win_data->user_command[i].environ, " ", -1);
 	}
 	win_data->menuitem_copy_url = NULL;
+	win_data->menuitem_dim_text = NULL;
 	win_data->menuitem_cursor_blinks = NULL;
 	win_data->menuitem_audible_bell = NULL;
 	win_data->menuitem_show_tabs_bar = NULL;
@@ -2178,6 +2190,7 @@ void win_data_dup(struct Window *win_data_orig, struct Window *win_data)
 	// win_data->transparent_background;
 	// win_data->background_saturation;
 	// win_data->scrollback_lines;
+	// win_data->dim_text;
 	// win_data->cursor_blinks;
 	// win_data->audible_bell;
 	// win_data->visible_bell;
