@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-07-28 13:57+0800\n"
+"POT-Creation-Date: 2009-09-06 15:39+0800\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,87 +16,89 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: dialog.c:119 menu.c:349
+#: dialog.c:148 menu.c:449
 msgid "Rename this tab"
 msgstr ""
 
-#: dialog.c:122
+#: dialog.c:151
 msgid "Change the saturation of background"
 msgstr ""
 
-#: dialog.c:125
+#: dialog.c:154
 msgid "Confirm to close multi tabs"
 msgstr ""
 
-#: dialog.c:128
+#: dialog.c:157
 msgid "Get the key value for using in profile"
 msgstr ""
 
-#: dialog.c:131 menu.c:406
-msgid "Usage"
+#: dialog.c:160
+#, c-format
+msgid "Usage for %s %s"
 msgstr ""
 
-#: dialog.c:134
+#: dialog.c:163
 msgid "Error when writing profile"
 msgstr ""
 
-#: dialog.c:137
+#: dialog.c:166
 msgid "Confirm to close running foreground program"
 msgstr ""
 
-#: dialog.c:140
+#: dialog.c:169
 msgid "Change the opacity of window"
 msgstr ""
 
-#: dialog.c:143
+#: dialog.c:172
 msgid "Change the foreground color in terminal"
 msgstr ""
 
-#: dialog.c:146
+#: dialog.c:175
 msgid "Change the background color in terminal"
 msgstr ""
 
-#: dialog.c:149
-msgid "Change the command line color on tab"
+#: dialog.c:183 menu.c:282
+#, c-format
+msgid "Change the %s color on tab"
 msgstr ""
 
-#: dialog.c:152
-msgid "Change the current directory color on tab"
-msgstr ""
-
-#: dialog.c:155
-msgid "Change the custom tab text color"
-msgstr ""
-
-#: dialog.c:158
-msgid "Change the root privileges color on tab"
-msgstr ""
-
-#: dialog.c:161
-msgid "Change the normal tab text color"
-msgstr ""
-
-#: dialog.c:164
+#: dialog.c:187
 msgid "Error when creating child process"
 msgstr ""
 
-#: dialog.c:167
+#: dialog.c:190
 msgid "The following error is occurred:"
 msgstr ""
 
-#: dialog.c:365
+#: dialog.c:193 dialog.c:578
+msgid "Adjust the brightness of ANSI colors used in terminal"
+msgstr ""
+
+#: dialog.c:196
+msgid "The format of your profile is out of date"
+msgstr ""
+
+#: dialog.c:199
+msgid "The format of socket data is out of date"
+msgstr ""
+
+#: dialog.c:202
+msgid "Confirm to execute -e/-x/--execute command"
+msgstr ""
+
+#: dialog.c:458
 msgid "Please input the Label Name of this tab:"
 msgstr ""
 
-#: dialog.c:368
+#: dialog.c:461
 msgid "Change the Saturation of background:"
 msgstr ""
 
-#: dialog.c:371
+#: dialog.c:464
 msgid "You are about to close multi tabs. Continue anyway?"
 msgstr ""
 
-#: dialog.c:374
+#: dialog.c:467
 msgid ""
 "You may press any key here to get the key value for using in profile.\n"
 "\n"
@@ -104,307 +106,363 @@ msgid ""
 "And press [Close] to exit."
 msgstr ""
 
-#: dialog.c:390
+#: dialog.c:489
 #, c-format
-msgid ""
-"Error while writing profile '%s':\n"
-"\n"
-"%s"
+msgid "Error while writing profile '%s':"
 msgstr ""
 
-#: dialog.c:393
+#: dialog.c:499
 #, c-format
-msgid ""
-"Error while writing profile '%s/%s':\n"
-"\n"
-"%s"
+msgid "There is still a running foreground program on #%d tab:"
 msgstr ""
 
-#: dialog.c:401
-#, c-format
-msgid ""
-"There is still a running foreground program on #%d tab:\n"
-"\n"
-"\t%s\n"
-"\n"
-"Continue anyway?\n"
+#: dialog.c:505 dialog.c:610
+msgid "Continue anyway?"
 msgstr ""
 
-#: dialog.c:408
+#: dialog.c:512
 msgid "Change the Opacity of window:"
 msgstr ""
 
-#: dialog.c:468
-#, c-format
-msgid ""
-"Error while creating the child process:\n"
-"\n"
-"%s"
+#: dialog.c:568
+msgid "Error while creating the child process:"
 msgstr ""
 
-#: dialog.c:550
+#: dialog.c:584
+msgid ""
+"Some entry in profile is added, removed, or changed in this version.\n"
+"Please use [Save settings] on the right click menu to save your settings,\n"
+"and edit it manually if necessary.\n"
+msgstr ""
+
+#: dialog.c:587
+#, c-format
+msgid ""
+"%s\n"
+"Your profile is %s."
+msgstr ""
+
+#: dialog.c:593
+#, c-format
+msgid ""
+"The data got from socket seems incorrect.\n"
+"If you just updated %s recently,\n"
+"Please close all the windows of %s and try again."
+msgstr ""
+
+#: dialog.c:608
+msgid "is trying to execute the following command:"
+msgstr ""
+
+#: dialog.c:707
 msgid "Label Name:"
 msgstr ""
 
-#: dialog.c:589
+#: dialog.c:771
 msgid "Key Value:"
 msgstr ""
 
-#: dialog.c:677 dialog.c:1034
+#: dialog.c:862 dialog.c:1384
 msgid "Bold Demo Text"
 msgstr ""
 
-#: dialog.c:681
-msgid "Running Command"
-msgstr ""
-
-#: dialog.c:685
-msgid "Current Dir"
-msgstr ""
-
-#: dialog.c:689
-msgid "Custom Tab Name"
-msgstr ""
-
-#: dialog.c:693
-msgid "Root Privileges"
-msgstr ""
-
-#: dialog.c:697
-msgid "Normal Text"
-msgstr ""
-
-#: main.c:125
+#: main.c:183
 #, c-format
 msgid ""
 "%s is a libvte based X Terminal Emulator.\n"
 "\n"
 msgstr ""
 
-#: main.c:126
+#: main.c:184
 msgid ""
 "Use -e/-x/--execute {Command} to run a command when start up. (Must be the "
 "final option).\n"
 msgstr ""
 
-#: main.c:128
+#: main.c:186
+msgid "Use -T/--title {title} to specify the window title.\n"
+msgstr ""
+
+#: main.c:187
 msgid "Use -t/--tab {number} to open multi tabs when start up.\n"
 msgstr ""
 
-#: main.c:129
+#: main.c:188
+msgid ""
+"Use -d/--directory {directory} to specify the init directory when start up.\n"
+msgstr ""
+
+#: main.c:189
 msgid "Use -s/--separate to run in separate process.\n"
 msgstr ""
 
-#: main.c:130
+#: main.c:190
 msgid "Use -v/--version to show the version information.\n"
 msgstr ""
 
-#: main.c:131
+#: main.c:191
 msgid "Use -p/--profile to got a profile sample.\n"
 msgstr ""
 
-#: main.c:133
+#: main.c:193
 #, c-format
 msgid ""
 "Use -u/--user_profile {%s} to use a specified profile.\n"
 "\n"
 msgstr ""
 
-#: main.c:136
+#: main.c:196
 #, c-format
 msgid "The %s system config is: %s/%s\n"
 msgstr ""
 
-#: main.c:138
+#: main.c:200
 #, c-format
 msgid ""
 "And your %s profile is: %s/%s\n"
 "\n"
 msgstr ""
 
-#: main.c:140
+#: main.c:202
 msgid ""
 "Default shortcut key: (It may custom by editing user's profile)\n"
 "\n"
 msgstr ""
 
-#: main.c:141
+#: main.c:203
 msgid ""
 "  * <Ctrl><`>\t\tDisable/Enable hyperlinks, function keys and right click "
 "menu\n"
 msgstr ""
 
-#: main.c:142
+#: main.c:204
 msgid "  * <Ctrl><T/Q>\t\tAdd a New tab/Close current tab\n"
 msgstr ""
 
-#: main.c:143
+#: main.c:205
+msgid "\t\t\t(Using <Ctrl><D> or 'exit' to close tabs is recommended)\n"
+msgstr ""
+
+#: main.c:206
 msgid "  * <Ctrl><E>\t\tRename current tab\n"
 msgstr ""
 
-#: main.c:144
+#: main.c:207
 msgid "  * <Ctrl><PgUp/PgDn>\tSwitch to Prev/Next tab\n"
 msgstr ""
 
-#: main.c:145
+#: main.c:208
 msgid "  * <Ctrl><Home/End>\tSwitch to First/Last tab\n"
 msgstr ""
 
-#: main.c:146
+#: main.c:209
 msgid "  * <Ctrl><Left/Right>\tMove current page Forward/Backward\n"
 msgstr ""
 
-#: main.c:147
+#: main.c:210
 msgid "  * <Ctrl><Up/Down>\tMove current page to First/Last\n"
 msgstr ""
 
-#: main.c:148
+#: main.c:211
 msgid "  * <Ctrl><F1~F12>\tSwitch to 1st ~ 12th tab\n"
 msgstr ""
 
-#: main.c:149
+#: main.c:212
 msgid "  * <Ctrl><O>\t\tSelect all the text in the Vte Terminal box\n"
 msgstr ""
 
-#: main.c:150
-msgid "  * <Ctrl><X>\t\tCopy the text to clipboard\n"
-msgstr ""
-
-#: main.c:151
-msgid "  * <Ctrl><V>\t\tPast the text in clipboard\n"
-msgstr ""
-
-#: main.c:152
-msgid "  * <Ctrl><+/->\t\tIncrease/Decrease the font size of current tab\n"
-msgstr ""
-
-#: main.c:153
-msgid "  * <Ctrl><Enter>\tReset the font size of current tab\n"
-msgstr ""
-
-#: main.c:154
-msgid "  * <Shift><Insert>\tPast the text in primary clipboard\n"
-msgstr ""
-
-#: main.c:155
+#: main.c:213
 msgid ""
-"\t\t\t(i.e. Emulate a middle button mouse click to past the text)\n"
+"  * <Ctrl><X/V>\t\tCopy the text to clipboard / Paste the text in clipboard\n"
+msgstr ""
+
+#: main.c:214
+msgid ""
+"  * <Ctrl><+/-/Enter>\tIncrease/Decrease/Reset the font size of current tab\n"
+msgstr ""
+
+#: main.c:215
+msgid ""
+"  * <Alt><F11/Enter>\tSwitch between fullwindow/unfullwindow and fullscreen/"
+"unfullscreen state\n"
+msgstr ""
+
+#: main.c:216
+msgid "  * <Shift><Insert>\tPaste the text in primary clipboard\n"
+msgstr ""
+
+#: main.c:217
+msgid ""
+"\t\t\t(i.e. Emulate a middle button mouse click to paste the text)\n"
 "\n"
 msgstr ""
 
-#: main.c:157
+#: main.c:219
 #, c-format
 msgid "Please report bug to %s. Thank you for using %s!\n"
 msgstr ""
 
-#: menu.c:70
+#: menu.c:91
 msgid "Change text encoding"
 msgstr ""
 
-#: menu.c:80
+#: menu.c:103
 msgid "New tab with specified locale"
 msgstr ""
 
-#: menu.c:82
+#: menu.c:105
 msgid "New tab"
 msgstr ""
 
-#: menu.c:157 menu.c:160
+#: menu.c:176 menu.c:179
 msgid " (Wide)"
 msgstr ""
 
-#: menu.c:205
+#: menu.c:240
 msgid "Change the font"
 msgstr ""
 
-#: menu.c:215
+#: menu.c:250
 msgid "Change colors"
 msgstr ""
 
-#: menu.c:223
+#: menu.c:258
 msgid "Change the foreground color"
 msgstr ""
 
-#: menu.c:230
+#: menu.c:265
 msgid "Change the background color"
 msgstr ""
 
-#: menu.c:239
-msgid "Change the cmdline color on tab"
+#: menu.c:272
+msgid "Adjust the brightness of ANSI colors"
 msgstr ""
 
-#: menu.c:246
-msgid "Change the dir color on tab"
-msgstr ""
-
-#: menu.c:253
-msgid "Change the custom color on tab"
-msgstr ""
-
-#: menu.c:260
-msgid "Change the root color on tab"
-msgstr ""
-
-#: menu.c:267
-msgid "Change the normal color on tab"
-msgstr ""
-
-#: menu.c:285
+#: menu.c:304
 msgid "Transparent Window"
 msgstr ""
 
-#: menu.c:289
+#: menu.c:311
 msgid "Window Opacity"
 msgstr ""
 
-#: menu.c:301
+#: menu.c:323
 msgid "Transparent Background"
 msgstr ""
 
-#: menu.c:305
+#: menu.c:330
 msgid "Background Saturation"
 msgstr ""
 
-#: menu.c:318
-msgid "Scrollback lines"
+#: menu.c:345
+msgid "Copy URL"
 msgstr ""
 
-#: menu.c:323
-msgid "Clean scrollback lines"
-msgstr ""
-
-#: menu.c:337
-msgid "Switch input methods"
+#: menu.c:358
+msgid "Copy"
 msgstr ""
 
 #: menu.c:366
-msgid "Increase window size"
+msgid "Paste"
 msgstr ""
 
-#: menu.c:371
-msgid "Decrease window size"
-msgstr ""
-
-#: menu.c:381
-msgid "Reset to default font/size"
+#: menu.c:379
+msgid "Scrollback lines"
 msgstr ""
 
 #: menu.c:387
+msgid "Clean scrollback lines"
+msgstr ""
+
+#: menu.c:398
+msgid "Cursor Blinks"
+msgstr ""
+
+#: menu.c:405
+msgid "Audible Bell"
+msgstr ""
+
+#: menu.c:410
+msgid "Show the tabs bar"
+msgstr ""
+
+#: menu.c:420
+msgid "Hide the tabs bar"
+msgstr ""
+
+#: menu.c:437
+msgid "Switch input methods"
+msgstr ""
+
+#: menu.c:466
+msgid "Increase window size"
+msgstr ""
+
+#: menu.c:471
+msgid "Decrease window size"
+msgstr ""
+
+#: menu.c:481
+msgid "Reset to user custom font/size"
+msgstr ""
+
+#: menu.c:487
 msgid "Reset to system font/size"
 msgstr ""
 
-#: menu.c:395
+#: menu.c:495
 msgid "Reset the content"
 msgstr ""
 
-#: menu.c:413
+#: menu.c:506
+msgid "Usage"
+msgstr ""
+
+#: menu.c:513
 msgid "Get function key value"
 msgstr ""
 
-#: menu.c:421
+#: menu.c:521
 msgid "Save settings"
 msgstr ""
 
-#: menu.c:636
+#: menu.c:909
 msgid "Font Selection"
+msgstr ""
+
+#: profile.c:466
+msgid "Window Title"
+msgstr ""
+
+#: profile.c:469
+msgid "Running Command"
+msgstr ""
+
+#: profile.c:472
+msgid "Current Dir"
+msgstr ""
+
+#: profile.c:475
+msgid "Custom Tab Name"
+msgstr ""
+
+#: profile.c:478
+msgid "Root Privileges"
+msgstr ""
+
+#: profile.c:481
+msgid "Normal Text"
+msgstr ""
+
+#: profile.c:990 profile.c:993
+#, c-format
+msgid "The profile \"%s\" is invalid: %s"
+msgstr ""
+
+#: profile.c:1907
+msgid "The target file is NOT exists"
+msgstr ""
+
+#: profile.c:1918
+msgid "The target file is a directory"
 msgstr ""

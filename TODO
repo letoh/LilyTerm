@@ -1,3 +1,23 @@
-Sometimes the texts of vte terminal won't be show correctly.
-seperate process on window title
-the window title will not recover when there is only one page and change the page color
+BUG:
+
+*.h
+
+Trying to not use kill()
+Check every singal function for "gpointer user_data".
+How to init color data?
+Using VteTerminal not GtkWidget.
+
+TODO:
+
+Warning after user changed the settings.
+Get locale list from locales.
+Hack libvte for background.
+
+Change backspace key value via right click menu.
+Load/Save profile via right click menu.
+
+Deprecated:
+
+vte_terminal_set_font_from_string_full()
+vte_terminal_match_add()
+vte_terminal_set_cursor_blinks()

@@ -1,103 +1,103 @@
 /*
- * Copyright (c) 2008 Lu, Chao-Ming (Tetralet).  All rights reserved.
+ * Copyright (c) 2008-2009 Lu, Chao-Ming (Tetralet).  All rights reserved.
+ * 
+ * This file is part of LilyTerm.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * LilyTerm is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * LilyTerm is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with LilyTerm.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 
 #include "vtefont.h"
 
-extern GtkWidget *current_vtebox;
+// extern GtkWidget *current_vte;
+extern GtkWidget *menu_active_window;
 
-void set_vtebox_font(GtkWidget *widget, gint type)
+void set_vte_font(GtkWidget *widget, gint type)
 {
-#ifdef DEBUG
-	g_debug("! Launch set_vtebox_font with type = %d", type);
+#ifdef DETAIL
+	g_debug("! Launch set_vte_font with type = %d", type);
 #endif
-	GtkWidget *vtebox = current_vtebox;
+	// GtkWidget *vte = current_vte;
+	struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(menu_active_window), "Win_Data");
+	GtkWidget *vte = win_data->current_vte;
 	gchar *new_font_name = NULL;
 	// type 0: reset current page's font size
 	// type 1: increase current page's font size
 	// type 2: decrease current page's font size
-	// type 3: increase window size & font size for every vtebox
-	// type 4: decrease window size & font size for every vtebox
-	// type 5: reset window size & font size to default for every vtebox
-	// type 6: reset window size & font size to system for every vtebox
-	// type 7: change every vtebox to the selected font name
+	// type 3: increase window size & font size for every vte
+	// type 4: decrease window size & font size for every vte
+	// type 5: reset window size & font size to default for every vte
+	// type 6: reset window size & font size to system for every vte
+	// type 7: change every vte to the selected font name
 
 	switch (type)
 	{
 		case 0:
 			// reset current page's font size
-			new_font_name = get_resize_font(vtebox, 2);
-			reset_vtebox_size(vtebox, new_font_name, 0);
+			new_font_name = get_resize_font(vte, 2);
+			reset_vte_size(vte, new_font_name, 0);
 			break;
 		case 1:
 			// increase current page's font size
-			new_font_name = get_resize_font(vtebox, 6);
-			reset_vtebox_size(vtebox, new_font_name, 0);
+			new_font_name = get_resize_font(vte, 6);
+			reset_vte_size(vte, new_font_name, 0);
 			break;
 		case 2:
 			// decrease current page's font size
-			new_font_name = get_resize_font(vtebox, 7);
-			reset_vtebox_size(vtebox, new_font_name, 0);
+			new_font_name = get_resize_font(vte, 7);
+			reset_vte_size(vte, new_font_name, 0);
 			break;
 		case 3:
-			// increase window size & font size for every vtebox
-			new_font_name = get_resize_font(vtebox, 4);
-			reset_vtebox_size(vtebox, new_font_name, 1);
+			// increase window size & font size for every vte
+			new_font_name = get_resize_font(vte, 4);
+			reset_vte_size(vte, new_font_name, 1);
 			break;
 		case 4:
-			// decrease window size & font size for every vtebox
-			new_font_name = get_resize_font(vtebox, 5);
-			reset_vtebox_size(vtebox, new_font_name, 1);
+			// decrease window size & font size for every vte
+			new_font_name = get_resize_font(vte, 5);
+			reset_vte_size(vte, new_font_name, 1);
 			break;
 		case 5:
-			// reset window size & font size to default for every vtebox
-			new_font_name = get_resize_font(vtebox, 0);
-			reset_vtebox_size(vtebox, new_font_name, 2);
+			// reset window size & font size to default for every vte
+			new_font_name = get_resize_font(vte, 0);
+			reset_vte_size(vte, new_font_name, 2);
 			break;
 		case 6:
-			// reset window size & font size to system for every vtebox
-			new_font_name = get_resize_font(vtebox, 1);
-			reset_vtebox_size(vtebox, new_font_name, 3);
+			// reset window size & font size to system for every vte
+			new_font_name = get_resize_font(vte, 1);
+			reset_vte_size(vte, new_font_name, 3);
 			break;
 		case 7:
-			// change every vtebox to the selected font name
-			new_font_name = get_resize_font(vtebox, 3);
-			reset_vtebox_size(vtebox, new_font_name, 1);
+			// change every vte to the selected font name
+			new_font_name = get_resize_font(vte, 3);
+			reset_vte_size(vte, new_font_name, 1);
 			break;
 	}
+#ifdef DETAIL
+	g_debug("* free new_font_name %p (%s) in set_vte_font()", new_font_name, new_font_name);
+#endif
 	g_free(new_font_name);
 }
 
 // it will update the new_font_name and page_data->font_name
-gchar *get_resize_font(GtkWidget *vtebox, gint type)
+gchar *get_resize_font(GtkWidget *vte, gint type)
 {
-#ifdef DEBUG
-	g_debug("! Launch get_resize_font for vte %p with type %d", vtebox, type);
+#ifdef DETAIL
+	g_debug("! Launch get_resize_font for vte %p with type %d", vte, type);
 #endif
 
-	// we must insure that vtebox!=NULL
-	struct Page *page_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Page_Data");
+	// we must insure that vte!=NULL
+	struct Page *page_data = (struct Page *)g_object_get_data(G_OBJECT(vte), "Page_Data");
 	struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(page_data->window), "Win_Data");
 	// g_debug("Get win_data = %d when get resize font!", win_data);
 
@@ -112,14 +112,21 @@ gchar *get_resize_font(GtkWidget *vtebox, gint type)
 
 	if (win_data->restore_font_name == NULL)
 	{
-		win_data->restore_font_name = g_strdup(page_data->font_name);
-		// g_debug("Restore the font to %s!", restore_font_name);
+		// win_data->restore_font_name = g_strdup(page_data->font_name);
+		win_data->restore_font_name = g_strdup(win_data->default_font_name);
+		// g_debug("Restore the font to %s!", win_data->restore_font_name);
 		if (type==2)
 			return g_strdup(page_data->font_name);
 	}
 
 	if (type<3)
+	{
+#ifdef DETAIL
+		g_debug("* free page_data->font_name %p (%s) in get_resize_font() when type<3",
+			page_data->font_name, page_data->font_name);
+#endif
 		g_free(page_data->font_name);
+	}
 	
 	// we use font_size to save current font size
 	// font_size = (the size in font_name) * PANGO_SCALE
@@ -148,6 +155,7 @@ gchar *get_resize_font(GtkWidget *vtebox, gint type)
 		case 7:
 		{
 			gint oldfontsize, fontsize;
+
 			// g_debug("old font name: %s\n", page_data->font_name);
 			PangoFontDescription *font_desc = pango_font_description_from_string(
 								page_data->font_name);
@@ -161,25 +169,33 @@ gchar *get_resize_font(GtkWidget *vtebox, gint type)
 				// g_debug("window_resize_ratio = %f",  win_data->window_resize_ratio);
 				case 4:
 					if (win_data->window_resize_ratio)
-						page_data->font_size = page_data->font_size * win_data->window_resize_ratio + 0.5;
+						page_data->font_size = page_data->font_size *
+								       win_data->window_resize_ratio +
+								       0.5;
 					else
 						page_data->font_size = page_data->font_size + PANGO_SCALE;
 					break;
 				case 5:
 					if (win_data->window_resize_ratio)
-						page_data->font_size = page_data->font_size / win_data->window_resize_ratio + 0.5;
+						page_data->font_size = page_data->font_size /
+								       win_data->window_resize_ratio +
+								       0.5;
 					else
 						page_data->font_size = page_data->font_size - PANGO_SCALE;
 					break;
 				case 6:
 					if (win_data->font_resize_ratio)
-						page_data->font_size = page_data->font_size * win_data->font_resize_ratio + 0.5;
+						page_data->font_size = page_data->font_size *
+								       win_data->font_resize_ratio +
+								       0.5;
 					else
 						page_data->font_size = page_data->font_size + PANGO_SCALE;
 					break;
 				case 7:
 					if (win_data->font_resize_ratio)
-						page_data->font_size = page_data->font_size / win_data->font_resize_ratio + 0.5;
+						page_data->font_size = page_data->font_size /
+								       win_data->font_resize_ratio +
+								       0.5;
 					else
 						page_data->font_size = page_data->font_size - PANGO_SCALE;
 					break;
@@ -187,6 +203,7 @@ gchar *get_resize_font(GtkWidget *vtebox, gint type)
 			// g_debug("font_size = %d", page_data->font_size);
 			fontsize = (page_data->font_size)/PANGO_SCALE;
 			
+			// to avoid the fontsize is unchanged or = 0
 			switch (type)
 			{
 				case 4:
@@ -205,99 +222,119 @@ gchar *get_resize_font(GtkWidget *vtebox, gint type)
 			
 			// g_debug("Trying to change the font size to %d.\n", fontsize);
 			pango_font_description_set_size(font_desc, fontsize*PANGO_SCALE);
+#ifdef DETAIL
+			g_debug("* free page_data->font_name %p (%s) in get_resize_font()",
+				page_data->font_name, page_data->font_name);
+#endif
 			g_free(page_data->font_name);
 			page_data->font_name = pango_font_description_to_string(font_desc);
 			break;
 		}
 	}
+
 	// g_debug("new font name: %s\n", page_data->font_name);
+
 	if (type<6 && type!=2)
 	{
+		// We need to update "win_data->restore_font_name"
+		// if not using <Ctrl><+ - enter> to change the font size.
+#ifdef DETAIL
+		g_debug("* free win_data->restore_font_name %p (%s) in get_resize_font()",
+			win_data->restore_font_name, win_data->restore_font_name);
+#endif
 		g_free(win_data->restore_font_name);
 		win_data->restore_font_name = g_strdup(page_data->font_name);
+	}
+	else if (type >=6)
+	{
+		// Check if we can specify page_data->font_size = 0
+		if ( ! strcmp(page_data->font_name, win_data->restore_font_name))
+		{
+			page_data->font_size = 0;
+			// g_debug("The font is restored to win_data->restore_font_name");
+		}
+
 	}
 	return g_strdup(page_data->font_name);
 }
 
-void reset_vtebox_size(GtkWidget *vtebox, gchar *new_font_name, gint type)
+void reset_vte_size(GtkWidget *vte, gchar *new_font_name, gint type)
 {
-#ifdef DEBUG
-	g_debug("! Launch reset_vtebox_size() with vtebox = %p, new_font_name = %s, type = %d",
-		vtebox, new_font_name, type);
+#ifdef DETAIL
+	g_debug("! Launch reset_vte_size() with vte = %p, new_font_name = %s, type = %d",
+		vte, new_font_name, type);
 #endif
 
 	// type 0: change current page's font
-	// type 1: apply current column & row to every vtebox
-	// type 2: apply default column & row to every vtebox
-	// type 3: apply system column & row to every vtebox
+	// type 1: apply current column & row to every vte
+	// type 2: apply default column & row to every vte
+	// type 3: apply system column & row to every vte
 
-	struct Page *page_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Page_Data");
+	struct Page *page_data = (struct Page *)g_object_get_data(G_OBJECT(vte), "Page_Data");
 	struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(page_data->window), "Win_Data");
-	// g_debug("Get win_data = %d when reset vtebox size!", win_data);
+	// g_debug("Get win_data = %d when reset vte size!", win_data);
 
 	switch (type)
 	{
 		case 0:
-			// We need to apply a new font to a single vtebox.
+			// We need to apply a new font to a single vte.
 			// so that we should insure that this won't chage the size of window.
-			// g_debug("Trying to apply font %s to vtebox\n", current_font_name);
-			vte_terminal_set_font_from_string_full(VTE_TERMINAL(vtebox), new_font_name, win_data->font_anti_alias);
-			
-			win_data->update_hints = 2;
-			// g_debug("window_resizable in change current font!");
-			window_resizable(page_data->window, win_data->current_vtebox, 2, 1);
-
+			// g_debug("Trying to apply font %s to vte\n", current_font_name);
+			vte_terminal_set_font_from_string_full( VTE_TERMINAL(vte),
+								new_font_name,
+								win_data->font_anti_alias);
+			update_window_hint(win_data, page_data);
 			break;
 		case 1:
-			// increase/decrease window size & font size for every vtebox
-			// g_debug("Trying to apply font %s to every vtebox\n", current_font_name);
-			// struct Page *page_data = (struct Page *)g_object_get_data(G_OBJECT(current_vtebox), "Page_Data");
-			apply_font_to_every_vtebox( page_data->window, new_font_name,
-					vte_terminal_get_column_count(VTE_TERMINAL(win_data->current_vtebox)),
-					vte_terminal_get_row_count(VTE_TERMINAL(win_data->current_vtebox)));
+			// increase/decrease window size & font size for every vte
+			// g_debug("Trying to apply font %s to every vte\n", current_font_name);
+			// struct Page *page_data = (struct Page *)g_object_get_data(G_OBJECT(current_vte), "Page_Data");
+			apply_font_to_every_vte( page_data->window, new_font_name,
+					vte_terminal_get_column_count(VTE_TERMINAL(win_data->current_vte)),
+					vte_terminal_get_row_count(VTE_TERMINAL(win_data->current_vte)));
 			break;
 		case 2:
-			// reset window size & font size for every vtebox
-			// g_debug("Trying to apply font %s to every vtebox\n", current_font_name);
-			apply_font_to_every_vtebox(page_data->window, new_font_name,
+			// reset window size & font size for every vte
+			// g_debug("Trying to apply font %s to every vte\n", current_font_name);
+			apply_font_to_every_vte(page_data->window, new_font_name,
 						   win_data->default_column, win_data->default_row);
 			break;
 		case 3:
-			// reset window size & font size for every vtebox
-			// g_debug("Trying to apply font %s to every vtebox\n", current_font_name);
-			apply_font_to_every_vtebox(page_data->window, new_font_name,
+			// reset window size & font size for every vte
+			// g_debug("Trying to apply font %s to every vte\n", current_font_name);
+			apply_font_to_every_vte(page_data->window, new_font_name,
 						   win_data->system_column, win_data->system_row);
 			break;
 	}
 }
 
-void apply_font_to_every_vtebox(GtkWidget *window, gchar *new_font_name, gint column, gint row)
+void apply_font_to_every_vte(GtkWidget *window, gchar *new_font_name, gint column, gint row)
 {
-#ifdef DEBUG
-	g_debug("! Launch apply_font_to_every_vtebox() with window = %p, new_font_name = %s,"
+#ifdef DETAIL
+	g_debug("! Launch apply_font_to_every_vte() with window = %p, new_font_name = %s,"
 		" column = %d, row = %d", window, new_font_name, column, row);
 #endif
 
 	struct Window *win_data = (struct Window *)g_object_get_data(G_OBJECT(window), "Win_Data");
-	// g_debug("Get win_data = %d when apply font to every vtebox!", win_data);
+	// g_debug("Get win_data = %d when apply font to every vte!", win_data);
 
-	GtkWidget *vtebox = NULL;
-	struct Page *page_data;
+	struct Page *page_data = NULL;
 	gint i;
 
-	// g_debug("Trying to apply every vtebox to %dx%d!", column, row);
-	// g_debug("Trying to apply font %s to every vtebox!\n", new_font_name);
+	// g_debug("Trying to apply every vte to %dx%d!", column, row);
+	// g_debug("Trying to apply font %s to every vte!\n", new_font_name);
 	for (i=0;i<gtk_notebook_get_n_pages(GTK_NOTEBOOK(win_data->notebook));i++)
 	{
-		vtebox=(GtkWidget *)g_object_get_data(G_OBJECT(gtk_notebook_get_tab_label(
-								GTK_NOTEBOOK(win_data->notebook),
-									gtk_notebook_get_nth_page(
-										GTK_NOTEBOOK(win_data->notebook), i))),
-								"VteBox");
-		page_data = (struct Page *)g_object_get_data(G_OBJECT(vtebox), "Page_Data");
+		page_data = get_page_data_from_nth_page(win_data, i);
 		// g_debug("The default font for %d page is: %s (%s)\n", i, page_data->font_name, new_font_name);
-		vte_terminal_set_font_from_string_full(VTE_TERMINAL(vtebox), new_font_name, win_data->font_anti_alias);
-		vte_terminal_set_size(VTE_TERMINAL(vtebox), column, row);
+		vte_terminal_set_font_from_string_full(VTE_TERMINAL(page_data->vte),
+						       new_font_name,
+						       win_data->font_anti_alias);
+		vte_terminal_set_size(VTE_TERMINAL(page_data->vte), column, row);
+#ifdef DETAIL
+		g_debug("* free page_data->font_name %p (%s) in apply_font_to_every_vte()",
+			page_data->font_name, page_data->font_name);
+#endif
 		g_free(page_data->font_name);
 		page_data->font_name = g_strdup(new_font_name);
 
@@ -306,7 +343,30 @@ void apply_font_to_every_vtebox(GtkWidget *window, gchar *new_font_name, gint co
 
 	// g_debug("Set hints to FALSE!\n");
 	win_data->update_hints = 1;
-	win_data->keep_vtebox_size |= 0x30;
-	// g_debug("window_resizable in apply_font_to_every_vtebox!");
-	window_resizable(window, vtebox, 2, 1);
+	// win_data->keep_vte_size |= 0x30;
+	// g_debug("window_resizable in apply_font_to_every_vte!");
+	// window_resizable(window, page_data->vte, 2, 1);
+	keep_window_size (win_data, page_data->vte, 0x380);
 }
+
+gboolean check_if_every_vte_is_using_restore_font_name (struct Window *win_data,
+							struct Page *page_data)
+{
+	if (win_data->restore_font_name == NULL)
+	//	win_data->restore_font_name = g_strdup(page_data->font_name);
+		win_data->restore_font_name = g_strdup(win_data->default_font_name);
+	
+	gint i;
+	gboolean return_value = TRUE;
+	for (i=0;i<gtk_notebook_get_n_pages(GTK_NOTEBOOK(win_data->notebook));i++)
+	{
+		page_data = get_page_data_from_nth_page(win_data, i);
+		if (strcmp(page_data->font_name, win_data->restore_font_name))
+		{
+			return_value = FALSE;
+			break;
+		}
+	}
+	return return_value;
+}
+

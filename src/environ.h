@@ -17,20 +17,21 @@
  * along with LilyTerm.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef VTEFONT_H
-#define VTEFONT_H
+#ifndef ENVIRON_H
+#define ENVIRON_H
 
 #include <gtk/gtk.h>
-#include <vte/vte.h>
+// for strlen()
+#include <string.h>
+// for setenv() and unsetenv()
+#include <stdlib.h>
 
-#include "data.h"
-#include "profile.h"
-#include "window.h"
-
-void set_vte_font(GtkWidget *widget, gint type);
-void reset_vte_size(GtkWidget *vte, gchar *new_font_name, gint type);
-gchar *get_resize_font(GtkWidget *vte, gint type);
-void apply_font_to_every_vte(GtkWidget *window, gchar *new_font_name, gint colum, gint row);
-gboolean check_if_every_vte_is_using_restore_font_name (struct Window *win_data,
-							struct Page *page_data);
+gchar *convert_array_to_string(gchar **array, gchar separator);
+void set_VTE_CJK_WIDTH_environ(gint VTE_CJK_WIDTH);
+gchar *get_VTE_CJK_WIDTH_str(gint VTE_CJK_WIDTH);
+gint get_default_VTE_CJK_WIDTH();
+gchar *get_default_LC_TYPE();
+G_CONST_RETURN char *get_encoding_from_locale();
+void restore_SYSTEM_VTE_CJK_WIDTH_STR();
+gchar *convert_str_to_utf8(gchar *string, gchar *encoding_str);
 #endif

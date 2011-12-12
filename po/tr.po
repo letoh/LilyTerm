@@ -1,100 +1,100 @@
 # Translation of LilyTerm.
-# Copyright (C) 2009 Tetralet <tetralet@gmail.com>
+# Copyright (C) 2008-2009 Samed Beyribey <samed@archlinux.org.tr>
 # This file is distributed under the same license as the LilyTerm package.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: LilyTerm 0.9.7\n"
+"Project-Id-Version: LilyTerm 0.9.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2009-09-06 15:39+0800\n"
-"PO-Revision-Date: 2008-03-21 00:30+0800\n"
-"Last-Translator: Tetralet <tetralet@gmail.com>\n"
-"Language-Team: Tetralet <tetralet@gmail.com>\n"
+"PO-Revision-Date: 2009-08-22 20:42+0200\n"
+"Last-Translator: Samed Beyribey <ras0ir@eventualis.org>\n"
+"Language-Team: GNU-TR <tr@li.org>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #: dialog.c:148 menu.c:449
 msgid "Rename this tab"
-msgstr "變更此分頁的名稱"
+msgstr "Sekmeyi yeniden adlandır"
 
 #: dialog.c:151
 msgid "Change the saturation of background"
-msgstr "改變背景的透明度"
+msgstr "Arkaplan doygunluğunu değiştir"
 
 #: dialog.c:154
 msgid "Confirm to close multi tabs"
-msgstr "確認是否關閉多個分頁"
+msgstr "Birden çok sekme açık olduğu için onayınız gerekiyor"
 
 #: dialog.c:157
 msgid "Get the key value for using in profile"
-msgstr "取得可用於設定檔的鍵值"
+msgstr "Profilde kullanmak için kısayol değeri atayın"
 
 #: dialog.c:160
 #, c-format
 msgid "Usage for %s %s"
-msgstr "%s %s 的使用說明"
+msgstr "%s %s kullanımı"
 
 #: dialog.c:163
 msgid "Error when writing profile"
-msgstr "在寫入設定檔時發生錯誤"
+msgstr "Profil kaydedilirken hata oluştu"
 
 #: dialog.c:166
 msgid "Confirm to close running foreground program"
-msgstr "確認是否關閉正在前景執行中的程式"
+msgstr "Arkaplanda çalışan programı kapatmak için onayınız gerekiyor"
 
 #: dialog.c:169
 msgid "Change the opacity of window"
-msgstr "改變視窗的透明度"
+msgstr "Pencere donukluğunu değiştir"
 
 #: dialog.c:172
 msgid "Change the foreground color in terminal"
-msgstr "改變終端機的文字顏色"
+msgstr "Önplan rengini değiştir"
 
 #: dialog.c:175
 msgid "Change the background color in terminal"
-msgstr "改變終端機的背景顏色"
+msgstr "Arkaplan rengini değiştir"
 
 #: dialog.c:183 menu.c:282
 #, c-format
 msgid "Change the %s color on tab"
-msgstr "改變分頁上的%s顏色"
+msgstr "Sekmedeki %s rengini değiştir"
 
 #: dialog.c:187
 msgid "Error when creating child process"
-msgstr "在建立子行程時發生錯誤"
+msgstr "Alt işlem oluşturulurken hata meydana geldi"
 
 #: dialog.c:190
 msgid "The following error is occurred:"
-msgstr "發生了以下的錯誤："
+msgstr "Hata çıktısı:"
 
 #: dialog.c:193 dialog.c:578
 msgid "Adjust the brightness of ANSI colors used in terminal"
-msgstr "調整在終端機裡的 ANSI 顏色的亮度"
+msgstr "Uçbirimde kullanılacak ANSI renklerinin parlaklığını ayarla"
 
 #: dialog.c:196
 msgid "The format of your profile is out of date"
-msgstr "您的設定檔格式已過舊"
+msgstr "Profil biçiminiz güncel değil"
 
 #: dialog.c:199
 msgid "The format of socket data is out of date"
-msgstr "Socket 資料的格式已過舊"
+msgstr "Soket verisi biçimi güncel değil"
 
 #: dialog.c:202
 msgid "Confirm to execute -e/-x/--execute command"
-msgstr "確認是否執行 -e/-x/--execute 指令"
+msgstr "Çalıştırma komutu -e/-x/--execute komut için onaylayın "
 
 #: dialog.c:458
 msgid "Please input the Label Name of this tab:"
-msgstr "請輸入這個分頁的名稱："
+msgstr "Pencere başlığında görüntülenecek ismi giriniz:"
 
 #: dialog.c:461
 msgid "Change the Saturation of background:"
-msgstr "改變背景的透明度"
+msgstr "Arkaplan doygunluğunu ayarlayın:"
 
 #: dialog.c:464
 msgid "You are about to close multi tabs. Continue anyway?"
-msgstr "您將要關閉多個分頁。是否無論如何仍繼續？"
+msgstr "Birden fazla sekme kapatılacak. Devam etmek istiyor musunuz?"
 
 #: dialog.c:467
 msgid ""
@@ -103,32 +103,32 @@ msgid ""
 "Press [Copy] to copy the key value to clipboard;\n"
 "And press [Close] to exit."
 msgstr ""
-"您可以在此按下任意鍵來取得可用於設定檔的鍵值。\n"
+"Profilde kullanmak için herhangi bir tuşa basıp ayarlayabilirsiniz.\n"
 "\n"
-"按下【複製】可將鍵值複製至剪貼簿；\n"
-"按下【關閉】離開。"
+"Panoya kopyalamak için [Kopyala] düğmesine basınız;\n"
+"Çıkmak için [Kapat] düğmesine basınız."
 
 #: dialog.c:489
 #, c-format
 msgid "Error while writing profile '%s':"
-msgstr "在寫入設定檔 %s 時發生錯誤："
+msgstr "'%s' profili yazılırken hata oluştu:"
 
 #: dialog.c:499
 #, c-format
 msgid "There is still a running foreground program on #%d tab:"
-msgstr "在 #%d 分頁上有個前景程式尚在執行："
+msgstr "#%d numaralı sekmede hala çalışmakta olan bir uygulama var:"
 
 #: dialog.c:505 dialog.c:610
 msgid "Continue anyway?"
-msgstr "是否無論如何仍繼續？"
+msgstr "Devam etmek istiyor musunuz?"
 
 #: dialog.c:512
 msgid "Change the Opacity of window:"
-msgstr "改變視窗的透明度："
+msgstr "Pencere donukluğunu ayarlayın:"
 
 #: dialog.c:568
 msgid "Error while creating the child process:"
-msgstr "在建立此子行程時發生錯誤："
+msgstr "Alt süreç oluşturulurken hata meydana geldi:"
 
 #: dialog.c:584
 msgid ""
@@ -136,9 +136,9 @@ msgid ""
 "Please use [Save settings] on the right click menu to save your settings,\n"
 "and edit it manually if necessary.\n"
 msgstr ""
-"在這個版本裡的個人設定檔中已新增/移除/修改了某些項目，\n"
-"請使用右鍵選單中的【儲存設定】來儲存您的設定，\n"
-"並視形況加以修改。\n"
+"Bu sürümde profil dosyasında çeşitli değişiklikler var.\n"
+"Lütfen menüye sağ tıklayarak [Ayarları kaydet] seçeneğini kullanın\n"
+"veya yapılandırma dosyasını elle düzenleyin.\n"
 
 #: dialog.c:587
 #, c-format
@@ -147,7 +147,7 @@ msgid ""
 "Your profile is %s."
 msgstr ""
 "%s\n"
-"您的個人設定檔為：%s。"
+"Kullandığınız profil %s."
 
 #: dialog.c:593
 #, c-format
@@ -156,25 +156,25 @@ msgid ""
 "If you just updated %s recently,\n"
 "Please close all the windows of %s and try again."
 msgstr ""
-"經由 Socket 所取得的資料似乎不太正確。\n"
-"如果您剛剛升級了 %s，\n"
-"請關閉 %s 的所有視窗並再試一次。"
+"Soketten alınan veri hatalı gibi görünüyor.\n"
+"Eğer %s uygulamasını henüz güncellemişseniz,\n"
+"Lütfen %s uygulamasının pencerelerini kapatın ve tekrar deneyin. "
 
 #: dialog.c:608
 msgid "is trying to execute the following command:"
-msgstr "正試圖執行以下指令："
+msgstr "şu komutu çalıştırmayı deniyor:"
 
 #: dialog.c:707
 msgid "Label Name:"
-msgstr "分頁名稱："
+msgstr "İsim:"
 
 #: dialog.c:771
 msgid "Key Value:"
-msgstr "鍵值："
+msgstr "Tuş:"
 
 #: dialog.c:862 dialog.c:1384
 msgid "Bold Demo Text"
-msgstr "粗體範例文字"
+msgstr "Kalın Yazı Örneği"
 
 #: main.c:183
 #, c-format
@@ -182,7 +182,7 @@ msgid ""
 "%s is a libvte based X Terminal Emulator.\n"
 "\n"
 msgstr ""
-"%s 是一個基於 libvte 的 X 終端機模擬器。\n"
+"%s libvte tabanlı bir X Terminal Öykünücüsüdür.\n"
 "\n"
 
 #: main.c:184
@@ -190,33 +190,35 @@ msgid ""
 "Use -e/-x/--execute {Command} to run a command when start up. (Must be the "
 "final option).\n"
 msgstr ""
-"使用 -e/-x/--execute {指令} 來在啟動後執行某一特定程式。（須為最後一個選"
-"項）\n"
+"Açılışta bir programın çalıştırılması için -e / -x / --execute {Komut} "
+"kullanın. \n"
 
 #: main.c:186
 msgid "Use -T/--title {title} to specify the window title.\n"
-msgstr "使用 -T/--title {標題} 來指定視窗的標題。\n"
+msgstr "Pencere başlığını belirlemek için -T/--title {başlık} kullanın.\n"
 
 #: main.c:187
 msgid "Use -t/--tab {number} to open multi tabs when start up.\n"
-msgstr "使用 -t/--tab {數目} 來在啟動後開啟多個分頁。\n"
+msgstr "Açılışta çoklu sekme kullanmak için -t / --tab {sayı} kullanın.\n"
 
 #: main.c:188
 msgid ""
 "Use -d/--directory {directory} to specify the init directory when start up.\n"
-msgstr "使用 -d/--directory {目錄} 來指定啟動後的初始目錄。\n"
+msgstr ""
+"Açılışta kullanılacak dizini belirtmek için -d/--directory {dizin} "
+"kullanın.\n"
 
 #: main.c:189
 msgid "Use -s/--separate to run in separate process.\n"
-msgstr "使用 -s/--separate 來以獨立行程運行。\n"
+msgstr "Ayrı süreçlerde çalıştırmak için -s/--seperate kullanın.\n"
 
 #: main.c:190
 msgid "Use -v/--version to show the version information.\n"
-msgstr "使用 -v/--version 來顯示版本資訊。\n"
+msgstr "Sürüm bilgisini görüntülemek için -v/--version kullanın.\n"
 
 #: main.c:191
 msgid "Use -p/--profile to got a profile sample.\n"
-msgstr "使用 -p/--profile 以取得設定檔範例。\n"
+msgstr "Profil örneğini görüntülemek için -p/--profile kullanın.\n"
 
 #: main.c:193
 #, c-format
@@ -224,13 +226,13 @@ msgid ""
 "Use -u/--user_profile {%s} to use a specified profile.\n"
 "\n"
 msgstr ""
-"使用 -u/--user_profile {%s} 來指定使用某個特定的設定檔。\n"
+"Belirli bir profil kullanmak için -u/--user_profile {%s} kullanın.\n"
 "\n"
 
 #: main.c:196
 #, c-format
 msgid "The %s system config is: %s/%s\n"
-msgstr "%s 的系統設定檔為：%s/%s\n"
+msgstr "%s sistem geneli yapılandırma dosyası: %s/%s\n"
 
 #: main.c:200
 #, c-format
@@ -238,7 +240,7 @@ msgid ""
 "And your %s profile is: %s/%s\n"
 "\n"
 msgstr ""
-"而您的 %s 個人設定檔則為：%s/%s\n"
+"Kullandığınız %s profil dosyası: %s/%s\n"
 "\n"
 
 #: main.c:202
@@ -246,296 +248,310 @@ msgid ""
 "Default shortcut key: (It may custom by editing user's profile)\n"
 "\n"
 msgstr ""
-"預設的快捷鍵：（可經由編輯個人設定檔來自訂）\n"
+"Öntanımlı kısayol tuşu: (Kullanıcı profili düzenlenerek özel bir değer "
+"atanabilir)\n"
 "\n"
 
 #: main.c:203
 msgid ""
 "  * <Ctrl><`>\t\tDisable/Enable hyperlinks, function keys and right click "
 "menu\n"
-msgstr "  * <Ctrl><`>\t\t啟用/關閉超連結、功能鍵，及右鍵選單\n"
+msgstr ""
+"  * <Ctrl><`>\t\tLinkleri, fonksiyon tuşlarını ve sağ tıklama ile açılan "
+"menüyü etkinleştirir/devredışı bırakır\n"
 
 #: main.c:204
 msgid "  * <Ctrl><T/Q>\t\tAdd a New tab/Close current tab\n"
-msgstr "  * <Ctrl><T/Q>\t\t新增分頁/關閉目前的分頁\n"
+msgstr "  * <Ctrl><T/Q>\t\tYeni Sekme Aç/Mevcut sekmeyi kapat\n"
 
 #: main.c:205
 msgid "\t\t\t(Using <Ctrl><D> or 'exit' to close tabs is recommended)\n"
-msgstr "\t\t\t（使用 <Ctrl><D> 或 exit 來關閉分頁是比較建議的作法）\n"
+msgstr ""
+"\t\t\t(Sekmeleri <Ctrl><D> veya 'exit' kullanarak kapatmanız tavsiye "
+"edilir)\n"
 
 #: main.c:206
 msgid "  * <Ctrl><E>\t\tRename current tab\n"
-msgstr "  * <Ctrl><E>\t\t更改目前分頁的名稱\n"
+msgstr "  * <Ctrl><E>\t\tAçık sekmeyi yeniden adlandır\n"
 
 #: main.c:207
 msgid "  * <Ctrl><PgUp/PgDn>\tSwitch to Prev/Next tab\n"
-msgstr "  * <Ctrl><PgUp/PgDn>\t切換至上/下一個分頁\n"
+msgstr "  * <Ctrl><PgUp/PgDn>\tÖnceki/Sonraki sekmeye geçiş yap\n"
 
 #: main.c:208
 msgid "  * <Ctrl><Home/End>\tSwitch to First/Last tab\n"
-msgstr "  * <Ctrl><Home/End>\t切換至第一/最後一個分頁\n"
+msgstr "  * <Ctrl><Home/End>\tİlk ve son sekmeler arasında geçiş yap\n"
 
 #: main.c:209
 msgid "  * <Ctrl><Left/Right>\tMove current page Forward/Backward\n"
-msgstr "  * <Ctrl><Left/Right>\t往前/後移動該分頁\n"
+msgstr "  * <Ctrl><Left/Right>\tSekmenin yerini değiştir\n"
 
 #: main.c:210
 msgid "  * <Ctrl><Up/Down>\tMove current page to First/Last\n"
-msgstr "  * <Ctrl><Up/Down>\t將該分頁移至第一/最後一頁\n"
+msgstr "  * <Ctrl><Up/Down>\tSekmeyi başa veya sona taşı\n"
 
 #: main.c:211
 msgid "  * <Ctrl><F1~F12>\tSwitch to 1st ~ 12th tab\n"
-msgstr "  * <Ctrl><F1~F12>\t切換到第 1 至 12 個分頁\n"
+msgstr "  * <Ctrl><F1~F12>\t1 ile 12. sekmeler arasında geçiş yap\n"
 
 #: main.c:212
 msgid "  * <Ctrl><O>\t\tSelect all the text in the Vte Terminal box\n"
-msgstr "  * <Ctrl><O>\t\t全選 Vte 終端機視窗裡的文字\n"
+msgstr "  * <Ctrl><O>\t\tVte Terminalindeki tüm yazıları seç\n"
 
 #: main.c:213
 msgid ""
 "  * <Ctrl><X/V>\t\tCopy the text to clipboard / Paste the text in clipboard\n"
-msgstr "  * <Ctrl><X/V>\t\t將文字複製至剪貼簿/貼上剪貼簿中的文字\n"
+msgstr "  * <Ctrl><X/V>\t\tYazıyı panoya kopyala / Panodaki yazıyı yapıştır\n"
 
 #: main.c:214
 msgid ""
 "  * <Ctrl><+/-/Enter>\tIncrease/Decrease/Reset the font size of current tab\n"
-msgstr "  * <Ctrl><+/-/Enter>\t放大/縮小/重置目前分頁的字體\n"
+msgstr ""
+"  * <Ctrl><+/-/Enter>\tMevcut sekmenin yazıtipi boyutunu Artır/Azalt/"
+"Sıfırla\n"
 
 #: main.c:215
 msgid ""
 "  * <Alt><F11/Enter>\tSwitch between fullwindow/unfullwindow and fullscreen/"
 "unfullscreen state\n"
 msgstr ""
-"  * <Alt><F11/Enter>\t將視窗在 全視窗/非全視窗 及 全螢幕/非全螢幕 模式中切"
-"換\n"
+"  * <Alt><F11/Enter>\tTam ekran moduna giriş yap/Tam ekran modundan çıkış "
+"yap\n"
 
 #: main.c:216
 msgid "  * <Shift><Insert>\tPaste the text in primary clipboard\n"
-msgstr "  * <Shift><Insert>\t貼上主要剪貼簿中的文字\n"
+msgstr "  * <Shift><Insert>\tEsas panodaki yazıyı yapıştır\n"
 
 #: main.c:217
 msgid ""
 "\t\t\t(i.e. Emulate a middle button mouse click to paste the text)\n"
 "\n"
 msgstr ""
-"\t\t\t（即：模擬按下了滑鼠中鍵貼上文字）\n"
+"\t\t\t(Yapıştırmak için farenin orta tuşunun yaptığı işlemi yapar)\n"
 "\n"
 
 #: main.c:219
 #, c-format
 msgid "Please report bug to %s. Thank you for using %s!\n"
-msgstr "請向 %s 回報錯誤。感謝您使用 %s！\n"
+msgstr ""
+"Lütfen hataları %s adresine bildiriniz. %s programını kullandığınız için "
+"teşekkürler!\n"
 
 #: menu.c:91
 msgid "Change text encoding"
-msgstr "改變文字編碼"
+msgstr "Yazı kodlamasını değiştir"
 
 #: menu.c:103
 msgid "New tab with specified locale"
-msgstr "以特定 locale 開新分頁"
+msgstr "Belirli bir yerel ile yeni sekme aç"
 
 #: menu.c:105
 msgid "New tab"
-msgstr "新分頁"
+msgstr "Yeni sekme"
 
 #: menu.c:176 menu.c:179
 msgid " (Wide)"
-msgstr "（寬）"
+msgstr " (Geniş)"
 
 #: menu.c:240
 msgid "Change the font"
-msgstr "改變字型"
+msgstr "Yazıtipini değiştir"
 
 #: menu.c:250
 msgid "Change colors"
-msgstr "改變顏色"
+msgstr "Renkleri değiştir"
 
 #: menu.c:258
 msgid "Change the foreground color"
-msgstr "改變文字的顏色"
+msgstr "Önplan rengini değiştir"
 
 #: menu.c:265
 msgid "Change the background color"
-msgstr "改變背景的顏色"
+msgstr "Arkaplan rengini değiştir"
 
 #: menu.c:272
 msgid "Adjust the brightness of ANSI colors"
-msgstr "調整 ANSI 顏色的亮度"
+msgstr "ANSI renklerin parlaklığını ayarla"
 
 #: menu.c:304
 msgid "Transparent Window"
-msgstr "透明視窗"
+msgstr "Şeffaf Pencere"
 
 #: menu.c:311
 msgid "Window Opacity"
-msgstr "視窗透明度"
+msgstr "Pencere Donukluğu"
 
 #: menu.c:323
 msgid "Transparent Background"
-msgstr "透明背景"
+msgstr "Şeffaf Arkaplan"
 
 #: menu.c:330
 msgid "Background Saturation"
-msgstr "背景透明度"
+msgstr "Arkaplan Doygunluğu"
 
 #: menu.c:345
 msgid "Copy URL"
-msgstr "複製 URL"
+msgstr "Adresi kopyala"
 
 #: menu.c:358
 msgid "Copy"
-msgstr "複製"
+msgstr "Kopyala"
 
 #: menu.c:366
 msgid "Paste"
-msgstr "貼上"
+msgstr "Yapıştır"
 
 #: menu.c:379
 msgid "Scrollback lines"
-msgstr "歷史捲軸"
+msgstr "Geçmiş Satırlar"
 
 #: menu.c:387
 msgid "Clean scrollback lines"
-msgstr "清除歷史捲軸"
+msgstr "Geçmiş satırları temizle"
 
 #: menu.c:398
 msgid "Cursor Blinks"
-msgstr "遊標閃爍"
+msgstr "Yanıp sönen imleç"
 
 #: menu.c:405
 msgid "Audible Bell"
-msgstr "發出嗶聲"
+msgstr "Sistem zili"
 
 #: menu.c:410
 msgid "Show the tabs bar"
-msgstr "顯示分頁列"
+msgstr "Sekme çubuğunu göster"
 
 #: menu.c:420
 msgid "Hide the tabs bar"
-msgstr "隱藏分頁列"
+msgstr "Sekme çubuğunu gizle"
 
 #: menu.c:437
 msgid "Switch input methods"
-msgstr "切換輸入法"
+msgstr "Girdi yöntemini değiştir"
 
 #: menu.c:466
 msgid "Increase window size"
-msgstr "放大視窗"
+msgstr "Pencereyi Büyült"
 
 #: menu.c:471
 msgid "Decrease window size"
-msgstr "縮小視窗"
+msgstr "Pencereyi Küçült"
 
 #: menu.c:481
 msgid "Reset to user custom font/size"
-msgstr "重置為使用者自訂的字型及大小"
+msgstr "Kullanıcının yazıtipine/boyutuna sıfırla"
 
 #: menu.c:487
 msgid "Reset to system font/size"
-msgstr "重置為系統字型及大小"
+msgstr "Sistem yazıtipine/boyutuna sıfırla"
 
 #: menu.c:495
 msgid "Reset the content"
-msgstr "重置分頁的內容"
+msgstr "İçeriği sıfırla"
 
 #: menu.c:506
 msgid "Usage"
-msgstr "使用說明"
+msgstr "Kullanım"
 
 #: menu.c:513
 msgid "Get function key value"
-msgstr "取得功能鍵值"
+msgstr "Fonksiyon tuşu ata"
 
 #: menu.c:521
 msgid "Save settings"
-msgstr "儲存設定"
+msgstr "Ayarları kaydet"
 
 #: menu.c:909
 msgid "Font Selection"
-msgstr "選擇字型"
+msgstr "Yazıtipi Seçimi"
 
 #: profile.c:466
 msgid "Window Title"
-msgstr "視窗標題"
+msgstr "Pencere Başlığı"
 
 #: profile.c:469
 msgid "Running Command"
-msgstr "正在執行的指令"
+msgstr "Çalışan Komut"
 
 #: profile.c:472
 msgid "Current Dir"
-msgstr "目前的目錄"
+msgstr "Dizin"
 
 #: profile.c:475
 msgid "Custom Tab Name"
-msgstr "自訂的分頁名稱"
+msgstr "Özel Sekme Adı"
 
 #: profile.c:478
 msgid "Root Privileges"
-msgstr "Root 權限"
+msgstr "Root Yetkileri"
 
 #: profile.c:481
 msgid "Normal Text"
-msgstr "一般文字"
+msgstr "Normal Yazı"
 
 #: profile.c:990 profile.c:993
 #, c-format
 msgid "The profile \"%s\" is invalid: %s"
-msgstr "無法取用設定檔 \"%s\"：%s"
+msgstr "Belirtilen profil, \"%s\" geçersiz: %s"
 
 #: profile.c:1907
 msgid "The target file is NOT exists"
-msgstr "目的地檔案並不存在"
+msgstr "Hedef dosya BULUNMAMAKTADIR"
 
 #: profile.c:1918
 msgid "The target file is a directory"
-msgstr "目的地檔案是個目錄"
+msgstr "Hedef dosya bir dizin"
 
 #~ msgid "Change the command line color on tab"
-#~ msgstr "改變分頁上的指令顏色"
+#~ msgstr "Sekmedeki komut satırı rengini değiştir"
 
 #~ msgid "Change the current directory color on tab"
-#~ msgstr "改變分頁上的目錄顏色"
+#~ msgstr "Sekmedeki mevcut dizin rengini değiştir"
 
 #~ msgid "Change the custom tab text color"
-#~ msgstr "改變分頁上的自訂文字顏色"
+#~ msgstr "Özel sekme yazı rengini değiştir"
 
 #~ msgid "Change the root privileges color on tab"
-#~ msgstr "改變分頁上的 root 權限顏色"
+#~ msgstr "Sekmedeki root yetkileri rengini değiştir"
 
 #~ msgid "Change the normal tab text color"
-#~ msgstr "改變分頁上的一般文字顏色"
+#~ msgstr "Normal sekme yazı rengini değiştir"
 
 #~ msgid "Change the cmdline color on tab"
-#~ msgstr "改變分頁上的命令列顏色"
+#~ msgstr "Komut satırına ait sekmenin rengini değiştir"
 
 #~ msgid "Change the custom color on tab"
-#~ msgstr "改變分頁上的自訂顏色"
+#~ msgstr "Sekmedeki özel rengi değiştir"
 
 #~ msgid "Change the root color on tab"
-#~ msgstr "改變分頁上的 root 顏色"
+#~ msgstr "Root haklarına sahip sekmenin rengini değiştir"
 
 #~ msgid "Change the normal color on tab"
-#~ msgstr "改變分頁上的一般顏色"
+#~ msgstr "Normal sekme rengini değiştir"
 
+#, fuzzy
 #~ msgid ""
 #~ "%s\n"
 #~ "Your profile is %s/%s."
 #~ msgstr ""
-#~ "%s\n"
-#~ "您的個人設定檔為：%s/%s。"
+#~ "Kullandığınız %s profil dosyası: %s/%s\n"
+#~ "\n"
 
 #~ msgid ""
 #~ "Error while writing profile '%s/%s':\n"
 #~ "\n"
 #~ "%s\n"
 #~ msgstr ""
-#~ "在寫入設定檔 %s/%s 時發生錯誤：\n"
+#~ "Profil '%s/%s' kaydedilirken hata oluştu:\n"
 #~ "\n"
 #~ "%s\n"
 
 #~ msgid "  * <Ctrl><X>\t\tCopy the text to clipboard\n"
-#~ msgstr "  * <Ctrl><X>\t\t將文字複製至剪貼簿\n"
+#~ msgstr "  * <Ctrl><X>\t\tYazıyı panoya kopyala\n"
 
 #~ msgid "  * <Ctrl><Enter>\tReset the font size of current tab\n"
-#~ msgstr "  * <Ctrl><Enter>\t重置目前分頁的字體\n"
+#~ msgstr ""
+#~ "  * <Ctrl><Enter>\tAçık sekmedeki yazıtipi boyutunu öntanımlıya sıfırla\n"
+
+#~ msgid "Reset to default font/size"
+#~ msgstr "Öntanımlı font ve boyuta sıfırla"

@@ -1,27 +1,21 @@
 /*
- * Copyright (c) 2008 Lu, Chao-Ming (Tetralet).  All rights reserved.
+ * Copyright (c) 2008-2009 Lu, Chao-Ming (Tetralet).  All rights reserved.
+ * 
+ * This file is part of LilyTerm.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * LilyTerm is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * LilyTerm is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with LilyTerm.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 
 #ifndef WINDOW_H
 #define WINDOW_H
@@ -46,12 +40,19 @@
 
 #define ALL_ACCELS_MASK (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK | GDK_MOD3_MASK | GDK_MOD4_MASK | GDK_MOD5_MASK)
 #define SHIFT_ONLY_MASK (GDK_CONTROL_MASK | GDK_MOD1_MASK | GDK_MOD3_MASK | GDK_MOD4_MASK | GDK_MOD5_MASK)
-
-void new_window(int argc, char *argv[], char **environment, gint VTE_CJK_WIDTH, gchar *user_environ);
-gchar **apply_new_environ(gchar **sys_environ, gchar* user_environ);
-void window_option(struct Window *win_data, int argc, char *argv[]);
+#define DUD_MASK (GDK_LOCK_MASK | GDK_MOD2_MASK | ( ~GDK_MODIFIER_MASK))
+GtkNotebook *new_window(int argc,
+			char *argv[],
+			gchar *environment,
+			gchar *PWD,
+			gchar *VTE_CJK_WIDTH_STR,
+			gchar *user_environ,
+			gchar *encoding,
+			struct Window *win_data_orig,
+			struct Page *page_data_orig);
+void set_window_icon(GtkWidget *window);
+gboolean window_option(struct Window *win_data, gchar *encoding, int argc, char *argv[]);
 gboolean window_quit(GtkWidget *window, GdkEvent *event, struct Window *win_data);
-GString *got_help_message();
 gchar *got_profile_sample();
 gboolean window_key_press(GtkWidget *widget, GdkEventKey *event, struct Window *win_data);
 void deal_key_press(GtkWidget *window, gint type, struct Window *win_data);
@@ -60,5 +61,21 @@ void window_size_request (GtkWidget *window, GtkRequisition *requisition, struct
 void window_size_allocate (GtkWidget *window, GtkAllocation *allocation, struct Window *win_data);
 gboolean window_get_focus(GtkWidget *window, GdkEventFocus *event, struct Window *win_data);
 gboolean window_lost_focus (GtkWidget *window, GdkEventFocus *event, struct Window *win_data);
+void notebook_page_added (GtkNotebook *notebook, GtkWidget *child, guint page_num, struct Window *win_data);
+void remove_notebook_page (GtkNotebook *notebook, GtkWidget *child, guint page_num, struct Window *win_data);
+// void notebook_page_removed (GtkNotebook *notebook, GtkWidget *child, guint page_num, struct Window *win_data);
+void reorder_page_after_added_removed_page(struct Window *win_data, guint page_num);
+void destroy_window(struct Window *win_data);
+void update_window_hint(struct Window *win_data,
+			struct Page *page_data);
+GtkNotebook* create_window (GtkNotebook *notebook, GtkWidget *page, gint x, gint y,
+			    struct Window *win_data);
+gboolean window_state_event (GtkWidget *widget, GdkEventWindowState *event, struct Window *win_data);
+void keep_window_size (struct Window *win_data, GtkWidget *vte, guint keep_vte_size);
+#ifdef DEBUG
+void dump_data (struct Window *win_data, struct Page *page_data);
+void print_array(gchar *name, gchar **data);
+void print_color(gchar *name, GdkColor color);
+#endif
 
 #endif

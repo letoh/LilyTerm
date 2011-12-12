@@ -1,27 +1,21 @@
 /*
- * Copyright (c) 2008 Lu, Chao-Ming (Tetralet).  All rights reserved.
+ * Copyright (c) 2008-2009 Lu, Chao-Ming (Tetralet).  All rights reserved.
+ * 
+ * This file is part of LilyTerm.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * LilyTerm is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * LilyTerm is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with LilyTerm.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 
 #ifndef NOTEBOOK_H
 #define NOTEBOOK_H
@@ -37,6 +31,8 @@
 // for sockaddr_un
 #include <sys/un.h>
 
+#include <langinfo.h> 
+
 #include "data.h"
 #include "profile.h"
 #include "dialog.h"
@@ -44,14 +40,23 @@
 #include "menu.h"
 #include "main.h"
 
-GtkWidget *add_page(GtkWidget *window, GtkWidget *notebook, GtkWidget *menuitem_encoding,
-		    gchar *locale, gchar *environ, gboolean run_once, gint VTE_CJK_WIDTH);
-gboolean close_page (GtkWidget *vtebox, gboolean need_safe_close);
-gboolean vtebox_button_press(GtkWidget *widget, GdkEventButton *event, GtkWidget *window);
-void vtebox_grab_focus(GtkWidget *vtebox,GtkWidget *window);
-void vtebox_style_set (GtkWidget *vtebox, GtkStyle *previous_style, gpointer user_data);
-void vtebox_size_request (GtkWidget *vtebox, GtkRequisition *requisition, gpointer user_data);
-void vtebox_size_allocate (GtkWidget *vtebox, GtkAllocation *allocation, gpointer user_data);
-void set_VTE_CJK_WIDTH_environ(gint VTE_CJK_WIDTH);
+struct Page *add_page(struct Window *win_data,
+		      struct Page *page_data_prev,
+		      GtkWidget *menuitem_encoding,
+		      gchar *encoding,
+		      gchar *locale,
+		      gchar *user_environ,
+		      gboolean run_once,
+		      gchar *VTE_CJK_WIDTH);
+void label_size_request (GtkWidget *label, GtkRequisition *requisition, struct Page *page_data);
+gboolean close_page (GtkWidget *vte, gboolean need_safe_close);
+gboolean vte_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
+void vte_grab_focus(GtkWidget *vte, gpointer user_data);
+void vte_style_set (GtkWidget *vte, GtkStyle *previous_style, gpointer user_data);
+void vte_size_request (GtkWidget *vte, GtkRequisition *requisition, gpointer user_data);
+void vte_size_allocate (GtkWidget *vte, GtkAllocation *allocation, gpointer user_data);
+gboolean compare_win_page_encoding(GtkWidget *encoding, gchar *encoding_str);
+gchar *get_encoding_from_menu_item_name(GtkWidget *menuitem);
+gchar *get_url (GdkEventButton *event, struct Page *page_data, gint *tag);
 
 #endif

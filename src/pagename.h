@@ -1,27 +1,21 @@
 /*
- * Copyright (c) 2008 Lu, Chao-Ming (Tetralet).  All rights reserved.
+ * Copyright (c) 2008-2009 Lu, Chao-Ming (Tetralet).  All rights reserved.
+ * 
+ * This file is part of LilyTerm.
  *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * LilyTerm is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * LilyTerm is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with LilyTerm.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 
 #ifndef PAGENAME_H
 #define PAGENAME_H
@@ -41,11 +35,33 @@
 
 void reorder_page_number (GtkNotebook *notebook, GtkWidget *child, guint page_num, GtkWidget *window);
 gboolean monitor_cmdline(struct Page *page_data);
-void update_tab_name(struct Page *page_data);
+gboolean check_cmdline (struct Page *page_data, pid_t check_tpgid);
+gboolean check_update_cmdline(struct Page *page_data, pid_t check_tpgid);
+gboolean check_window_title (struct Page *page_data, gboolean lost_focus);
+gboolean check_pwd(struct Page *page_data, gchar *pwd, gchar *new_pwd, gint page_update_method);
+gboolean get_and_update_page_name(struct Page *page_data, gboolean lost_focus);
 void update_window_title(GtkWidget *window, gchar *name);
-void update_page_name(GtkWidget *window, GtkWidget *vtebox, GtkWidget *label, gint page_no, 
-		      gchar *custom_page_name, const gchar *tab_color, gboolean is_root, gboolean is_bold,
-		      gboolean show_encoding, GtkWidget *encoding);
+void update_page_name_wintitle(gchar **page_name,
+			      gchar **page_color,
+			      struct Window *win_data,
+			      struct Page *page_data);
+void update_page_name_cmdline(gchar **page_name,
+			     gchar **page_color,
+			     struct Window *win_data,
+			     struct Page *page_data);
+void update_page_name_pwd(gchar **page_name,
+			 gchar **page_color,
+			 struct Window *win_data,
+			 struct Page *page_data,
+			 gboolean lost_focus);
+gboolean update_page_name(GtkWidget *window, GtkWidget *vte, gchar *page_name, GtkWidget *label,
+			  gint page_no, gchar *custom_page_name, const gchar *tab_color, gboolean is_root,
+			  gboolean is_bold, gboolean show_encoding, gchar *encoding_str,
+			  gboolean custom_window_title, gboolean lost_focus);
+void update_page_name_normal(gchar **page_name,
+			     gchar **page_color,
+			     struct Window *win_data,
+			     struct Page *page_data);
 gchar *get_page_name_with_number(gchar *label_name, gint page_no);
 gchar *get_tab_name_with_page_names(struct Window *win_data);
 gchar *get_tab_name_with_cmdline(pid_t tpgid);
@@ -55,5 +71,6 @@ gchar *get_cmdline(pid_t tpgid);
 gboolean check_is_root(pid_t tpgid);
 gboolean check_status_data(gchar **status_data);
 void change_notebook_color(gboolean is_root);
+void update_page_window_title (VteTerminal *vte, struct Page *page_data);
 
 #endif
