@@ -1,3 +1,380 @@
+2012-04-17 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+  Trying to migrate to GTK3+ but failed. Still having big trouble in handling geometry.
+
+  New Feature:
+	* May use <Win> and <Menu> keys as function key.
+	  Thanks BV1AL for this idea.
+	* Added a menuitem "Always hide the tabs bar".
+	  Thanks BV1AL for this idea.
+	* Added a menuitem "Always show the tabs bar".
+	  Thanks Slavko for this idea.
+	* Applied new Polish translation.
+	  VERY THANKS to Bogusz Kowalski.
+	* Add a new menu item [Visible bell].
+	* Add a new menu item [Urgent bell].
+	  VERY THANKS to captnfab for this idea and patch.
+	  Be notice that for performance reason, the Urgent bell will disable
+	  if the LilyTerm window is in focus.
+	  i.e. It only works only when the LilyTerm window is losing focus.
+	* Add new menu item [View clipboard] and [View primary clipboard].
+	* Add a new menu item [Paste to every Vte Terminal].
+	  VERY THANKS to Bogusz Kowalski for this idea.
+	* Add a new menu item [Launch File Manager].
+	  Thanks Slavko for this idea.
+	* Confirm before pasting more than 1 lines to the Vte Terminal.
+	  May add a programs to "paste_texts_whitelist" in profile so that
+	  LilyTerm will not warn you when trying to paste lines to it.
+	  Set confirm_to_paste = 0 in user profile to disable this feature.
+	* The function key "Edit Label" is disabled by default,
+	  and the menu item [Rename this tab] is shown by default.
+	* Add a menu item [Add other locales...] to [Change text encoding]
+	  menu subitem. Thanks BV1AL for this idea.
+	* Add a new menu item [Reload settings].
+	* A new key binding <Ctrl N>, open a new windows with current directory.
+	  Thanks mrknacky for this idea.
+	* Using <Ctrl E> to edit tab name is disable by default.
+	  Thanks Rodolfo Quesada-Zumbado for this idea.
+	* Support solarized ansi color themes from
+	  http://ethanschoonover.com/solarized.
+	  Thanks medicalwei for this idea.
+	* New handmade build system. autotools had been dropped.
+	* Added a button <Join and paste> to [Confirm to paste texts] dialog.
+	* Add a new make target: update-po to po/Makefile.
+	  Thanks caleb for this idea.
+	* Better about dialog. Thanks Mario Blättermann for this idea.
+	* Added a new menu item: [Invert Color].
+	* Add a new option and a new menuitem 'Cursor shape'.
+	  Thanks ralesi for this great idea.
+	* Add a new option and a new menuitem 'Change the color of cursor'.
+	  Thanks ralesi for this great idea.
+	* Add a new option and a new menuitem 'Auto save settings'.
+
+  FIX:
+	* Remove '>' from URL matching.
+	  Thanks BrainWorker for reporting this bug.
+	* Fix some typo and syntax in translations texts.
+	  VERY THANKS to Vladimir Smolyar.
+
+2011-06-15 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+  version 0.9.9~rc9, It will be the version of 0.9.9,
+  Release as a rc version in case I forget something.
+
+  FIX:
+	* A race condition segfault bug if the locale settings is incorrect and the
+	  -e option is failed at the same time.
+	* The profile path in help message may not updated after saving the profile.
+	  Thanks 夢見草 for report this bug.
+	* Some translation strings missed.
+	  Thanks Vladimir Smolyar and Niels Martignène for reporting this bug.
+
+  New Feature:
+	* Add "screen" to foreground_program_whitelist.
+	* A new menu item "Window opacity when inactive" and a new check box menu item
+	  "Dim window when inactive", may dim the window when inactive if the screen
+	  is composited.
+	  Thanks keenerd for this great idea.
+	* Add a new color theme 'grayscale'. Thanks BV1AL for this idea.
+	* Applied new Franch translation.
+	  VERY THANKS to Niels Martignène.
+	* Applied new Slovak translation.
+	  VERY THANKS to Slavko.
+
+2010-12-10 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+  version 0.9.9~rc8
+
+  It is a hotfix version for 0.9.9~rc7.
+
+  FIX:
+	* Can not keep correct geometry size under kwin/xfwm4.
+	  VERY THANKS to Marco Paolone and Vladimir Smolyar for reporting this
+	  stupid bug.
+
+2010-12-6 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+  version 0.9.9~rc7
+
+  It is the final preview version of LilyTerm 0.9.9.
+  CALL FOR TRANSLATORS!
+
+  FIX:
+	* The default function key of 'Copy the text to clipboard' is changed
+	  into 'Ctrl Delete', and the default function key of 'Paste the text
+	  in clipboard' is changed into 'Ctrl Insert',
+	  Thanks Renato for report this bug.
+	* The profile option 'window_opacity', 'background_saturation',
+	  'font_resize_ratio', 'window_resize_ratio', 'brightness' and
+	  'inactive_brightness' won't be saved correctly under it_IT locale.
+	  VERY THANKS to Marco Paolone for report this strange bug.
+
+  New Feature:
+	* Applied new Flemish/Dutch translations.
+	  VERY THANKS to Adrian Buyssens.
+	* New Dialog: [Find String], but it is almost unusable.
+	  Please visit https://bugzilla.gnome.org/show_bug.cgi?id=627886 for
+	  more details.
+	* New function key: <Ctrl><F> to launch the search string dialog,
+	  <F3> to find the next string matching the search regex,
+	  and <Shift><F3> to find the previous string matching the search regex.
+	* New command line option [-g/--geometry] and new profile option
+	  [geometry], may specify the geometry (size and position) of window
+	  when starting.
+	  Very thanks Adrian Buyssens and Hámorszky Balázs for this idea.
+	* Better [Set function keys] dialog.
+
+2010-10-25 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+  version 0.9.9~rc6
+
+  FIX:
+	* No response under Ubuntu.
+	  Thanks 老杜, 夢見草 and bb for reporting this bug.
+	* Switch to $HOME if the init dir is invalid.
+
+  New Feature:
+	* Defensive programming, making LilyTerm behave in a predictable manner
+	  despite unexpected inputs.
+
+2010-09-26 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+  version 0.9.9~rc5
+
+  New Feature:
+	* Better support the --name and --title option from Gtk+2.
+	  VERY THANKS to caleb and letoh for this idea.
+	* May set the 'default_locale' and 'locales list' via right click menu.
+
+2010-09-21 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+  version 0.9.9~rc4
+
+  FIX:
+	* Fixed a segfault bug when launched with -e option.
+
+2010-09-21 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+  version 0.9.9~rc3
+
+  FIX:
+	* Fixed a stupid double free() segfault bug.
+	  VERY THANKS to Aeglos Lin, Solomon Huang and letoh for
+	  reporting and testing this bug.
+
+2010-09-21 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+  version 0.9.9~rc2
+
+  FIX:
+	* Speed up when initing and starting.
+	  VERY THANKS to caleb and letoh for reporting this bug.
+
+2010-09-18 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+  version 0.9.9~rc
+
+  It is the final version of LilyTerm 0.9.9. CALL FOR TRANSLATORS!
+
+  FIX:
+	* The foreground texts will also dim when inactive.
+	* The profile option "show_transparent_menu" is renamed to
+	  "show_background_menu".
+	* The profile option "window_shows_current_page" is renamed to
+	  "window_title_shows_current_page".
+	* Fix some typo and syntax in translations texts.
+	  VERY THANKS to Vladimir.
+	* Sometimes translations will be mixed with different language
+	  when switching between locales.
+	  VERY THANKS to Vladimir for reporting and testing this bug.
+	* Better behavior when draging a tab to another window.
+	* May use <Shift>+<non-alphanumeric> in function keys.
+
+  New Feature:
+	* Applied new Russian and Ukrainian translations.
+	  VERY THANKS to Vladimir.
+	* Applied updated Simplified Chinese translation.
+	  VERY THANKS to GoGoNKT.
+	* New function key <Shift><Left/Right>:
+	  May Emulate a mouse Scroll Up/Down event on Vte Terminal box.
+	  Thanks qotsa for this idea, and caleb for the codes!
+	* New function key <Shift><Up/Down>:
+	  Asks to Scroll Up/Down 1 line on Vte Terminal box.
+	  Thanks qotsa for this idea.
+	* New [Usage] dialog.
+	* Better [Set function keys] dialog.
+	* New profile option: "window_title_append_package_name"
+	  May get rid of 'LilyTerm' on the window title.
+	  Thanks qotsa for this idea.
+	* New menuitem [Set background image], and New profile option:
+	  "background_image" and "scroll_background".
+	  Thanks caleb for this idea.
+	* May apply new settings from another profile directly via right click
+	  menu.
+	  Thanks BV1AL for this idea.
+	* [New tab with locale] may pop up a warning dialog if the locale is
+	  invalid.
+	* Move some rare used menuitems into [Misc] submenu.
+	* May use a simplified locale name (like 'zh_TW') in profile option
+	  'default_locale' and 'locales_list'.
+	* Using vte_terminal_set_background_image_file(vte, "/dev/null") to
+	  clear the background image. Thanks caleb for this great idea.
+	* Manual page updated.
+
+  DROP:
+	* The profile option "default_encoding" and "encodings_list"
+	  is obsoleted. LilyTerm will detect correct encoding automaticly.
+	* The profile option "fixed_page_width" is obsoleted.
+	  The page width will always be fixed on LilyTerm now.
+	* The profile option "show_get_function_key_menu" is obsoleted.
+
+2010-07-13 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+  version 0.9.9~pre7
+
+  FIX:
+	* Better compatibility for vte (0.25.1) and gtk (< 2.10).
+	* Added csh, dash, ksh, tcsh, and zsh to foreground_program_whitelist
+	  and background_program_whitelist.
+	  Thanks nasofe for report this bug.
+	* Better behavior when there is no '/proc' or the '/proc' is empty.
+	* Better behavior if the child process has became zombie or exited
+	  immediately.
+
+  New Feature:
+	* New menuitem: [Set the function key] instead of [Get the function
+	  key value].
+	* A warning dialog if some feature needs GTK >= 2.12 or VTE >= 0.16.
+
+2010-05-31 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+  version 0.9.9~pre6
+
+  FIX:
+	* Better compatibility for gtk (2.8 ~ 2.20) and vte (0.16 ~ 0.24).
+	* The default value for scrollback_lines sets back to 1024.
+	  scrollback_lines = -1 only works under vte > 0.22.3.
+	  Very thanks 蒜頭 for report this bug.
+
+  New Feature:
+	* Applied new Spanish translation.
+	  VERY THANKS to P.L. Francisco.
+	* New menuitem: "Change ANSI color theme".
+	* New menuitem: "Adjust the brightness when inactive".
+	* New menuitem: "Erase Binding".
+
+2010-05-01 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+  version 0.9.9~pre5
+
+  The default user profile is moved to ~/.config/lilyterm/default.conf.
+  Please do it manually and sorry for the inconvenience.
+
+  FIX:
+	* Fix a segfault bug when saving settings if the 1st page was closed.
+	* Closing a tab that is not on focus with clicking the [X] button on
+	  it may cause wrong tab to be focus.
+	  VERY THANKS to caleb for report this bug.
+	* LilyTerm will confirm twice if there is a foreground running program
+	  in a tab when closing it.
+
+  New Feature:
+	* Applied new Italian translation.
+	  VERY THANKS to Marco Paolone.
+	* Reduce the size of [X] button on the tab.
+	  VERY THANKS to caleb for this idea.
+	* New profile option: "default_encoding".
+	  May specify the default encoding when starting up.
+	* New profile option: "default_locale".
+	  May specify the default locale when starting up.
+	* New profile option: "fullscreen"
+	  May change to fullscreen mode when starting up.
+	  Thanks BV1AL for this idea.
+	* New menuitem: "New window with profile".
+	  May launch a new window of Lilyterm with specified profile listed
+	  in ~/.config/lilyterm/.
+	* New menuitem: "Save settings as".
+	  May save the settings into a new profile.
+	* Now [transparent_background] and [background_color] may use at the
+	  same time even though the window is not composited.
+	* Set the default value of profile option "scrollback_lines" to -1,
+	  It means the lines of scrollback history is unlimited.
+	  VERY THANKS to caleb for this idea.
+	* The default key for move_tab_forward changed into "Ctrl ]".
+	* The default key for move_tab_backward changed into "Ctrl [".
+
+2010-02-26 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+  version 0.9.9~pre4
+
+  New Feature:
+	* The default key for "move_tab_forward" recover to "Ctrl Left".
+	  The default key for "move_tab_backward" recover to "Ctrl Right".
+	* New profile option: "execute_command_whitelist".
+	  Don't need to confirm for executing a program if it's in the
+	  whitelist.
+	* New profile option: "execute_command_in_new_tab".
+	  May launch executed command in a new tab of last actived window,
+	  instead of opening a new window. It is enabled by default.
+	  Thanks to nasofe for this idea.
+	* New profile option: "foreground_program_whitelist".
+	  If a program is running on foreground, Don't need to confirm for
+	  terminating it if it's in the whitelist.
+	* New profile option: "background_program_whitelist".
+	  If a program is running in background, Don't need to confirm for
+	  terminating it if it's in the whitelist.
+	* New profile option: "show_close_button_on_tab".
+	  May Show a close button [X] on current tab.
+	  It is enabled by default.
+	  Thanks Andrew for this idea.
+	* New profile option: "show_close_button_on_all_tabs".
+	  May Show a close button [X] on all tabs.
+	  It is disabled by default.
+	* Show a list of all running program of a LilyTerm window and confirm
+	  to close it if click the [X] of the window title.
+
+2010-02-19 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+  version 0.9.9~pre3
+
+  FIX:
+	* Better behavior when closing multi-page and confirming to close
+	  running application.
+	* Trying not to use kill() when there is no child process of this
+	  page, or the bash history will not write back to ~/.bash_history.
+	  Thanks to Douglas McFadzean, 老杜, winlin, and robert for reporting
+	  this bug.
+	* Some compile warning under Debian Lenny AMD64 system.
+	* "confirm_to_execute_command" will always set to "1" when starting
+	  up without -e option.
+	  VERY THANKS to Douglas McFadzean for reporting this bug.
+
+  New Feature:
+	* Man page updated.
+	* New profile option: "show_exit_menu".
+	  May enable/disable menu item [Exit LilyTerm].
+	  It is disabled by default.
+	* The default key for move_tab_forward changed into "Ctrl Insert".
+	* The default key for move_tab_backward changed into "Ctrl Delete".
+	* A confirm window when trying to close a tab with child process in it,
+	  and an option to use kill() or not.
+
+2010-02-03 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
+  version 0.9.9~pre2
+
+  FIX:
+	* [New tab with specified locale] will always set the encoding of new
+	  tab to "ANSI_X3.4-1968".
+
+2010-02-02 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
+
+  version 0.9.9~pre1
+
+  FIX:
+	* Ignore anything beyond -e or -x options.
+	  VERY THANKS to Douglas McFadzean for reporting this stupid bug.
+
+  New Feature:
+	* Code cleanup.
+	* Added a man page.
+	* Update the year of copyright to 2008-2010.
+	  Thanks to caleb for reporting this bug.
+	* Added a -? command option.
+	* New profile option: "confirm_to_execute_command".
+	  May disable/enable the confirm dialog when executing a command.
+	  It is enabled by default.
+	  VERY THANKS to letoh and Douglas McFadzean for this idea.
+	* New profile option: "encodings_list" and "locales_list".
+	  Profile option "locales_list" is splited into two options:
+	  "encodings_list" and "locales_list".
+	  Please review and update your profile to response this change.
+
 2009-12-15 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
 
   version 0.9.8
@@ -30,7 +407,7 @@
 	  Please see the following links for more details:
 	  http://live.gnome.org/ControlCenter/AddingDefaultApplications
 	  You need to complie lilyterm with gnome-control-center-dev package
-	  (>2.24.0 I think) to enable this options.
+	  (>2.26.0 I think) to enable this options.
 	  VERY THANKS to caleb for reporting this bug and providing the
 	  lilyterm.xml.
 	* New menu item: [Dim text when inactive].
@@ -58,7 +435,7 @@
 	  is launched with "zh_TW.UTF-8 lilyterm". (0.9.7~pre7)
 	* Better behavior when run with LC_ALL=zh_TW (not zh_TW.Big5).
 	  (0.9.7~pre7)
-	  Thanks to Balázs Hámorszky for reporting and testing this bug. 
+	  Thanks to Balázs Hámorszky for reporting and testing this bug.
 	* Using gdk_spawn_on_screen_with_pipes() instead of vfork()/execvp()
 	  when clicking on a hyperlink, or it will cause zombie process.
 	  (0.9.7~pre8)
@@ -205,13 +582,13 @@
 	* No warning dialog if there is no "format version" in profile.
 	  Thanks caleb for this idea. (0.9.7)
 	* The new page will be placed next to the current page. (0.9.7)
-	
+
 2008-7-25 Lu, Chao-Ming (Tetralet) <tetralet@gmail.com>
 
   version 0.9.6
 
   For GJK users:
-	
+
 	If your vte is >= 0.16.14 (Debian Lenny), and you want to enable
 	VTE_CJK_WIDTH, Please make sure that you have applied the patch on
 	http://bugzilla.gnome.org/show_bug.cgi?id=542795.
@@ -353,7 +730,7 @@
 	    page_dir_color = darkgreen
 	    page_custom_color = darkred
 	    page_normal_color = black
-	  
+
 	  in your profile, or use `use_color_page = 0' to disable it.
 	* Shows the PWD (current directory) on page name.
 	  Enable it will NOT cause performance problem. Lilyterm with 100 tabs

@@ -3,7 +3,7 @@
 <default-apps>
   <terminals>
     <terminal>
-      <name>lilyterm</name>
+      <name>LilyTerm</name>
       <executable>lilyterm</executable>
       <command>lilyterm %s</command>
       <icon-name>terminal</icon-name>

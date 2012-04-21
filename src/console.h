@@ -18,34 +18,16 @@
  */
 
 #include <gtk/gtk.h>
-// for g_get_tmp_dir()
-#include <glib.h>
 // for L10n
 #include <locale.h>
 #include <glib/gi18n.h>
 // for exit()
 #include <stdlib.h>
-// for socket()
-#include <sys/un.h>
-#include <sys/socket.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <errno.h>
+// for va_start(), va_arg(), va_end()
+#include <stdarg.h>
+// for strcmp()
+#include <string.h>
 
 #include "lilyterm.h"
 
-// the max size of saddr.sun_path in Linux is 108!
-#define UNIX_PATH_MAX 108
-
-#ifdef UNIT_TEST
-int fake_main(int argc, char *argv[]);
-#endif
-
-gboolean set_fd_non_block(gint *fd);
-gboolean init_socket_server();
-gboolean accept_socket(GIOChannel *source, GIOCondition condition, gpointer user_data);
-gboolean read_socket(GIOChannel *channel, GIOCondition condition, gpointer user_data);
-gboolean socket_fault(int i, GError *error, GIOChannel* channel, gboolean unref);
-gboolean clear_channel(GIOChannel* channel, gboolean unref);
-gint shutdown_socket_server(gpointer data);
-gchar *get_local_list();
+gchar *get_help_message(gchar *profile);

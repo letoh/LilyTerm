@@ -19,18 +19,8 @@
 
 #include <gtk/gtk.h>
 #include <vte/vte.h>
-// for aoti()
-#include <stdlib.h>
-// for strlen()
-#include <string.h>
-// for usleep()
-#include <unistd.h>
-// for stat()
-#include <sys/stat.h>
+
 #include "lilyterm.h"
 
-gboolean check_cmdline (struct Page *page_data, pid_t check_tpgid);
-gboolean check_window_title (struct Page *page_data, gboolean lost_focus);
-gboolean check_pwd(struct Page *page_data, gchar *pwd, gchar *new_pwd, gint page_update_method);
-gchar *get_tab_name_with_page_names(struct Window *win_data);
-gchar *get_tab_name_with_cmdline(struct Page *page_data);
+gchar *get_resize_font(GtkWidget *vte, Font_Name_Type type);
+void reset_vte_size(GtkWidget *vte, gchar *new_font_name, Font_Reset_Type type);

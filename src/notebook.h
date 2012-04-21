@@ -1,6 +1,6 @@
 /*
- * Copyright (c) 2008-2009 Lu, Chao-Ming (Tetralet).  All rights reserved.
- * 
+ * Copyright (c) 2008-2010 Lu, Chao-Ming (Tetralet).  All rights reserved.
+ *
  * This file is part of LilyTerm.
  *
  * LilyTerm is free software: you can redistribute it and/or modify
@@ -17,9 +17,6 @@
  * along with LilyTerm.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef NOTEBOOK_H
-#define NOTEBOOK_H
-
 #include <gtk/gtk.h>
 #include <vte/vte.h>
 #include <glib/gi18n.h>
@@ -31,33 +28,19 @@
 // for sockaddr_un
 #include <sys/un.h>
 
-#include <langinfo.h> 
+#include "lilyterm.h"
 
-#include "data.h"
-#include "profile.h"
-#include "dialog.h"
-#include "pagename.h"
-#include "menu.h"
-#include "main.h"
-
-struct Page *add_page(struct Window *win_data,
-		      struct Page *page_data_prev,
-		      GtkWidget *menuitem_encoding,
-		      gchar *encoding,
-		      gchar *locale,
-		      gchar *user_environ,
-		      gboolean run_once,
-		      gchar *VTE_CJK_WIDTH);
+gchar **get_argv(struct Window *win_data, gboolean *argv_need_be_free);
+void create_utf8_child_process_failed_dialog (struct Window *win_data, gchar *message, gchar *encoding);
+void create_child_process_failed_dialog(struct Window *win_data, gchar *message, gchar *encoding);
+void clear_arg(struct Window *win_data);
 void label_size_request (GtkWidget *label, GtkRequisition *requisition, struct Page *page_data);
-gboolean close_page (GtkWidget *vte, gboolean need_safe_close);
 gboolean vte_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data);
 void vte_grab_focus(GtkWidget *vte, gpointer user_data);
-void dim_vte_text (struct Window *win_data, struct Page *page_data, gint dim_text);
-void vte_style_set (GtkWidget *vte, GtkStyle *previous_style, gpointer user_data);
-void vte_size_request (GtkWidget *vte, GtkRequisition *requisition, gpointer user_data);
-void vte_size_allocate (GtkWidget *vte, GtkAllocation *allocation, gpointer user_data);
-gboolean compare_win_page_encoding(GtkWidget *encoding, gchar *encoding_str);
-gchar *get_encoding_from_menu_item_name(GtkWidget *menuitem);
+gboolean compare_win_page_encoding(GtkWidget *menu_item_encoding, gchar *encoding_str);
+// void vte_style_set (GtkWidget *vte, GtkStyle *previous_style, gpointer user_data);
+// void vte_size_request (GtkWidget *vte, GtkRequisition *requisition, gpointer user_data);
+// void vte_size_allocate (GtkWidget *vte, GtkAllocation *allocation, gpointer user_data);
 gchar *get_url (GdkEventButton *event, struct Page *page_data, gint *tag);
-
-#endif
+void page_data_dup(struct Page *page_data_prev, struct Page *page_data);
+// void vte_paste_clipboard (VteTerminal *vte, gpointer user_data);
